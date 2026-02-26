@@ -19,7 +19,7 @@ function ContactSection() {
     e.preventDefault();
 
     const emailInput = formRef.current.elements.email;
-    
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(formRef.current.elements.email.value)) {
       console.log("regex failed");
@@ -76,21 +76,21 @@ function ContactSection() {
         <SectionHeader
           subtitle="Contact"
           title="Contact Us"
-          description="Utilize our tools to develop your concepts and bring your vision to life. Once complete, effortlessly share your creations."
+          description="Have a question or feedback? We'd love to hear from you. Send us a message!"
           centered
         />
-        
+
         <div className="row justify-content-center">
-          <div className="col-lg-8 col-xl-7">  
-            
-              <div className="info mb-5" data-aos="fade-up" data-aos-delay="100">
+          <div className="col-lg-8 col-xl-7">
+
+            <div className="info mb-5" data-aos="fade-up" data-aos-delay="100">
               <div className="d-flex align-items-center gap-3">
-                
-             <div className="icon d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle border border-secondary" 
-              style={{ width: '44px', height: '44px' }}>
-            <i className="bi bi-send text-body"></i>
-          </div>
-                <span> 
+
+                <div className="icon d-flex align-items-center justify-content-center flex-shrink-0 rounded-circle border border-secondary"
+                  style={{ width: '44px', height: '44px' }}>
+                  <i className="bi bi-send text-body"></i>
+                </div>
+                <span>
                   <span className="d-block text-muted small">Email</span>
                   <strong className="text-body">{contactInfo.email}</strong>
                 </span>
@@ -99,7 +99,7 @@ function ContactSection() {
 
             <div className="form-wrapper" data-aos="fade-up" data-aos-delay="300">
               <form id="contactForm" onSubmit={handleFormSubmit} ref={formRef}>
-                
+
                 <div className="row mb-3">
                   <div className="col-md-6 mb-3 mb-md-0">
                     <Input
@@ -146,10 +146,10 @@ function ContactSection() {
                 </div>
 
                 <div className='actions'>
-                  <button className="btn fw-semibold w-100 py-3" 
-                          type="submit" 
-                          disabled={isLoading}
-                          style={{ backgroundColor: '#52b69a', color: '#fff', border: 'none' }}>
+                  <button className="btn btn-primary fw-semibold w-100 py-3 text-white"
+                    type="submit"
+                    disabled={isLoading}
+                    style={{ border: 'none' }}>
                     {!isLoading ? (
                       <>Send Message</>
                     ) : (

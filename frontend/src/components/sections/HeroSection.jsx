@@ -14,69 +14,53 @@ function HeroSection() {
           }
         }
       `}</style>
-    <section className="hero__v6 section" id="home">
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-6">
-            <div className="row">
-              <div className="col-lg-11">
-                <span
-                  className="hero-subtitle text-uppercase"
-                  data-aos="fade-up"
-                  data-aos-delay="0"
-                >
-                  Autopilot Virtual Assistant Agency 
-                </span>
+      <section className="hero__v6 section" id="home">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-6">
+              <div className="row">
+                <div className="col-lg-11">
+                  <span
+                    className="hero-subtitle text-uppercase"
+                    data-aos="fade-up"
+                    data-aos-delay="0"
+                  >
+                    TMC Food Hub
+                  </span>
 
-                <h1
-                  className="hero-title mb-3"
-                  data-aos="fade-up"
-                  data-aos-delay="100"
-                >
-                  An employer-side resource management platform for finding the
-                  right people to work with.
-                </h1>
+                  <h1
+                    className="hero-title mb-3"
+                    data-aos="fade-up"
+                    data-aos-delay="100"
+                  >
+                    Your Cravings, Delivered, Anytime, Anywhere.
+                  </h1>
 
-                <p
-                  className="hero-description mb-4 mb-lg-5"
-                  data-aos="fade-up"
-                  data-aos-delay="200"
-                >
-                  AVAA helps clients and employers browse, evaluate, and select
-                  talent through complete profiles, seamless filtering, and a
-                  clean, centralized platform.
-                </p>
+                  <p
+                    className="hero-description mb-4 mb-lg-5"
+                    data-aos="fade-up"
+                    data-aos-delay="200"
+                  >
+                    TMC Food Hub is your premier delivery service connecting you to the best
+                    local restaurants. Fast, reliable, and convenient dining at your fingertips.
+                  </p>
 
-                <div
-                  className="cta d-flex gap-2 mb-4 mb-lg-5"
-                  data-aos="fade-up"
-                  data-aos-delay="300"
-                >
-                  <a className="btn" href="#">
-                    Find the right people
-                  </a>
+                  <div
+                    className="cta d-flex gap-2 mb-4 mb-lg-5"
+                    data-aos="fade-up"
+                    data-aos-delay="300"
+                  >
+                    <a className="btn" href="#">
+                      Order Now
+                    </a>
 
-                  <a className="btn btn-white-outline" href="#">
-                    Built for employers. Designed for decisions.
-                    <svg
-                      className="lucide lucide-arrow-up-right"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M7 7h10v10"></path>
-                      <path d="M7 17 17 7"></path>
-                    </svg>
-                  </a>
-                </div>
+                    <a className="btn btn-white-outline" href="#">
+                      <i className="bi bi-play-circle-fill me-2 fs-5"></i>
+                      Explore
+                    </a>
+                  </div>
 
-                {/* <div
+                  {/* <div
                   className="logos mb-4"
                   data-aos="fade-up"
                   data-aos-delay="400"
@@ -106,31 +90,31 @@ function HeroSection() {
                     />
                   </div>
                 </div> */}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-lg-6">
+              <div className="hero-img">
+                {/* <img */}
+                {/*   className="img-card img-fluid" */}
+                {/*   src="assets/images/card-expenses.png" */}
+                {/*   alt="Talent profile card" */}
+                {/*   data-aos="fade-down" */}
+                {/*   data-aos-delay="600" */}
+                {/* /> */}
+                <img
+                  className="img-main img-fluid rounded-4"
+                  src={heroImage}
+                  alt="AVAA platform preview"
+                  data-aos="fade-in"
+                  data-aos-delay="500"
+                />
               </div>
             </div>
           </div>
-
-          <div className="col-lg-6">
-            <div className="hero-img">
-              {/* <img */}
-              {/*   className="img-card img-fluid" */}
-              {/*   src="assets/images/card-expenses.png" */}
-              {/*   alt="Talent profile card" */}
-              {/*   data-aos="fade-down" */}
-              {/*   data-aos-delay="600" */}
-              {/* /> */}
-              <img
-                className="img-main img-fluid rounded-4"
-                src={heroImage}
-                alt="AVAA platform preview"
-                data-aos="fade-in"
-                data-aos-delay="500"
-              />
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
+      </section>
     </>
   );
 }
