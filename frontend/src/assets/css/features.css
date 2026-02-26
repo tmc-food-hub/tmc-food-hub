@@ -1,0 +1,23 @@
+.features__v2 .icon {
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  border-radius: 50%;
+  background-color: var(--bs-secondary);
+  color: var(--bs-primary);
+}
+
+
+.features__v2 .btn-play i {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 50%;
+  background-color: var(--bs-white);
+  color: var(--bs-primary);
+}
+h2{
+font-weight: 600;
+margin-bottom: 4px;
+color: var(--bs-text-color);
+}

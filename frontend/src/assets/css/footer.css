@@ -1,0 +1,38 @@
+.footer {
+  background-color: rgba(var(--inverse-color-rgb), 0.02);
+  font-size: 15px;
+}
+
+.footer h2, .footer h3, .footer h4 {
+  font-size: 16px;
+}
+.footer ul li {
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+.footer a {
+  color: rgba(var(--inverse-color-rgb), 0.6);
+  text-decoration: none;
+}
+.dark-mode .footer a {
+  color: #ffffff;
+}
+.footer a:hover {
+  color: var(--inverse-color);
+}
+.footer a .badge {
+  -webkit-transition: 0.3s all ease;
+  transition: 0.3s all ease;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--bs-primary);
+}
+.footer a:hover .badge {
+  background-color: rgba(var(--bs-primary-rgb), 1);
+  color: var(--bs-white);
+}
+.footer .quick-contact i {
+  color: var(--inverse-color);
+}
+.footer .credits {
+  font-size: 13.5px;
+}

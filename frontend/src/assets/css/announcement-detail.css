@@ -1,0 +1,220 @@
+/* Layout & Fonts */
+.cea-detail-page {
+    padding: 120px 0 80px 0;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-family: 'Bricolage Grotesque', sans-serif;
+}
+.cea-container-narrow {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/* Breadcrumbs */
+.cea-breadcrumbs {
+    font-size: 13px;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.cea-breadcrumb-link {
+    color: var(--bs-primary);
+    text-decoration: none !important;
+}
+
+.cea-breadcrumb-link:hover {
+    color: var(--bs-primary-hover);
+}
+
+.cea-breadcrumb-separator {
+    color: #adb5bd;
+    margin: 0 5px;
+}
+
+.cea-breadcrumb-active {
+    color: var(--bs-body-color);
+    opacity: 0.8;
+}
+
+.cea-category-pill {
+    background-color: var(--bs-icon-container);
+    color: var(--bs-primary);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.cea-h1-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--bs-heading-color);
+    margin: 15px 0 8px 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.cea-subtitle {
+    font-size: 1.2rem;
+    color: var(--bs-body-color);
+    opacity: 0.7;
+    margin-bottom: 35px;
+}
+
+/* Publisher Block & Logo Fix */
+.cea-publisher-block {
+    border-top: 1px solid rgba(var(--inverse-color-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--inverse-color-rgb), 0.1);
+    padding: 16px 0;
+    margin-bottom: 40px;
+}
+
+.cea-avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #ffffff !important; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #eeeeee; 
+    overflow: hidden;
+}
+
+.cea-publisher-logo {
+    max-width: 75%; 
+    max-height: 75%;
+    object-fit: contain;
+}
+
+.cea-author-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    margin-bottom: 0;
+}
+
+.cea-publish-date {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--bs-body-color);
+    opacity: 0.7;
+}
+
+.cea-btn-icon {
+    border: 1px solid rgba(var(--inverse-color-rgb), 0.1);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+.action-btn.dark-mode img {
+  filter: invert(1);
+}
+
+.action-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: filter 0.3s ease;
+}
+
+.action-btn.dark-mode svg {
+  filter: invert(1);
+}
+
+.cea-btn-icon:hover {
+    background-color: var(--bs-primary);
+    color: #ffffff;
+    border-color: var(--bs-primary);
+}
+
+.cea-summary-box {
+    border-left: 4px solid var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.04);
+    padding: 20px 25px;
+    margin-bottom: 45px;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.cea-hero-figure {
+    margin-bottom: 50px;
+}
+
+.cea-hero-figure img {
+    width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Takeaways Card */
+.cea-takeaways-card {
+    background-color: var(--bs-icon-container);
+    padding: 30px;
+    border-radius: 12px;
+    margin: 40px 0;
+}
+
+.cea-takeaways-title {
+    color: var(--bs-primary);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.cea-check-circle {
+    background-color: var(--bs-primary);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.cea-h2-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    margin: 45px 0 20px 0;
+    letter-spacing: -0.01em;
+}
+
+.cea-body-text {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--bs-body-color);
+    margin-bottom: 25px;
+}
+
+/* ----------------------- Print Styles ----------------------- */
+@media print {
+    /* Hide buttons and dropdowns in print */
+    .cea-publisher-block .d-flex.gap-2,
+    .cea-btn-icon,
+    .dropdown,
+    .dropdown-menu {
+        display: none !important;
+    }
+
+    /* Ensure article content fills page */
+    body, .site-wrap, .cea-container-narrow {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        background-color: #fff;
+        color: #000;
+    }
+}

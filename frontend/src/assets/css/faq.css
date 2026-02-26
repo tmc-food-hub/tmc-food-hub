@@ -1,0 +1,91 @@
+.faq__v2 {
+  background-color: rgba(var(--inverse-color-rgb), 0.02);
+  
+}
+
+.faq__v2 .subtitle {
+  margin-top: 50px;
+  background-color: rgba(var(--bs-secondary-rgb), 0.2);
+  color: var(--bs-primary);
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+}
+
+.faq__v2 .custom-accordion {
+  --bs-accordion-bg: var(--bs-body-bg);
+  --bs-accordion-btn-icon: url("");
+  --bs-accordion-btn-active-icon: url("");
+  
+}
+
+.faq__v2 .custom-accordion .accordion-button {
+  position: relative;
+  padding-right: 50px;
+  
+  
+  
+}
+.faq__v2 .custom-accordion .accordion-button::after {
+  content: "\f4fe";
+  font-family: "bootstrap-icons" !important;
+  font-style: normal;
+  font-weight: 400 !important;
+  font-variant: normal;
+  text-transform: none;
+  right: 20px;
+  top: 15px;
+  width: 18px;
+  height: 14px;
+  font-size: 30px;
+ 
+  background-image: none;
+  -webkit-transform-origin: center center;
+          transform-origin: center center;
+  -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+  line-height: 1;
+  position: absolute;
+  -webkit-font-smoothing: antialiased;
+}
+
+.faq__v2 .custom-accordion .accordion-button:not(.collapsed)::after {
+  -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+  content: "\f2ea";
+}
+.faq__v2 .custom-accordion .accordion-item {
+  border: none;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  -webkit-transition: 0.3s all ease-in-out;
+  transition: 0.3s all ease-in-out;
+}
+.faq__v2 .custom-accordion .accordion-item .accordion-header .accordion-button {
+  outline: none;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--bs-heading-color);
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border: none;
+}
+.faq__v2 .custom-accordion .accordion-item .accordion-header .accordion-button:not(.collapsed) {
+  background-color: transparent;
+
+
+}
+.faq__v2 .custom-accordion .accordion-item .accordion-body {
+  border-top: none;
+  color: var(--bs-text-color);
+}
+.question{
+  color: var(--bs-text-color);
+  font-style: normal;
+}

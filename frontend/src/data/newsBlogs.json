@@ -1,0 +1,38 @@
+[
+  {
+    "category": "Artistry",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "Artistry fuels innovation in the digital landscapes",
+    "link": "#"
+  },
+  {
+    "category": "Developer",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "Coding innovation drive to the future of technology",
+    "link": "#"
+  },
+  {
+    "category": "Marketing",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "Strategic marketing transform brand narratives",
+    "link": "#"
+  },
+  {
+    "category": "AI",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "AI integration reshaping modern development",
+    "link": "#"
+  },
+  {
+    "category": "Collaboration",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "Real-time collaboration tools for teams",
+    "link": "#"
+  },
+  {
+    "category": "Cloud",
+    "image": "/assets/images/hero-bg-1-min.jpg",
+    "title": "Cloud technology driving business scalability",
+    "link": "#"
+  }
+]

@@ -1,0 +1,29 @@
+.services__v3 .subtitle,
+.events__v1 .subtitle {
+  background-color: rgba(var(--bs-secondary-rgb), 0.2);
+  color: var(--bs-primary);
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+}
+
+.services__v3 .icon,
+.events__v1 .icon {
+  display: inline-block;
+  position: relative;
+  color: var(--bs-primary) !important;
+  margin-bottom: 1.5rem; 
+}
+.services__v3 .icon svg,
+.events__v1 .icon svg {
+  width: 45px;  
+  height: auto;  
+}
+
+.services__v3 .service-card,
+.events__v1 .service-card {
+  border: 1px solid rgba(var(--inverse-color-rgb), 0.2);
+}
