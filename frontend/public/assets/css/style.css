@@ -12,6 +12,8 @@
   --bs-secondary: #f9e8e6;
   --bs-secondary-rgb: 249, 232, 230;
   --bs-heading-color: #16181B;
+  --services-title-color: #0f172a;
+  --services-summary-color: rgba(15, 23, 42, 0.7);
   --inverse-color: #494B5B;
   --inverse-color-rgb: 73, 75, 91;
   --bs-link-color: var(--bs-primary);
@@ -465,6 +467,11 @@ h6 {
   --bs-primary: #951A0C;
   --bs-primary-hover: #b31f0f;
   --bs-text-color: #ffffff;
+  --bs-heading-color: #f8fafc;
+  --inverse-color: #e2e8f0;
+  --inverse-color-rgb: 226, 232, 240;
+  --services-title-color: #f8fafc;
+  --services-summary-color: rgba(226, 232, 240, 0.92);
   --nav-bg: #1a1a1a;
   --nav-color: #1a1a1a;
   --dropdown-bg: #1a1a1a;
@@ -472,5 +479,4 @@ h6 {
   --dropdown-hover-bg: rgba(255, 255, 255, 0.15);
   --bs-card-bg: #1e1e1e;
   --bs-icon-container: #1b281b;
-
 }

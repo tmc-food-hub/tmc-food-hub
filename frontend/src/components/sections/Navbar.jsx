@@ -38,6 +38,7 @@ function Navbar() {
   const renderNavItems = (isMobile = false) =>
     navigationItems.map((item) => {
       const isHomePage = location.pathname === '/';
+      const isServicesPath = location.pathname === '/services';
 
       if (item.children) {
         const isNewsPath = location.pathname === '/news-and-blogs';
@@ -46,7 +47,7 @@ function Navbar() {
         const isFAQPath = location.pathname === '/faq';
         const isAnyChildActive =
           (item.id === 'resources-dropdown' && (isNewsPath || isEventsPath)) ||
-          (item.id === 'support-dropdown' && isSupportPath) ||
+          (item.id === 'support-dropdown' && (isSupportPath || isFAQPath)) ||
           (isHomePage && item.children.some(c => isActive(c.id)));
 
         return (
@@ -70,7 +71,7 @@ function Navbar() {
                   (isEventsPage && isEventsPath) ||
                   (isNewsPage && isNewsPath) ||
                   (isSupportPage && isSupportPath) ||
-                  (isFaqPage && isFaqPage) ||
+                  (isFaqPage && isFAQPath) ||
                   (isHomePage && isActive(child.id));
 
                 return (
@@ -102,6 +103,24 @@ function Navbar() {
           </li>
         );
       }
+
+      if (item.id === 'services') {
+        return (
+          <li key={item.id} className="nav-item">
+            <Link
+              className={`nav-link ${isServicesPath ? 'active' : ''}`}
+              to="/services"
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (isMobile) closeMobileMenu();
+              }}
+            >
+              {item.label}
+            </Link>
+          </li>
+        );
+      }
+
       const isItemActive = isHomePage ? isActive(item.id) : false;
       return (
         <li key={item.id} className="nav-item">

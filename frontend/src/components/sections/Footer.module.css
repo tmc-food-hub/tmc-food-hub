@@ -1,0 +1,111 @@
+.footer {
+  background: #ffffff;
+  color: #1f2933;
+  padding-top: 70px;
+  border: 1px solid #f1f5f9;
+}
+
+.heading {
+  color: #111724;
+  margin-bottom: 14px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.subheading {
+  color: #111724;
+  margin-bottom: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.description {
+  color: rgba(17, 23, 36, 0.75);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.socialRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.socialIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111724;
+  border: 1px solid rgba(17, 23, 36, 0.2);
+  background: rgba(15, 23, 42, 0.04);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.socialIcon:hover {
+  color: #ffffff;
+  border-color: rgba(var(--bs-primary-rgb), 1);
+  background: var(--bs-primary);
+  transform: translateY(-2px);
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.linkList li {
+  margin-bottom: 10px;
+}
+
+.link {
+  color: rgba(17, 23, 36, 0.88);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.link:hover {
+  color: var(--bs-primary);
+}
+
+.contactInfo {
+  margin: 0;
+  font-style: normal;
+  display: grid;
+  gap: 14px;
+}
+
+.contactInfo p {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.contactInfo span {
+  color: rgba(17, 23, 36, 0.65);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.contactInfo a {
+  color: #111724;
+  text-decoration: none;
+}
+
+.contactInfo a:hover {
+  color: rgba(var(--bs-primary-rgb), 1);
+}
+
+.bottomBar {
+  margin-top: 26px;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px 0;
+  color: #6b7280;
+  font-size: 0.88rem;
+}

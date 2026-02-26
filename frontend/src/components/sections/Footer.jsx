@@ -1,117 +1,105 @@
-import contactInfo from '../../data/contact.json';
-import { Link } from 'react-router-dom';  
+import { createElement } from 'react';
+import { Link } from 'react-router-dom';
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
+import styles from './Footer.module.css';
 
-/**
- * Displays footer with company information, navigation links, services, and contact details.
- */
+const socialLinks = [
+  { icon: FaFacebookF, label: 'Facebook', href: '#' },
+  { icon: FaInstagram, label: 'Instagram', href: '#' },
+  { icon: FaXTwitter, label: 'X', href: '#' },
+  { icon: FaLinkedinIn, label: 'LinkedIn', href: '#' }
+];
+
+const quickLinks = [
+  { label: 'Home', type: 'route', to: '/' },
+  { label: 'Menu', type: 'anchor', href: '#' },
+  { label: 'Restaurants', type: 'anchor', href: '#' },
+  { label: 'How It Works', type: 'route', to: '/#how-it-works' },
+  { label: 'Deals & Promos', type: 'anchor', href: '#' },
+  { label: 'FAQs', type: 'route', to: '/faq' },
+  { label: 'Contact Us', type: 'route', to: '/#contact' }
+];
+
+const restaurantLinks = [
+  { label: 'Partner With Us', href: '#' },
+  { label: 'Restaurant Dashboard', href: '#' },
+  { label: 'Merchant Support', href: '#' },
+  { label: 'Success Stories', href: '#' }
+];
+
 function Footer() {
-  
-   const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -80;  
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-  };
-
   return (
-    <footer className="footer pt-5 pb-5">
+    <footer className={styles.footer}>
       <div className="container">
-        <div className="row mb-5 pb-4 g-4">
-          {/* Column 1: About AVAA */}
+        <div className="row g-4 pb-4">
           <div className="col-lg-3 col-md-6">
-            <h3 className="mb-3 fw-bold">AVAA</h3>
-            <p className="mb-3 small">Precision in IT Resourcing.</p>
-            <p className="small">We are an Employer-Side Resource Management Platform redefining how you navigate the IT workforce. We replace guesswork with data and scattered searches with a centralized, intelligent system.</p>
-          </div>
-
-          {/* Column 2: Explore */}
-          <div className="col-lg-3 col-md-6">
-            <h3 className="mb-3">Explore</h3>
-            <ul className="list-unstyled">
-              <li className="mb-2">
-                <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                  Home
-                </Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#about" onClick={() => scrollToSection('about')}>About Us</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#features" onClick={() => scrollToSection('features')}>Why Choose Us</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#how-it-works" onClick={() => scrollToSection('how-it-works')}>How It Works</Link>
-              </li>
-               <li className="mb-2">
-                <Link to="/company-events-announcements" onClick={() => window.scrollTo(0, 0)}>
-                  Events & Announcements
-                </Link>
-              </li>
-               <li className="mb-2">
-                <Link to="/news-and-blogs" onClick={() => window.scrollTo(0, 0)}>
-                  News & Blogs
-                </Link>
-              </li>
-             
-              <li className="mb-2">
-                <Link to="/support" onClick={() => scrollToSection('support')}>Support</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/faq" onClick={() => scrollToSection('faq')}>FAQ</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Our Services */}
-          <div className="col-lg-3 col-md-6">
-            <h3 className="mb-3">Our Services</h3>
-            <ul className="list-unstyled">
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>Web & App Development</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>UI/UX Design</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>Business Systems & CRM</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>Automation Specialists</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>Digital Marketing</Link>
-              </li>
-              <li className="mb-2">
-                <Link to="/#services" onClick={() => scrollToSection('services')}>IT Support Services</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Contact Information */}
-          <div className="col-lg-3 col-md-6">
-            <h3 className="mb-3">Contact Us</h3>
-          {/*  <div className="mb-3">
-              <p className="small fw-bold mb-1">Address:</p>
-              <p className="small">{contactInfo.addressLines.join(' ')}</p>
-            </div>*/}
-            <div className="mb-3">
-              <p className="small fw-bold mb-1">Email Address:</p>
-              <p className="small"><a href={`mailto:${contactInfo.email}`}>{contactInfo.email}</a></p>
+            <h3 className={styles.heading}>TMC Foodhub</h3>
+            <p className={styles.description}>
+              TMC Foodhub helps restaurants scale with smarter ordering, reliable delivery, and tools built for long-term growth.
+            </p>
+            <div className={styles.socialRow}>
+              {socialLinks.map(({ icon, label, href }) => (
+                <a key={label} href={href} aria-label={label} className={styles.socialIcon}>
+                  {createElement(icon, { size: 15 })}
+                </a>
+              ))}
             </div>
-            {/*<div className="mb-3">
-              <p className="small fw-bold mb-1">Contact Number:</p>
-              <p className="small"><a href={`tel:${contactInfo.phoneHref}`}>{contactInfo.phoneDisplay}</a></p>
-            </div>*/}
           </div>
-        </div>
 
-        <div className="row credits pt-3 border-top">
-          <div className="col-xl-12 text-center">
-            &copy; {new Date().getFullYear()} AVAA. All rights reserved.
+          <div className="col-lg-3 col-md-6">
+            <h4 className={styles.subheading}>Quick Links</h4>
+            <ul className={styles.linkList}>
+              {quickLinks.map((item) => (
+                <li key={item.label}>
+                  {item.type === 'route' ? (
+                    <Link to={item.to} className={styles.link}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a href={item.href} className={styles.link}>
+                      {item.label}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="col-lg-3 col-md-6">
+            <h4 className={styles.subheading}>For Restaurants</h4>
+            <ul className={styles.linkList}>
+              {restaurantLinks.map((item) => (
+                <li key={item.label}>
+                  <a href={item.href} className={styles.link}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="col-lg-3 col-md-6">
+            <h4 className={styles.subheading}>Contact Information</h4>
+            <address className={styles.contactInfo}>
+              <p>
+                <span>Email</span>
+                <a href="mailto:hello@tmcfoodhub.com">hello@tmcfoodhub.com</a>
+              </p>
+              <p>
+                <span>Phone</span>
+                <a href="tel:+18001234567">+1 (800) 123-4567</a>
+              </p>
+              <p>
+                <span>Website</span>
+                <a href="https://tmcfoodhub.com">tmcfoodhub.com</a>
+              </p>
+            </address>
           </div>
         </div>
+      </div>
+
+      <div className={styles.bottomBar}>
+        <div className="container text-center">© 2026 TMC Foodhub. All Rights Reserved.</div>
       </div>
     </footer>
   );
