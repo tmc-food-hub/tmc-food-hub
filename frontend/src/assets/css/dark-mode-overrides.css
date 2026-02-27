@@ -1,0 +1,226 @@
+/* ================================================
+   DARK MODE OVERRIDES FOR UPDATED SECTIONS
+   ================================================ */
+
+/* ---------- GLOBAL SECTION HEADERS ---------- */
+.dark-mode .subtitle {
+    background-color: rgba(217, 76, 56, 0.15) !important;
+    color: #F87171 !important;
+}
+
+/* Override all hardcoded dark heading colors */
+.dark-mode .howitworks__v1 h2,
+.dark-mode .howitworks__v1 h3,
+.dark-mode .about__v4 h2,
+.dark-mode .about__v4 h3,
+.dark-mode .services__v3 h2,
+.dark-mode .events__v1 h2,
+.dark-mode .news-blog h2,
+.dark-mode .faq__v2 h2,
+.dark-mode .features__v2 h2,
+.dark-mode .contact__v2 h2 {
+    color: #F3F4F6 !important;
+}
+
+/* Override all hardcoded dark step titles */
+.dark-mode .howitworks__v1 .fs-6 {
+    color: #F3F4F6 !important;
+}
+
+/* Dark red accent text → brighter red for dark mode */
+.dark-mode .features__v2 .display-5 span {
+    color: #F87171 !important;
+}
+
+/* ---------- ABOUT SECTION ---------- */
+.dark-mode .about__v4 .border {
+    border-color: #374151 !important;
+}
+
+.dark-mode .about__v4 .bg-white {
+    background-color: #1F2937 !important;
+}
+
+.dark-mode .about__v4 .icon {
+    background-color: rgba(217, 76, 56, 0.15) !important;
+    color: #F87171 !important;
+}
+
+/* ---------- HOW IT WORKS SECTION ---------- */
+.dark-mode .howitworks__v1 .flowing-dots {
+    stroke: #F87171 !important;
+}
+
+.dark-mode .step-number {
+    color: #FFFFFF !important;
+}
+
+/* ---------- FEATURES (WHY CHOOSE TMC) ---------- */
+.dark-mode .features__v2 .bg-white {
+    background-color: #1F2937 !important;
+}
+
+.dark-mode .features__v2 .bg-white[style] {
+    border-color: #374151 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .features__v2 .rounded-4.bg-white {
+    background-color: #1F2937 !important;
+}
+
+.dark-mode .features__v2 h3,
+.dark-mode .features__v2 .fs-6 {
+    color: #F3F4F6 !important;
+}
+
+/* Feature icon backgrounds */
+.dark-mode .features__v2 .rounded-3[style*="backgroundColor"] {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* ---------- SERVICES SECTION ---------- */
+.dark-mode .services__v3 .service-card {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .services__v3 .service-card h3 {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .services__v3 .service-card .icon {
+    color: #F59E0B !important;
+}
+
+/* ---------- EVENTS SECTION ---------- */
+.dark-mode .events__v1 .service-card {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .events__v1 .service-card h3 {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .events__v1 .service-card .icon {
+    color: #F59E0B !important;
+}
+
+/* ---------- NEWS BLOG SECTION ---------- */
+.dark-mode .news-blog .blog-card {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .news-blog .blog-title {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .news-blog .blog-tag {
+    background-color: rgba(217, 76, 56, 0.15) !important;
+    color: #F87171 !important;
+}
+
+/* ---------- TESTIMONIALS SECTION ---------- */
+.dark-mode .testimonial-card {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .testimonial-card h5 {
+    color: #F3F4F6 !important;
+}
+
+/* ---------- FAQ SECTION ---------- */
+.dark-mode .faq__v2 {
+    background-color: #1a1412 !important;
+}
+
+.dark-mode .faq__v2 .accordion-item {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .faq__v2 .accordion-button {
+    background-color: #1F2937 !important;
+    color: #F3F4F6 !important;
+    box-shadow: none !important;
+}
+
+.dark-mode .faq__v2 .accordion-button:not(.collapsed) {
+    background-color: #1F2937 !important;
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .faq__v2 .accordion-button::after {
+    filter: invert(1);
+}
+
+.dark-mode .faq__v2 .accordion-body {
+    background-color: #1F2937 !important;
+    color: #D1D5DB !important;
+    border-top: 1px solid #374151 !important;
+}
+
+/* ---------- FOOTER (MODULE CSS OVERRIDES) ---------- */
+:global(.dark-mode) footer,
+.dark-mode footer {
+    background-color: #111827 !important;
+    border-color: #1F2937 !important;
+    color: #D1D5DB !important;
+}
+
+.dark-mode footer h3,
+.dark-mode footer h4 {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode footer p,
+.dark-mode footer address,
+.dark-mode footer address span {
+    color: #9CA3AF !important;
+}
+
+.dark-mode footer a {
+    color: #D1D5DB !important;
+}
+
+.dark-mode footer a:hover {
+    color: #F87171 !important;
+}
+
+.dark-mode footer [class*="socialIcon"] {
+    color: #D1D5DB !important;
+    border-color: #4B5563 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-mode footer [class*="socialIcon"]:hover {
+    color: #FFFFFF !important;
+    background: #991B1B !important;
+    border-color: #991B1B !important;
+}
+
+.dark-mode footer [class*="bottomBar"] {
+    border-color: #374151 !important;
+    color: #6B7280 !important;
+    background-color: #0F172A !important;
+}
+
+.dark-mode footer [class*="contactInfo"] a {
+    color: #F87171 !important;
+}
+
+.dark-mode footer [class*="link"] {
+    color: #D1D5DB !important;
+}
+
+.dark-mode footer [class*="link"]:hover {
+    color: #F87171 !important;
+}
+
+/* ---------- SPECIAL LINKS (Read more) ---------- */
+.dark-mode .special-link span {
+    color: #F87171 !important;
+}

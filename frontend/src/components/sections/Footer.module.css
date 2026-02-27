@@ -109,3 +109,60 @@
   color: #6b7280;
   font-size: 0.88rem;
 }
+
+/* ========== DARK MODE ========== */
+:global(.dark-mode) .footer {
+  background: #111827 !important;
+  color: #D1D5DB !important;
+  border-color: #1F2937 !important;
+}
+
+:global(.dark-mode) .heading {
+  color: #F3F4F6 !important;
+}
+
+:global(.dark-mode) .subheading {
+  color: #F3F4F6 !important;
+}
+
+:global(.dark-mode) .description {
+  color: #9CA3AF !important;
+}
+
+:global(.dark-mode) .link {
+  color: #D1D5DB !important;
+}
+
+:global(.dark-mode) .link:hover {
+  color: #F87171 !important;
+}
+
+:global(.dark-mode) .socialIcon {
+  color: #D1D5DB !important;
+  border-color: #4B5563 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:global(.dark-mode) .socialIcon:hover {
+  color: #fff !important;
+  background: #991B1B !important;
+  border-color: #991B1B !important;
+}
+
+:global(.dark-mode) .contactInfo span {
+  color: #9CA3AF !important;
+}
+
+:global(.dark-mode) .contactInfo a {
+  color: #F87171 !important;
+}
+
+:global(.dark-mode) .contactInfo a:hover {
+  color: #FCA5A5 !important;
+}
+
+:global(.dark-mode) .bottomBar {
+  border-color: #374151 !important;
+  color: #6B7280 !important;
+  background-color: #0F172A !important;
+}

@@ -18,6 +18,7 @@ import './assets/css/testimonials.css';
 import './assets/css/company-events-and-announcements.css';
 import './assets/css/support.css';
 import './assets/css/announcement-detail.css'
+import './assets/css/dark-mode-overrides.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

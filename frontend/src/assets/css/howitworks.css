@@ -12,6 +12,7 @@
 .howitworks__v1 .step-card {
   position: relative;
 }
+
 .howitworks__v1 .step-card .step-number {
   width: 60px;
   height: 60px;
@@ -20,22 +21,31 @@
   background-color: var(--bs-primary);
   font-size: 18px;
 }
-.howitworks__v1 .arch-line {
+
+.arch-connector {
   position: absolute;
-  top: 15px;
-  width: 150px;
-  right: 0;
-  left: calc(100% + 24px);
-  -webkit-transform: translateX(-50%);
-          transform: translateX(-50%);
+  top: 10px;
+  left: 50%;
+  width: calc(100% + 1.5rem);
+  /* column width + g-4 gap */
+  height: 40px;
+  z-index: 0;
+  opacity: 0.8;
+  pointer-events: none;
+  overflow: visible;
 }
-@media (max-width: 991.98px) {
-  .howitworks__v1 .arch-line {
-    display: none;
+
+@media (min-width: 1200px) {
+  .arch-connector {
+    width: calc(100% + 3rem);
+    /* column width + g-xl-5 gap */
   }
 }
-.howitworks__v1 .arch-line.reverse {
-  top: 20px;
+
+@media (max-width: 991.98px) {
+  .arch-connector {
+    display: none !important;
+  }
 }
 
 .step-number {

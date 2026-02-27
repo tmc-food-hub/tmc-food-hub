@@ -139,7 +139,7 @@ function Navbar() {
     <header className={`fbs__net-navbar navbar navbar-expand-lg fixed-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode ? 'active' : ''}`} style={{ padding: '0.1rem 0' }}>
       <div className="container d-flex align-items-center justify-content-between">
         <Link className="navbar-brand" to="/" onClick={() => window.scrollTo(0, 0)}>
-          <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '100px', height: '35px', objectFit: 'contain' }} />
+          <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '130px', height: '45px', objectFit: 'contain' }} />
         </Link>
 
         <div className="collapse navbar-collapse" id="navbarNav">
@@ -160,7 +160,7 @@ function Navbar() {
         <div className="offcanvas offcanvas-start w-75 d-lg-none" id="fbs__net-navbars" tabIndex="-1">
           <div className="offcanvas-header border-bottom">
             <Link to="/" onClick={() => { window.scrollTo(0, 0); closeMobileMenu(); }}>
-              <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '100px', height: '35px', objectFit: 'contain' }} />
+              <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '130px', height: '45px', objectFit: 'contain' }} />
             </Link>
             <button className={`btn-close ${isDarkMode ? 'btn-close-white' : ''}`} data-bs-dismiss="offcanvas" />
           </div>

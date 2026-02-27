@@ -33,11 +33,11 @@ function Homepage() {
           <AboutSection />
           <FeaturesSection />
           <HowItWorksSection />
+          <TestimonialsSection />
           <ServicesSection />
           <EventsSection />
           <NewsBlogSection isPreview={true} />
-          <TestimonialsSection /> 
-        
+          <FAQSection />
           <ContactSection />
           <Footer />
         </main>

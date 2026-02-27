@@ -6,12 +6,12 @@ import BlogCard from '../ui/BlogCard';
 
 // ===== Blogs Array (Updated with New Blogs) =====
 const allBlogs = [
-  { id: 1, tag: "Top Picks", title: "10 Hidden Gems in the City You Must Try", date: "Feb 20, 2026", readTime: "5 min read" },
-  { id: 2, tag: "Promos", title: "Get 50% Off Your First Order with TMC Food Hub", date: "Feb 18, 2026", readTime: "2 min read" },
-  { id: 3, tag: "Guide", title: "The Ultimate Guide to Late Night Cravings", date: "Feb 15, 2026", readTime: "8 min read" },
-  { id: 4, tag: "Healthy", title: "5 Salad Spots That Actually Taste Good", date: "Feb 10, 2026", readTime: "6 min read" },
-  { id: 5, tag: "Top Picks", title: "Where to Find the Best Pizza in Town", date: "Feb 5, 2026", readTime: "4 min read" },
-  { id: 6, tag: "Tips", title: "How to Keep Your Delivered Fries Crispy", date: "Feb 1, 2026", readTime: "3 min read" },
+  { id: 1, tag: "Food Trends", title: "What's Cooking in 2026: The Food Trends Shaping How We Order", date: "Feb 18, 2026", readTime: "5 min read" },
+  { id: 2, tag: "Platform News", title: "Foodhub Introduces Real-Time Order Tracking for a Faster, Smarter Experience", date: "Feb 22, 2026", readTime: "4 min read" },
+  { id: 3, tag: "Restaurant Spotlight", title: "Restaurant Spotlight: How Local Flavors Are Winning Hearts on Foodhub", date: "Feb 8, 2026", readTime: "7 min read" },
+  { id: 4, tag: "Restaurant Spotlight", title: "Meet Our Partner: The Story Behind One of Foodhub's Fastest-Growing Kitchens", date: "Jan 30, 2026", readTime: "6 min read" },
+  { id: 5, tag: "Food Trends", title: "From Cloud Kitchens to Comfort Food: The Rise of Smart Dining at Home", date: "Feb 10, 2026", readTime: "6 min read" },
+  { id: 6, tag: "Platform News", title: "New on Foodhub: Scheduled Orders for Effortless Meal Planning", date: "Feb 14, 2026", readTime: "5 min read" },
 ];
 
 const NewsBlogSection = ({ isPreview = false }) => {
@@ -45,15 +45,29 @@ const NewsBlogSection = ({ isPreview = false }) => {
   return (
     <section className="section news-blog" id="news-blogs-section">
       <div className="container">
-        <SectionHeader
-          subtitle={isPreview ? "NEWS & BLOGS" : "News & Blogs"}
-          title={isPreview ? "Discover Great Food Places!" : "TMC Food Hub Blogs"}
-          description={isPreview
-            ? "Stay updated with the latest trends, restaurant reviews, and tasty food guides."
-            : "Insights, updates, and expert perspectives on the best food experiences in town."
-          }
-          centered={true}
-        />
+        {isPreview ? (
+          <div className="text-center mb-5">
+            <span
+              className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
+              style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            >
+              BLOGS
+            </span>
+            <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+              Ideas, Insights & Food Trends
+            </h2>
+            <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
+              From food delivery tips to restaurant spotlights — TMC Foodhub keeps you updated on the latest in the food scene and platform news.
+            </p>
+          </div>
+        ) : (
+          <SectionHeader
+            subtitle="News & Blogs"
+            title="TMC Food Hub Blogs"
+            description="Insights, updates, and expert perspectives on the best food experiences in town."
+            centered={true}
+          />
+        )}
 
         {isPreview === false && (
           <div className="featured-card-wrapper shadow" data-aos="fade-up">

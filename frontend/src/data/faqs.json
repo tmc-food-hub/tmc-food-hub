@@ -1,44 +1,44 @@
 [
   {
     "id": "One",
-    "question": "What makes AVAA different from traditional recruitment agencies or job boards?",
-    "answer": "AVAA is not just a job board; we are a dedicated employer-side resource management platform. While traditional methods often involve fragmented workflows and manual searching, our mission is to consolidate detailed IT talent profiles into a single, structured system. We provide an advanced, criteria-based filtering engine that allows you to identify professionals based on specific technical skills and project backgrounds, ensuring your selection process is efficient, transparent, and data-driven.",
+    "question": "What areas does TMC Foodhub deliver to?",
+    "answer": "We currently serve select cities and municipalities in the Philippines. Enter your delivery address on the homepage to see available restaurants in your area.",
     "isOpen": true
   },
   {
     "id": "Two",
-    "question": "What types of IT professionals and services can I access through AVAA?",
-    "answer": "We cover the full spectrum of the digital ecosystem. Whether you need to build a product from scratch or market an existing one, AVAA connects you with talent across: Web & Mobile Development (Frontend, Backend, Full-Stack, iOS, and Android developers), Design (UI/UX designers focused on user behavior and wireframing), Business Systems (Experts in CRM development and Workflow Automation), Digital Growth (Digital Marketing strategists and Social Media specialists), and Support (IT Support professionals for hardware and network maintenance).",
+    "question": "How do I track my order?",
+    "answer": "Once your order is confirmed, you can track its status in real time from the Orders page. You'll see updates from preparation to pickup to delivery, including your rider's live location on the map.",
     "isOpen": false
   },
   {
     "id": "Three",
-    "question": "How does AVAA help reduce the time spent on screening candidates?",
-    "answer": "Our vision is to make the identification of IT talent streamlined and transparent. We achieve this by minimizing manual searching through our centralized architecture. Instead of sifting through vague resumes, our platform presents comprehensive profiles that detail technical skills and project experience. This allows you to utilize our filtering engine to instantly match candidates to your specific requirements, significantly reducing human error and hiring time.",
+    "question": "What payment methods are accepted?",
+    "answer": "TMC Foodhub accepts Cash on Delivery (COD), GCash, Maya, and Credit/Debit Card payments. You can select your preferred payment method during checkout.",
     "isOpen": false
   },
   {
     "id": "Four",
-    "question": "Can AVAA help optimize our internal business operations, not just our software development?",
-    "answer": "Absolutely. Beyond standard software development, we specialize in Business Systems & Automation. We can connect you with Automation Specialists who identify repetitive manual tasks and replace them with 'Autopilot' workflows. Additionally, we offer talent experienced in custom CRM development to help you centralize client data and streamline your internal communication, ensuring your organizational throughput increases alongside your technical capabilities.",
+    "question": "How do I become a restaurant partner?",
+    "answer": "If you're a restaurant or food vendor interested in partnering with TMC Foodhub, visit our Partner page or contact us at partners@tmcfoodhub.com. We'll walk you through the onboarding process, menu setup, and dashboard access.",
     "isOpen": false
   },
   {
     "id": "Five",
-    "question": "Is AVAA suitable for finding talent for complex, scalable projects?",
-    "answer": "Yes. Our platform is built on the vision of supporting scalable technology that adapts to evolving requirements. Whether you need a Full-Stack Developer for a cohesive turnkey product, or a Backend Developer to build a secure 'engine room' for a high-availability application, our detailed profiling ensures you find professionals capable of handling robust, enterprise-level architectures and complex integrations.",
+    "question": "Can I cancel or modify my order after placing it?",
+    "answer": "You can cancel or modify your order within a few minutes of placing it, before the restaurant starts preparing it. After preparation begins, cancellation may not be possible. Check your order status page for available options.",
     "isOpen": false
   },
   {
     "id": "Six",
-    "question": "How do you reset your password?",
-    "answer": "To reset your password, click \"Forgot Password\" on the login page and enter the email address associated with your account. You'll receive a password reset link within a few minutes — check your spam folder if it doesn't appear. Click the link, enter your new password, confirm it, and hit Save. For security reasons, the link expires after 24 hours. If you're already logged in and just want to change your password, you can do so under Account Settings → Security.",
+    "question": "Is there a minimum order amount?",
+    "answer": "Minimum order amounts may vary by restaurant. Each restaurant's menu page will display the minimum order requirement, if any, before you proceed to checkout.",
     "isOpen": false
   },
   {
     "id": "Seven",
-    "question": "Billing & Invoices",
-    "answer": "You can view and download all your invoices from the Billing & Invoices section under your account settings. Invoices are generated automatically at the start of each billing cycle. To update your payment method, click \"Manage Payment\" and enter your new card details. If you believe there's an error on an invoice or need a refund, please contact our support team with your invoice number and we'll look into it within 1-2 business days.",
+    "question": "How are delivery fees calculated?",
+    "answer": "Delivery fees are calculated based on the distance between the restaurant and your delivery address. Some restaurants may offer free delivery for orders above a certain amount. Promo codes and vouchers can also reduce or waive delivery fees.",
     "isOpen": false
   }
 ]

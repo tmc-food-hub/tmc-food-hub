@@ -1,102 +1,95 @@
-import aboutUsImage from "../../assets/home/aboutus.png";
+import aboutUsImage from "../../assets/home/about_us_image.png";
 
 /**
- * Displays company mission, vision, and about information with refined circular icons.
+ * Displays company mission, vision, and about information.
  */
 function AboutSection() {
   return (
     <section
-      className="about__v4 section"
+      className="about__v4 section overflow-hidden"
       id="about"
       style={{
         paddingTop: '80px',
         paddingBottom: '50px'
       }}
     >
+
       <div className="container">
-        <div className="row">
-          {/* LEFT CONTENT COLUMN */}
-          <div className="col-md-6 order-md-2">
-            <div className="row justify-content-end">
-              <div className="col-md-11 mb-4 mb-md-0">
-                <span
-                  className="subtitle text-uppercase mb-3"
-                  data-aos="fade-up"
-                  data-aos-delay="0"
-                >
-                  About us
-                </span>
+        {/* Top Content Row: Image on left, Text on right */}
+        <div className="row align-items-center mb-5">
+          {/* LEFT COLUMN: Image */}
+          <div className="col-md-6 mb-4 mb-md-0" data-aos="fade-right">
+            <div className="img-wrap position-relative">
 
-                <h2
-                  className="mb-4"
-                  data-aos="fade-up"
-                  data-aos-delay="100"
-                >
-                  Enjoy Your Food, Hassle-Free
-                </h2>
 
-                <div data-aos="fade-up" data-aos-delay="200">
-                  <p>
-                    At TMC Food Hub, we believe that enjoying great food shouldn't be complicated.
-                    That's why we've streamlined the delivery process to ensure your favorites
-                    arrive hot, fresh, and on time.
-                  </p>
-                  <p>
-                    We partner with the best local restaurants to offer a wide variety of cuisines,
-                    satisfying every craving with just a few clicks. Experience the convenience of
-                    premium food delivery, brought directly to your door.
-                  </p>
-                </div>
-              </div>
+
+              <img
+                className="img-fluid rounded-4 w-100 object-fit-cover shadow-sm"
+                style={{ maxHeight: '450px', position: 'relative', zIndex: 1 }}
+                src={aboutUsImage}
+                alt="About TMC Food Hub"
+              />
             </div>
           </div>
 
-          {/* RIGHT IMAGE COLUMN */}
-          <div className="col-md-6">
-            <div className="img-wrap position-relative h-100">
-              <img
-                className="img-fluid rounded-4"
-                src={aboutUsImage}
-                alt="AVAA platform overview"
-                data-aos="fade-up"
-                data-aos-delay="0"
-              />
+          {/* RIGHT COLUMN: Text */}
+          <div className="col-md-6 ps-md-5" data-aos="fade-left">
+            <span
+              className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
+              style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            >
+              ABOUT US
+            </span>
+
+            <h2
+              className="mb-4 fw-bold"
+              style={{ fontSize: '2.5rem', color: '#1B1B1B' }}
+            >
+              Bringing Great Food Closer to You.
+            </h2>
+
+            <div className="text-muted" style={{ fontSize: '1rem', lineHeight: '1.7' }}>
+              <p>
+                TMC Foodhub is a modern food e-commerce platform dedicated to connecting hungry customers with the best local restaurants, home cooks, and specialty food vendors. We believe great food should be accessible to everyone &mdash; quickly, conveniently, and affordably. Our platform streamlines the entire ordering experience from discovery and selection to checkout and real-time tracking.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* MISSION & VISION FULL CONTENT CARDS */}
-        <div className="row g-4 mt-5">
-          <div className="col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div className="p-4 rounded-4 shadow-sm border h-100">
-              <div className="d-flex align-items-center gap-3 mb-3">
+        {/* Bottom Content Row: Mission and Vision Cards */}
+        <div className="row g-4 mt-2">
+          {/* MISSION CARD */}
+          <div className="col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div className="p-4 p-lg-5 rounded-4 border h-100 bg-white" style={{ borderColor: '#E5E7EB', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+              <div className="d-flex align-items-center gap-3 mb-4">
                 <div
-                  className="icon rounded-circle bg-danger-subtle d-flex align-items-center justify-content-center"
-                  style={{ width: '50px', height: '50px', flexShrink: 0 }}
+                  className="icon rounded-circle d-flex align-items-center justify-content-center"
+                  style={{ width: '45px', height: '45px', backgroundColor: '#FDECE9', color: '#D94C38' }}
                 >
-                  <i className="bi bi-clock-history fs-4 text-primary"></i>
+                  <i className="bi bi-lightbulb fs-5"></i>
                 </div>
-                <h3 className="text-uppercase" style={{ color: 'var(--bs-primary)' }}>Quick Order</h3>
+                <h3 className="fs-5 fw-bold mb-0" style={{ color: '#1B1B1B' }}>MISSION</h3>
               </div>
-              <p className="mb-3">
-                Browse our extensive menu and place your order in seconds. Our intuitive interface makes finding and ordering your favorite meals easier than ever.
+              <p className="mb-0 text-muted" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                To create a seamless and enjoyable food ordering experience by connecting communities with their favorite local flavors &mdash; empowering restaurants and food vendors to grow their business while delighting customers with fast, reliable, and personalized delivery service.
               </p>
             </div>
           </div>
 
-          <div className="col-md-6" data-aos="fade-up" data-aos-delay="600">
-            <div className="p-4 rounded-4 shadow-sm border h-100">
-              <div className="d-flex align-items-center gap-3 mb-3">
+          {/* VISION CARD */}
+          <div className="col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div className="p-4 p-lg-5 rounded-4 border h-100 bg-white" style={{ borderColor: '#E5E7EB', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+              <div className="d-flex align-items-center gap-3 mb-4">
                 <div
-                  className="icon rounded-circle bg-danger-subtle d-flex align-items-center justify-content-center"
-                  style={{ width: '50px', height: '50px', flexShrink: 0 }}
+                  className="icon rounded-circle d-flex align-items-center justify-content-center"
+                  style={{ width: '45px', height: '45px', backgroundColor: '#FDECE9', color: '#D94C38' }}
                 >
-                  <i className="bi bi-geo-alt fs-4 text-primary"></i>
+                  <i className="bi bi-eye fs-5"></i>
                 </div>
-                <h3 className="text-uppercase" style={{ color: 'var(--bs-primary)' }}>Live Tracking</h3>
+                <h3 className="fs-5 fw-bold mb-0" style={{ color: '#1B1B1B' }}>VISION</h3>
               </div>
-              <p className="mb-3">
-                Follow your food's journey from the kitchen to your doorstep with our real-time GPS tracking. Know exactly when your delicious meal will arrive.
+              <p className="mb-0 text-muted" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                TMC Foodhub envisions becoming the most trusted and beloved food delivery platform in the Philippines &mdash; recognized for its speed, variety, and commitment to supporting local food businesses. We strive to build a platform where every meal ordered creates value for customers, vendors, and communities alike.
               </p>
             </div>
           </div>

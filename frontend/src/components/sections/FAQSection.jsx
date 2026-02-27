@@ -10,7 +10,7 @@ function FAQSection() {
 
   useEffect(() => {
     const hashId = location.hash.replace('#', '');
-    
+
     if (hashId) {
       // Open only the FAQ that matches the Quick Link
       setActiveId(hashId);
@@ -26,14 +26,22 @@ function FAQSection() {
   }, [location.hash]);
 
   return (
-    <section className="section faq__v2" id="faq">
+    <section className="section faq__v2" id="faq" style={{ backgroundColor: '#FFF5F0' }}>
       <div className="container">
-        <SectionHeader
-          subtitle="FAQ"
-          title="Frequently Asked Questions"
-          description="Utilize our tools to develop your concepts and bring your vision to life. Once complete, effortlessly share your creations."
-          centered
-        />
+        <div className="text-center mb-5">
+          <span
+            className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
+            style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+          >
+            FAQS
+          </span>
+          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+            Frequently Asked Questions
+          </h2>
+          <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
+            Curious about how TMC Foodhub works? Get quick answers to our most common questions.
+          </p>
+        </div>
         <div className="row">
           <div className="col-md-8 mx-auto">
             <div className="faq-content">
@@ -44,14 +52,14 @@ function FAQSection() {
                     id={faq.id}
                     question={faq.question}
                     answer={faq.answer}
-                    isOpen={activeId === faq.id} // only the activeId is open
+                    isOpen={activeId === faq.id}
                   />
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>  
+      </div>
     </section>
   );
 }

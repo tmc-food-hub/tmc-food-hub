@@ -1,30 +1,20 @@
 [
   {
-    "logo": "assets/images/AVAA Logo/avaa-banner.png",
-    "quote": "AVAA makes talent evaluation simple and efficient. The complete profiles and seamless filtering help us quickly identify candidates who truly fit our needs.",
-    "name": "Aumentado, Paula Jeanna P.",
-    "jobTitle": "Virtual Assistant",
-    "avatar": "assets/images/testimonials/Paula.jfif"
+    "quote": "As a restaurant owner, the partner dashboard is a game changer. I can manage orders, update my menu, and track sales all from one screen.",
+    "name": "Reyes, Carlo Miguel D.",
+    "jobTitle": "Restaurant Owner",
+    "avatar": "https://randomuser.me/api/portraits/men/32.jpg"
   },
   {
-    "logo": "assets/images/AVAA Logo/avaa-banner.png",
-    "quote": "AVAA’s filtering tools save us a lot of time. We can narrow down candidates quickly while still reviewing detailed and complete profiles.",
-    "name": "Castañeda, Kate Ma. Emmylou M.",
-    "jobTitle": "Virtual Assistant",
-    "avatar": "assets/images/testimonials/Rem.jfif"
+    "quote": "The scheduled delivery feature is perfect for our office team lunches. We set it the night before and it arrives exactly on time every single day.",
+    "name": "Dela Cruz, Angeline B.",
+    "jobTitle": "Restaurant Owner",
+    "avatar": "https://randomuser.me/api/portraits/women/44.jpg"
   },
   {
-    "logo": "assets/images/AVAA Logo/avaa-banner.png",
-    "quote": "Using AVAA feels straightforward and organized. It removes the clutter from hiring and helps us focus on selecting the right talent.",
-    "name": "Magdame, Stephanie Angel C.",
-    "jobTitle": "Virtual Assistant",
-    "avatar": "assets/images/testimonials/Stephanie.jfif"
-  },
-  {
-    "logo": "assets/images/AVAA Logo/avaa-banner.png",
-    "quote": "AVAA provides a reliable way to evaluate talent through structured profiles and intuitive browsing. It makes hiring decisions clearer and more confident.",
-    "name": "Blanza, Christine A.",
-    "jobTitle": "Virtual Assistant",
-    "avatar": "assets/images/testimonials/Christine.jfif"
+    "quote": "I love discovering local home cooks and specialty vendors. I found my new favorite sinigang just a few streets away, which I never would have known without TMC Foodhub.",
+    "name": "Villanueva, Jerome M.",
+    "jobTitle": "Customer",
+    "avatar": "https://randomuser.me/api/portraits/men/67.jpg"
   }
 ]

@@ -1,4 +1,4 @@
-import heroImage from "../../assets/home/heroimage.png"
+import heroImage from "../../assets/home/main_hero.png"
 
 /**
  * Main hero banner with headline, description, and call-to-action buttons.
@@ -16,7 +16,7 @@ function HeroSection() {
       `}</style>
       <section className="hero__v6 section" id="home">
         <div className="container">
-          <div className="row">
+          <div className="row align-items-center">
             <div className="col-lg-6">
               <div className="row">
                 <div className="col-lg-11">
@@ -29,7 +29,7 @@ function HeroSection() {
                   </span>
 
                   <h1
-                    className="hero-title mb-3"
+                    className="hero-title mb-3 fw-bold"
                     data-aos="fade-up"
                     data-aos-delay="100"
                   >
@@ -37,7 +37,8 @@ function HeroSection() {
                   </h1>
 
                   <p
-                    className="hero-description mb-4 mb-lg-5"
+                    className="hero-description mb-4 mb-lg-5 text-muted"
+                    style={{ fontSize: '1.1rem' }}
                     data-aos="fade-up"
                     data-aos-delay="200"
                   >
@@ -46,69 +47,32 @@ function HeroSection() {
                   </p>
 
                   <div
-                    className="cta d-flex gap-2 mb-4 mb-lg-5"
+                    className="cta d-flex gap-3 mb-4 mb-lg-5 align-items-center"
                     data-aos="fade-up"
                     data-aos-delay="300"
                   >
-                    <a className="btn" href="#">
+                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3" style={{ backgroundColor: '#8B1F1C', borderColor: '#8B1F1C' }} href="#">
                       Order Now
                     </a>
 
-                    <a className="btn btn-white-outline" href="#">
-                      <i className="bi bi-play-circle-fill me-2 fs-5"></i>
+                    <a className="btn btn-white-outline d-flex align-items-center fw-semibold border-0" href="#">
+                      <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: '#8B1F1C' }}></i>
                       Explore
                     </a>
                   </div>
 
-                  {/* <div
-                  className="logos mb-4"
-                  data-aos="fade-up"
-                  data-aos-delay="400"
-                >
-                  <span className="logos-title text-uppercase mb-4 d-block">
-                    Trusted by employers and clients
-                  </span>
-
-                  <div className="logos-images d-flex gap-4 align-items-center">
-                    <img
-                      className="img-fluid js-img-to-inline-svg"
-                      src="assets/images/logo/actual-size/logo-air-bnb__black.svg"
-                      alt="Company 1"
-                      style={{ width: "110px" }}
-                    />
-                    <img
-                      className="img-fluid js-img-to-inline-svg"
-                      src="assets/images/logo/actual-size/logo-ibm__black.svg"
-                      alt="Company 2"
-                      style={{ width: "80px" }}
-                    />
-                    <img
-                      className="img-fluid js-img-to-inline-svg"
-                      src="assets/images/logo/actual-size/logo-google__black.svg"
-                      alt="Company 3"
-                      style={{ width: "110px" }}
-                    />
-                  </div>
-                </div> */}
                 </div>
               </div>
             </div>
 
-            <div className="col-lg-6">
+            <div className="col-lg-6 mt-5 mt-lg-0">
               <div className="hero-img">
-                {/* <img */}
-                {/*   className="img-card img-fluid" */}
-                {/*   src="assets/images/card-expenses.png" */}
-                {/*   alt="Talent profile card" */}
-                {/*   data-aos="fade-down" */}
-                {/*   data-aos-delay="600" */}
-                {/* /> */}
                 <img
-                  className="img-main img-fluid rounded-4"
+                  className="img-main img-fluid rounded-4 w-100"
                   src={heroImage}
-                  alt="AVAA platform preview"
-                  data-aos="fade-in"
-                  data-aos-delay="500"
+                  alt="TMC Food Hub Hero"
+                  data-aos="fade-left"
+                  data-aos-delay="400"
                 />
               </div>
             </div>

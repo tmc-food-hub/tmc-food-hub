@@ -1,35 +1,29 @@
-
 function FeaturesSection() {
   return (
-    <section className="section features__v2" id="features">
+    <section className="section features__v2 py-5" id="features">
       <div className="container">
 
-
+        {/* Section Header */}
         <div className="row justify-content-center mb-5">
           <div className="col-lg-8 text-center" data-aos="fade-up">
             <h2
-              className="display-4 fw-bold  text-uppercase mb-0"
-              style={{ letterSpacing: '-1px' }}
+              className="display-5 fw-bold text-uppercase mb-0"
+              style={{ letterSpacing: '-1px', color: '#1B1B1B' }}
             >
-              Why Choose <span className="text-primary">TMC</span>
+              Why Choose <span style={{ color: '#8B1F1C' }}>TMC</span>
             </h2>
-            <div
-              className="bg-primary mx-auto mt-3"
-              style={{ width: '60px', height: '4px', borderRadius: '2px' }}
-            ></div>
           </div>
         </div>
 
         <div className="row">
           <div className="col-12">
-
             <div
-              className="d-lg-flex p-4 p-md-5 rounded-4 content shadow-sm border"
+              className="d-lg-flex p-4 p-md-5 rounded-4 bg-white"
+              style={{ border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}
               data-aos="fade-in"
               data-aos-delay="0"
-
             >
-              <div className="row align-items-center">
+              <div className="row align-items-center w-100 mx-0">
 
                 {/* Left Side */}
                 <div className="col-lg-5 mb-5 mb-lg-0" data-aos="fade-up" data-aos-delay="0">
@@ -37,18 +31,21 @@ function FeaturesSection() {
                     <div className="col-lg-11 text-center text-lg-start">
                       <div className="h-100 flex-column justify-content-between d-flex">
                         <div>
-                          <h2>Everything you need, whenever you need it.</h2>
-                          <p className="mb-5 text-muted lead" style={{ fontSize: '1.1rem' }}>
-                            TMC Food Hub delivers a seamless experience from finding
-                            your craving to having it at your door step quickly.
+                          <h2 className="fw-bold mb-4" style={{ fontSize: '2.5rem', color: '#1B1B1B' }}>
+                            Satisfy Every Craving.<br />Every Time.
+                          </h2>
+                          <p className="mb-5 text-muted" style={{ fontSize: '1rem', lineHeight: '1.6' }}>
+                            TMC Foodhub transforms the way people discover and enjoy food &mdash; putting your favorite restaurants just a few taps away.
                           </p>
                         </div>
                         <div className="align-self-start mx-auto mx-lg-0">
                           <a
-                            className="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 text-white text-decoration-none"
+                            className="btn d-inline-flex align-items-center gap-2 px-4 py-2 text-white text-decoration-none rounded-3 fw-semibold"
+                            style={{ backgroundColor: '#8B1F1C', borderColor: '#8B1F1C' }}
                             href="#"
                           >
-                            <span className="fw-bold">Order Now</span>
+                            <i className="bi bi-play-circle-fill"></i>
+                            <span>Watch the Video</span>
                           </a>
                         </div>
                       </div>
@@ -61,39 +58,45 @@ function FeaturesSection() {
                   <div className="row g-4">
                     {[
                       {
-                        icon: "bi-truck",
-                        title: "Fast Delivery",
-                        text: "Get your food PIPING hot! Our optimized delivery routes ensure your meals arrive as quickly as possible.",
+                        icon: "bi-basket",
+                        title: "Wide Variety",
+                        text: "Browse hundreds of restaurants, cuisines, and food categories all in one place.",
                         delay: 0
                       },
                       {
-                        icon: "bi-shop",
-                        title: "Wide Selection",
-                        text: "From local favorites to international cuisines, explore a vast array of restaurants right at your fingertips.",
+                        icon: "bi-truck",
+                        title: "Fast & Reliable Delivery",
+                        text: "Real-time tracking ensures your food arrives hot and on time.",
                         delay: 100
                       },
                       {
-                        icon: "bi-shield-lock",
-                        title: "Secure Payments",
-                        text: "Pay with confidence. We support multiple payment methods, all secured by industry-leading encryption.",
+                        icon: "bi-tags",
+                        title: "Exclusive Deals",
+                        text: "Enjoy promos, discounts, and loyalty rewards available only on Foodhub.",
                         delay: 200
                       },
                       {
-                        icon: "bi-headset",
-                        title: "24/7 Support",
-                        text: "Got an issue with your order? Our dedicated customer support team is available around the clock to assist you.",
+                        icon: "bi-phone",
+                        title: "Easy Ordering",
+                        text: "A clean, intuitive interface makes ordering effortless from any device.",
                         delay: 300
+                      },
+                      {
+                        icon: "bi-shop",
+                        title: "Support Local",
+                        text: "We partner with local restaurants and home cooks to boost community food businesses.",
+                        delay: 400
                       }
                     ].map((feature, idx) => (
                       <div key={idx} className="col-sm-6" data-aos="fade-up" data-aos-delay={feature.delay}>
-                        <div className="p-4 rounded-4 shadow-sm  h-100 border">
+                        <div className="p-4 rounded-4 h-100 bg-white" style={{ border: '1px solid #E5E7EB', boxShadow: '0 2px 4px -1px rgba(0,0,0,0.05)' }}>
                           <div
-                            className="rounded-3 d-flex align-items-center justify-content-center mb-3 bg-danger-subtle"
-                            style={{ width: '50px', height: '50px' }}
+                            className="rounded-3 d-flex align-items-center justify-content-center mb-3"
+                            style={{ width: '40px', height: '40px', backgroundColor: '#FFF5E6', color: '#F59E0B' }}
                           >
-                            <i className={`bi ${feature.icon} fs-2 text-primary`}></i>
+                            <i className={`bi ${feature.icon} fs-5`}></i>
                           </div>
-                          <h3 className="fs-6 fw-bold mb-2 ">{feature.title}</h3>
+                          <h3 className="fs-6 fw-bold mb-2" style={{ color: '#1B1B1B' }}>{feature.title}</h3>
                           <p className="small mb-0 text-muted" style={{ lineHeight: '1.6' }}>{feature.text}</p>
                         </div>
                       </div>
