@@ -1,0 +1,122 @@
+
+.support .subtitle { 
+  background-color: rgba(var(--bs-secondary-rgb), 0.2); 
+  color: var(--bs-primary);
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+ 
+}
+/* for contanct form */
+.form-card{
+ background-color: var( --bs-card-bg);
+ 
+}
+.form-title{
+  font-family: "Bricolage Grotesque";
+}
+
+.form-label{
+font-size: small;
+font-weight: 500;
+}
+
+.form-control{
+font-size: 0.9rem;
+}
+
+.form-select{
+  font-size: 0.9rem;
+  background-color: var( --bs-card-bg);
+}
+
+.support .btn{
+width: 100%;
+padding-top: 0.75rem;
+padding-bottom: 0.75rem;
+font-size: 0.9rem;
+}
+
+/* for quick links */
+.link-title{
+     font-family: "Bricolage Grotesque";
+}
+
+.support .list-group-item{
+    background-color: var( --bs-card-bg);
+    border: 1px solid #f0f0f0; 
+    border-radius: 15px;
+}
+
+.icon-link{
+border-radius: 5px;
+padding: 5px 10px 5px 10px;
+background-color: var(--bs-icon-container);
+color: #D94C38;
+font-size: 18px;
+font-weight: bolder;
+
+}
+
+.link-label{
+    font-weight: 700;
+    color: var(--bs-text-color);
+}
+/* for help card */
+.help-card {
+border-radius: 20px;
+border: 1px solid #f0f0f0;
+background-color: var( --bs-card-bg);
+
+}
+
+/* for location */
+.location-card{
+border-radius: 20px;
+border: 1px solid #f0f0f0;
+background-color: var( --bs-card-bg);
+height: 350px;
+
+}
+
+.location-title{
+    font-family: "Bricolage Grotesque";
+}
+
+.location-icon{
+    background-color: var(--bs-icon-container);
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+   
+}
+
+.icon-link i,
+.location-icon, .help-card i {
+  color: #D94C38;
+}
+
+.help-card, .card-title,
+.location-card .card-title {
+  color: var(--bs-text-color);
+}
+.floating-chat{
+  background-color: none;
+  margin-top: 30%;
+  text-align: center;
+  color: var(--bs-text-color);
+}
+.message-container{
+ background-color: #D94C38;
+ padding: 5px 12px 0px 12px;
+ border-radius: 100%;
+ font-size: 20px;
+ 
+
+}
+
+
