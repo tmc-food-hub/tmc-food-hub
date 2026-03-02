@@ -31,7 +31,7 @@ const CompanyEventsAndAnnouncementsSection = () => {
           <div className="row g-0 align-items-center">
             <div className="col-lg-6 order-1 order-lg-2">
               <img
-                src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80"
+                src="/assets/images/tmc_foodhub_platformm.png"
                 alt="TMC Foodhub Platform Demo"
                 className="cea-featured-img"
               />
@@ -80,7 +80,7 @@ const CompanyEventsAndAnnouncementsSection = () => {
             <div className="col-md-5">
               <div className="cea-white-card shadow-sm">
                 <img
-                  src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"
+                  src="/assets/images/scheduled_platform_thumbnail.png"
                   className="cea-card-img"
                   alt="Platform Maintenance"
                 />
@@ -119,7 +119,7 @@ const CompanyEventsAndAnnouncementsSection = () => {
             <div className="col-md-5">
               <div className="cea-white-card shadow-sm">
                 <img
-                  src="https://images.unsplash.com/photo-1526367790999-0150786686a2?auto=format&fit=crop&w=600&q=80"
+                  src="/assets/images/scheduled_platform_thumbnail.png"
                   className="cea-card-img"
                   alt="Scheduled Delivery Feature"
                 />
@@ -164,7 +164,7 @@ const CompanyEventsAndAnnouncementsSection = () => {
           <h2 className="cea-section-heading mb-5">Company Events</h2>
           <div className="cea-white-card mb-4 shadow-sm">
             <img
-              src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80"
+              src="/assets/images/tmc_foodhub_platformm.png"
               className="cea-event-img-large"
               alt="TMC Foodhub Platform Demo"
             />

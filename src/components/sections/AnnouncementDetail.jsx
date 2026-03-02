@@ -35,8 +35,8 @@ const AnnouncementDetail = () => {
       images.map(img =>
         !img.complete
           ? new Promise(resolve => {
-              img.onload = img.onerror = resolve;
-            })
+            img.onload = img.onerror = resolve;
+          })
           : Promise.resolve()
       )
     );
@@ -127,7 +127,7 @@ const AnnouncementDetail = () => {
       const isLast = index === parts.length - 1;
       let displayPart = part;
 
-      if (part === "Events & Announcement") displayPart = "AVAA Company Events";
+      if (part === "Events & Announcement") displayPart = "TMC Foodhub Company Events";
       if (part === "General")
         displayPart = data.type === "event" ? "Company Events" : "General Announcement";
 
@@ -185,10 +185,10 @@ const AnnouncementDetail = () => {
           <div className="cea-publisher-block d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
               <div className="cea-avatar-circle me-3">
-                <img src="/assets/images/AVAA Logo/avaa-logo.png" alt="AVAA" className="cea-publisher-logo" />
+                <img src="/assets/images/TMClogo.png" alt="TMC Foodhub" className="cea-publisher-logo" />
               </div>
               <div className="cea-author-info">
-                <p className="cea-author-name">AVAA Editorial Team</p>
+                <p className="cea-author-name">TMC Foodhub Editorial Team</p>
                 <small className="cea-publish-date">
                   Published on {data.date} • {data.readTime}
                 </small>

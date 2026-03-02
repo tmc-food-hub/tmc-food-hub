@@ -51,7 +51,7 @@ function BlogCard({
           date: date,
           readTime: readTime,
           summary: summary || `Summary for ${title}`,
-          author: author || 'AVAA Editorial Team',
+          author: author || 'TMC Foodhub Editorial Team',
           keyTakeaways: keyTakeaways || [
             'Data-driven selection reduces hiring risk',
             'Internal resource mobility optimizes efficiency',
@@ -70,7 +70,7 @@ function BlogCard({
           date: date,
           readTime: readTime,
           summary: summary || `Summary for ${title}`,
-          author: author || 'AVAA Editorial Team',
+          author: author || 'TMC Foodhub Editorial Team',
           keyTakeaways: keyTakeaways || [
             'Data-driven selection reduces hiring risk',
             'Internal resource mobility optimizes efficiency',

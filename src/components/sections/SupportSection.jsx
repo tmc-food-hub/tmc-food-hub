@@ -33,7 +33,7 @@ function SupportSection() {
         <SectionHeader
           subtitle="SUPPORT CENTER"
           title="We're Here to Help"
-          description="Get the priority support you need for your AVAA experience. Our dedicated team is standing by to ensure your success."
+          description="Get the priority support you need for your TMC Foodhub experience. Our dedicated team is standing by to ensure your success."
           centered
         />
 

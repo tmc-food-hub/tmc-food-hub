@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useLayoutEffect, useContext, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { 
-  Download, 
+import {
+  Download,
   Bookmark,
   Check,
   Printer,
@@ -15,24 +15,24 @@ import "../../assets/css/news-blog-detail.css";
 
 // ===== Blogs Array (Shared from NewsBlogSection) =====
 const allBlogs = [
-  { id: 1, tag: "System Architecture", title: "Optimizing Scalability in Modern IT Ecosystems", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 2, tag: "Data Analytics", title: "Predictive Analytics: Anticipating Talent Gaps", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 3, tag: "Platform Updates", title: "Introducing AVAA Flow: Seamless Hiring Pipelines", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 4, tag: "IT Workforce Strategy", title: "Bridging the Skills Gap in Full-Stack Development", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 5, tag: "Case Studies", title: "How GlobalTech Reduced Hiring Costs by 40%", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 6, tag: "IT Workforce Strategy", title: "AI & The Future of Technical Resourcing", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 7, tag: "Newsletter", title: "AVAA Monthly: February 2026 Edition", date: "Feb 1, 2026", readTime: "5 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 8, tag: "Research", title: "2026 IT Talent Landscape Report", date: "Jan 28, 2026", readTime: "12 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 9, tag: "Product Update", title: "AVAA Introduces Advanced Filtering for Faster Talent Matching", date: "January 10, 2026", readTime: "3 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 10, tag: "Company News", title: "AVAA Reaches Early Adoption Milestone Among Digital Agencies", date: "January 22, 2026", readTime: "2 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 11, tag: "Platform Overview", title: "What Is AVAA? A Smarter Way to Manage Talent", date: "February 2, 2026", readTime: "5 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 12, tag: "Industry Trends", title: "The Shift Toward Centralized Talent Platforms", date: "February 15, 2026", readTime: "6 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 13, tag: "System Architecture", title: "Behind the Code: Ensuring Security in Cloud-Native Hiring Platforms", date: "November 20, 2025", readTime: "10 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 14, tag: "IT Workforce Strategy", title: "From Fragmented to Focused: The Future of Employer-Side Resource Management", date: "February 10, 2026", readTime: "8 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 15, tag: "Platform Updates", title: "AVAA 2.0 Release Notes: Enhanced Criteria-Based Filtering Engine", date: "January 3, 2026", readTime: "5 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 16, tag: "Case Studies", title: "Case Study: Scaling Frontend Teams for a High-Traffic E-Commerce Giant", date: "January 15, 2026", readTime: "12 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 17, tag: "Newsletter", title: "The Autopilot Monthly: Trends in Automation and CRM Development", date: "December 05, 2025", readTime: "6 min read", image: "/assets/images/newsblog/Avaa1.png" },
-  { id: 18, tag: "System Architecture", title: "Microservices vs Monoliths: Making the Right Choice for Your Organization", date: "December 15, 2025", readTime: "9 min read", image: "/assets/images/newsblog/Avaa1.png" }
+  { id: 1, tag: "System Architecture", title: "Optimizing Scalability in Modern IT Ecosystems", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 2, tag: "Data Analytics", title: "Predictive Analytics: Anticipating Talent Gaps", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 3, tag: "Platform Updates", title: "Introducing TMC Foodhub Flow: Seamless Hiring Pipelines", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 4, tag: "IT Workforce Strategy", title: "Bridging the Skills Gap in Full-Stack Development", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 5, tag: "Case Studies", title: "How GlobalTech Reduced Hiring Costs by 40%", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 6, tag: "IT Workforce Strategy", title: "AI & The Future of Technical Resourcing", date: "Feb 3, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 7, tag: "Newsletter", title: "TMC Foodhub Monthly: February 2026 Edition", date: "Feb 1, 2026", readTime: "5 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 8, tag: "Research", title: "2026 IT Talent Landscape Report", date: "Jan 28, 2026", readTime: "12 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 9, tag: "Product Update", title: "TMC Foodhub Introduces Advanced Filtering for Faster Talent Matching", date: "January 10, 2026", readTime: "3 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 10, tag: "Company News", title: "TMC Foodhub Reaches Early Adoption Milestone Among Digital Agencies", date: "January 22, 2026", readTime: "2 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 11, tag: "Platform Overview", title: "What Is TMC Foodhub? A Smarter Way to Manage Talent", date: "February 2, 2026", readTime: "5 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 12, tag: "Industry Trends", title: "The Shift Toward Centralized Talent Platforms", date: "February 15, 2026", readTime: "6 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 13, tag: "System Architecture", title: "Behind the Code: Ensuring Security in Cloud-Native Hiring Platforms", date: "November 20, 2025", readTime: "10 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 14, tag: "IT Workforce Strategy", title: "From Fragmented to Focused: The Future of Employer-Side Resource Management", date: "February 10, 2026", readTime: "8 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 15, tag: "Platform Updates", title: "TMC Foodhub 2.0 Release Notes: Enhanced Criteria-Based Filtering Engine", date: "January 3, 2026", readTime: "5 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 16, tag: "Case Studies", title: "Case Study: Scaling Frontend Teams for a High-Traffic E-Commerce Giant", date: "January 15, 2026", readTime: "12 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 17, tag: "Newsletter", title: "The Autopilot Monthly: Trends in Automation and CRM Development", date: "December 05, 2025", readTime: "6 min read", image: "/assets/images/newsblog/news_blog.png" },
+  { id: 18, tag: "System Architecture", title: "Microservices vs Monoliths: Making the Right Choice for Your Organization", date: "December 15, 2025", readTime: "9 min read", image: "/assets/images/newsblog/news_blog.png" }
 ];
 
 // ===== Content Generator Functions =====
@@ -40,18 +40,18 @@ const generateSummary = (title, tag) => {
   const summaries = {
     "System Architecture": "Discover how modern system architecture principles enable scalable, resilient IT ecosystems that adapt to changing business demands while maintaining optimal performance.",
     "Data Analytics": "Learn how predictive analytics and data-driven insights are transforming workforce planning and helping organizations anticipate talent gaps before they impact operations.",
-    "Platform Updates": "Explore the latest AVAA platform enhancements designed to streamline hiring workflows and deliver more intelligent talent matching capabilities.",
+    "Platform Updates": "Explore the latest TMC Foodhub platform enhancements designed to streamline hiring workflows and deliver more intelligent talent matching capabilities.",
     "IT Workforce Strategy": "Strategic approaches to building, managing, and optimizing IT teams in an era of rapid technological change and evolving skill requirements.",
     "Case Studies": "Real-world success stories demonstrating how organizations have transformed their talent acquisition and resource management processes.",
-    "Newsletter": "Curated insights and updates from the AVAA team, delivered to keep you informed about the latest in workforce optimization.",
+    "Newsletter": "Curated insights and updates from the TMC Foodhub team, delivered to keep you informed about the latest in workforce optimization.",
     "Research": "In-depth analysis and research findings on emerging trends in IT workforce management and talent technology.",
-    "Product Update": "Detailed overview of new features and improvements in the AVAA platform, designed to enhance user experience and efficiency.",
-    "Company News": "Recent milestones, achievements, and developments from the AVAA team as we continue to grow and innovate.",
-    "Platform Overview": "A comprehensive introduction to AVAA's core capabilities and how our platform solves critical talent management challenges.",
+    "Product Update": "Detailed overview of new features and improvements in the TMC Foodhub platform, designed to enhance user experience and efficiency.",
+    "Company News": "Recent milestones, achievements, and developments from the TMC Foodhub team as we continue to grow and innovate.",
+    "Platform Overview": "A comprehensive introduction to TMC Foodhub's core capabilities and how our platform solves critical talent management challenges.",
     "Industry Trends": "Analysis of emerging patterns and shifts in the talent technology landscape and what they mean for your organization."
   };
-  
-  return summaries[tag] || `Explore our latest insights on ${title.toLowerCase()} and learn how AVAA is transforming talent management.`;
+
+  return summaries[tag] || `Explore our latest insights on ${title.toLowerCase()} and learn how TMC Foodhub is transforming talent management.`;
 };
 
 const generateContent = (title, tag) => {
@@ -108,7 +108,7 @@ const generateContent = (title, tag) => {
       <p>Like many organizations in their sector, our client faced significant challenges in scaling their technical teams while maintaining quality standards and controlling costs.</p>
       
       <h2>The Solution</h2>
-      <p>By implementing AVAA's talent management platform, they gained unprecedented visibility into their workforce capabilities and streamlined their hiring processes.</p>
+      <p>By implementing TMC Foodhub's talent management platform, they gained unprecedented visibility into their workforce capabilities and streamlined their hiring processes.</p>
       
       <h2>The Results</h2>
       <ul>
@@ -118,8 +118,8 @@ const generateContent = (title, tag) => {
       </ul>
     `,
     "Platform Updates": `
-      <h2>What's New in AVAA 2.0</h2>
-      <p>We're excited to announce significant updates to the AVAA platform that enhance performance, usability, and matching accuracy.</p>
+      <h2>What's New in TMC Foodhub 2.0</h2>
+      <p>We're excited to announce significant updates to the TMC Foodhub platform that enhance performance, usability, and matching accuracy.</p>
       
       <h2>Enhanced Filtering Engine</h2>
       <p>Our new criteria-based filtering engine allows for more precise talent matching, reducing search time by over 50%.</p>
@@ -181,20 +181,20 @@ const generateKeyTakeaways = (tag) => {
 
 const generateAuthor = (tag) => {
   const authors = {
-    "System Architecture": "AVAA Engineering Team",
-    "Data Analytics": "AVAA Analytics Team",
-    "Platform Updates": "AVAA Product Team",
-    "IT Workforce Strategy": "AVAA Strategy Team",
-    "Case Studies": "AVAA Customer Success Team",
-    "Newsletter": "AVAA Editorial Team",
-    "Research": "AVAA Research Department",
-    "Product Update": "AVAA Product Team",
-    "Company News": "AVAA Communications Team",
-    "Platform Overview": "AVAA Solutions Team",
-    "Industry Trends": "AVAA Market Intelligence Team"
+    "System Architecture": "TMC Foodhub Engineering Team",
+    "Data Analytics": "TMC Foodhub Analytics Team",
+    "Platform Updates": "TMC Foodhub Product Team",
+    "IT Workforce Strategy": "TMC Foodhub Strategy Team",
+    "Case Studies": "TMC Foodhub Customer Success Team",
+    "Newsletter": "TMC Foodhub Editorial Team",
+    "Research": "TMC Foodhub Research Department",
+    "Product Update": "TMC Foodhub Product Team",
+    "Company News": "TMC Foodhub Communications Team",
+    "Platform Overview": "TMC Foodhub Solutions Team",
+    "Industry Trends": "TMC Foodhub Market Intelligence Team"
   };
-  
-  return authors[tag] || "AVAA Editorial Team";
+
+  return authors[tag] || "TMC Foodhub Editorial Team";
 };
 
 const generateTags = (tag) => {
@@ -203,16 +203,16 @@ const generateTags = (tag) => {
     "Data Analytics": ["Predictive Analytics", "Workforce Planning", "Data Science", "HR Tech"],
     "IT Workforce Strategy": ["Talent Management", "Workforce Planning", "HR Strategy", "Future of Work"],
     "Case Studies": ["Success Stories", "ROI", "Implementation", "Results"],
-    "Platform Updates": ["New Features", "Product Launch", "Innovation", "AVAA Platform"],
-    "Product Update": ["New Features", "Product Launch", "Innovation", "AVAA Platform"],
-    "Company News": ["AVAA", "Growth", "Milestones", "Team"],
-    "Platform Overview": ["AVAA Platform", "Talent Management", "Features", "Overview"],
+    "Platform Updates": ["New Features", "Product Launch", "Innovation", "TMC Foodhub Platform"],
+    "Product Update": ["New Features", "Product Launch", "Innovation", "TMC Foodhub Platform"],
+    "Company News": ["TMC Foodhub", "Growth", "Milestones", "Team"],
+    "Platform Overview": ["TMC Foodhub Platform", "Talent Management", "Features", "Overview"],
     "Industry Trends": ["Market Trends", "Future of Work", "HR Tech", "Innovation"],
-    "Newsletter": ["Monthly Update", "News", "Insights", "AVAA"],
+    "Newsletter": ["Monthly Update", "News", "Insights", "TMC Foodhub"],
     "Research": ["Research", "Data", "Analysis", "Trends"]
   };
-  
-  return tagMap[tag] || [tag, "Talent Management", "Workforce Optimization", "AVAA"];
+
+  return tagMap[tag] || [tag, "Talent Management", "Workforce Optimization", "TMC Foodhub"];
 };
 
 // ===== Function to generate tag description =====
@@ -220,18 +220,18 @@ const generateTagDescription = (tag) => {
   const descriptions = {
     "System Architecture": "System architecture determines how effectively organizations scale and innovate in today's digital economy. Our engineering team shares battle-tested patterns for building resilient, cloud-native infrastructures that adapt to changing business demands.",
     "Data Analytics": "Predictive analytics transforms workforce data from historical records into forward-looking intelligence. Learn how organizations are using data science to forecast talent needs, identify skill gaps, and optimize resource allocation with measurable precision.",
-    "Platform Updates": "AVAA continuously evolves to address the real-world challenges of technical hiring. Each release brings enhanced matching capabilities, streamlined workflows, and performance improvements driven directly by customer feedback.",
+    "Platform Updates": "TMC Foodhub continuously evolves to address the real-world challenges of technical hiring. Each release brings enhanced matching capabilities, streamlined workflows, and performance improvements driven directly by customer feedback.",
     "IT Workforce Strategy": "Skills-based workforce planning outperforms traditional headcount models in today's fast-changing technology landscape. Discover how leading organizations build agile talent ecosystems through internal mobility, continuous development, and dynamic resource allocation.",
-    "Case Studies": "Real organizations achieve measurable results with AVAA's talent management platform. These case studies document specific challenges, implemented solutions, and the concrete ROI realized by companies across industries.",
-    "Newsletter": "Stay informed with curated insights from AVAA's workforce optimization experts. Each monthly edition delivers actionable intelligence on talent trends, platform updates, and strategic best practices.",
-    "Research": "AVAA's research team analyzes millions of data points to uncover patterns in IT workforce dynamics. Our reports provide evidence-based guidance for leaders navigating skill shortages, emerging technologies, and shifting talent expectations.",
+    "Case Studies": "Real organizations achieve measurable results with TMC Foodhub's talent management platform. These case studies document specific challenges, implemented solutions, and the concrete ROI realized by companies across industries.",
+    "Newsletter": "Stay informed with curated insights from TMC Foodhub's workforce optimization experts. Each monthly edition delivers actionable intelligence on talent trends, platform updates, and strategic best practices.",
+    "Research": "TMC Foodhub's research team analyzes millions of data points to uncover patterns in IT workforce dynamics. Our reports provide evidence-based guidance for leaders navigating skill shortages, emerging technologies, and shifting talent expectations.",
     "Product Update": "Every product release represents months of development and user testing. We detail new features, design decisions, and implementation best practices to help you maximize value from every enhancement.",
-    "Company News": "AVAA's journey is driven by our mission to transform technical talent management. Stay updated on our milestones, team growth, partnerships, and the customer stories that inspire our work.",
-    "Platform Overview": "AVAA unifies talent acquisition and resource management into a single, intelligent platform. Learn how our matching engine, analytics tools, and collaborative workflows solve the unique challenges of technical hiring.",
+    "Company News": "TMC Foodhub's journey is driven by our mission to transform technical talent management. Stay updated on our milestones, team growth, partnerships, and the customer stories that inspire our work.",
+    "Platform Overview": "TMC Foodhub unifies talent acquisition and resource management into a single, intelligent platform. Learn how our matching engine, analytics tools, and collaborative workflows solve the unique challenges of technical hiring.",
     "Industry Trends": "The talent technology landscape is evolving faster than ever before. Our market intelligence team analyzes emerging patterns in skills development, hiring practices, and workforce strategy to help you stay ahead."
   };
-  
-  return descriptions[tag] || `Expert insights and practical guidance on ${tag} from the AVAA team. Discover strategies and best practices for optimizing your workforce management approach.`;
+
+  return descriptions[tag] || `Expert insights and practical guidance on ${tag} from the TMC Foodhub team. Discover strategies and best practices for optimizing your workforce management approach.`;
 };
 
 // ===== Function to generate article slug with correct URL format =====
@@ -242,10 +242,10 @@ const generateArticleSlug = (title, tag) => {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
-  
+
   const newsTags = ["Platform Updates", "System Architecture", "Data Analytics", "Newsletter"];
   const blogTags = ["IT Workforce Strategy", "Research", "Case Studies"];
-  
+
   if (newsTags.includes(tag)) {
     return `/news/${slug}`;
   } else if (blogTags.includes(tag)) {
@@ -259,22 +259,22 @@ const generateArticleSlug = (title, tag) => {
 const validateEmail = (email) => {
   // Whitelist: Only allow A-Z, a-z, 0-9, and @ symbols
   const allowedCharsRegex = /^[A-Za-z0-9@.+\-_\s]+$/;
-  
+
   // Standard email format validation
   const emailFormatRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
   if (!email || email.trim() === '') {
     return { isValid: false, error: 'Email address is required' };
   }
-  
+
   if (!allowedCharsRegex.test(email)) {
     return { isValid: false, error: 'Email can only contain letters, numbers, and @ symbol' };
   }
-  
+
   if (!emailFormatRegex.test(email)) {
     return { isValid: false, error: 'Please enter a valid email address' };
   }
-  
+
   return { isValid: true, error: null };
 };
 
@@ -298,14 +298,14 @@ const NewsBlogDetailSection = () => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
-  
+
   const moreMenuRef = useRef(null);
   const moreButtonRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target) && 
-          moreButtonRef.current && !moreButtonRef.current.contains(event.target)) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target) &&
+        moreButtonRef.current && !moreButtonRef.current.contains(event.target)) {
         setShowMoreMenu(false);
       }
       if (showShareMenu) {
@@ -336,21 +336,21 @@ const NewsBlogDetailSection = () => {
 
   useEffect(() => {
     const state = location.state;
-    
+
     setLoading(true);
 
     if (state) {
       // State exists - coming from BlogCard click
       const category = state.tag || state.category || 'IT Workforce Strategy';
-      
+
       const blogData = allBlogs.find(blog => blog.id === state.id) || {};
-      
+
       const generatedPost = {
         id: state.id,
         tag: category,
         category: category.toUpperCase(),
         title: state.title,
-        image: blogData.image || '/assets/images/newsblog/Avaa1.png',
+        image: blogData.image || '/assets/images/newsblog/news_blog.png',
         author: generateAuthor(category),
         authorAvatar: '/assets/images/AVAA-S Logo.png',
         date: state.date,
@@ -365,27 +365,27 @@ const NewsBlogDetailSection = () => {
         fullUrl: `https://autopilotvirtual.com${generateArticleSlug(state.title, category)}`,
         relatedIds: []
       };
-      
+
       setPost(generatedPost);
-      
+
       let related = allBlogs
-        .filter(blog => 
-          blog.id !== state.id && 
+        .filter(blog =>
+          blog.id !== state.id &&
           blog.tag === category
         )
         .slice(0, 3);
-      
+
       if (related.length === 0) {
         const sortedBlogs = [...allBlogs]
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .filter(blog => blog.id !== state.id);
-        
+
         related = sortedBlogs.slice(0, 3);
       }
-      
+
       setRelatedBlogs(related);
       setLoading(false);
-      
+
     } else if (slug) {
       // No state but slug exists - direct URL access or page refresh
       const findBlogBySlug = () => {
@@ -396,29 +396,29 @@ const NewsBlogDetailSection = () => {
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-')
             .replace(/^-|-$/g, '');
-          
+
           if (blogSlug === slug) {
             return blog;
           }
         }
         return null;
       };
-      
+
       const foundBlog = findBlogBySlug();
-      
+
       if (foundBlog) {
         const newsTags = ["Platform Updates", "System Architecture", "Data Analytics", "Newsletter"];
         const basePath = newsTags.includes(foundBlog.tag) ? '/news' : '/blogs';
-        
+
         // Set the post directly without navigation to avoid loops
         const category = foundBlog.tag;
-        
+
         const generatedPost = {
           id: foundBlog.id,
           tag: category,
           category: category.toUpperCase(),
           title: foundBlog.title,
-          image: foundBlog.image || '/assets/images/newsblog/Avaa1.png',
+          image: foundBlog.image || '/assets/images/newsblog/news_blog.png',
           author: generateAuthor(category),
           authorAvatar: '/assets/images/AVAA-S Logo.png',
           date: foundBlog.date,
@@ -433,24 +433,24 @@ const NewsBlogDetailSection = () => {
           fullUrl: `https://autopilotvirtual.com${generateArticleSlug(foundBlog.title, category)}`,
           relatedIds: []
         };
-        
+
         setPost(generatedPost);
-        
+
         let related = allBlogs
-          .filter(blog => 
-            blog.id !== foundBlog.id && 
+          .filter(blog =>
+            blog.id !== foundBlog.id &&
             blog.tag === category
           )
           .slice(0, 3);
-        
+
         if (related.length === 0) {
           const sortedBlogs = [...allBlogs]
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .filter(blog => blog.id !== foundBlog.id);
-          
+
           related = sortedBlogs.slice(0, 3);
         }
-        
+
         setRelatedBlogs(related);
       } else {
         // Blog not found, redirect to news and blogs page
@@ -473,17 +473,17 @@ const NewsBlogDetailSection = () => {
 
   const handleShareClick = () => {
     const shareUrl = post?.fullUrl || window.location.href;
-    
+
     navigator.clipboard.writeText(shareUrl)
       .then(() => {
         setCopiedToClipboard(true);
         setTimeout(() => {
           setCopiedToClipboard(false);
         }, 2000);
-        
+
         if (navigator.share) {
           navigator.share({
-            title: post?.title || 'AVAA Blog Post',
+            title: post?.title || 'TMC Foodhub Blog Post',
             text: `Check out this article: ${post?.title}`,
             url: shareUrl,
           }).catch(console.error);
@@ -501,7 +501,7 @@ const NewsBlogDetailSection = () => {
           setCopiedToClipboard(false);
         }, 2000);
       });
-    
+
     setShowShareMenu(false);
   };
 
@@ -524,7 +524,7 @@ const NewsBlogDetailSection = () => {
       
       Tags: ${post?.tags?.join(', ')}
     `;
-    
+
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     element.href = url;
@@ -533,7 +533,7 @@ const NewsBlogDetailSection = () => {
     element.click();
     document.body.removeChild(element);
     URL.revokeObjectURL(url);
-    
+
     setShowMoreMenu(false);
     alert('Article downloaded successfully!');
   };
@@ -551,7 +551,7 @@ const NewsBlogDetailSection = () => {
   };
 
   const handleBookmarkArticle = () => {
-    const bookmarks = JSON.parse(localStorage.getItem('avaa-bookmarks') || '[]');
+    const bookmarks = JSON.parse(localStorage.getItem('tmc-bookmarks') || '[]');
     const newBookmark = {
       id: post?.id,
       title: post?.title,
@@ -560,29 +560,29 @@ const NewsBlogDetailSection = () => {
       slug: post?.slug,
       added: new Date().toISOString()
     };
-    
+
     const alreadyBookmarked = bookmarks.some(b => b.id === post?.id);
-    
+
     if (!alreadyBookmarked) {
       bookmarks.push(newBookmark);
-      localStorage.setItem('avaa-bookmarks', JSON.stringify(bookmarks));
+      localStorage.setItem('tmc-bookmarks', JSON.stringify(bookmarks));
       alert('Article bookmarked!');
     } else {
       alert('Article is already bookmarked.');
     }
-    
+
     setShowMoreMenu(false);
   };
 
   const handleEmailChange = (e) => {
     const inputValue = e.target.value;
-    
+
     // Sanitize input: remove any disallowed characters
     const sanitizedValue = sanitizeEmailInput(inputValue);
-    
+
     // Update email state with sanitized value
     setEmail(sanitizedValue);
-    
+
     // Clear error when user starts typing
     if (emailError) {
       setEmailError('');
@@ -600,22 +600,22 @@ const NewsBlogDetailSection = () => {
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    
+
     // Trim email to remove whitespace
     const trimmedEmail = email.trim();
     setEmail(trimmedEmail);
-    
+
     // Validate email
     const validation = validateEmail(trimmedEmail);
-    
+
     if (!validation.isValid) {
       setEmailError(validation.error);
       return;
     }
-    
+
     // Clear any previous errors
     setEmailError('');
-    
+
     // Proceed with subscription
     if (trimmedEmail) {
       setIsSubscribed(true);
@@ -633,11 +633,11 @@ const NewsBlogDetailSection = () => {
   return (
     <div className={`news-blog-detail ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="content-container">
-        
+
         {/* Breadcrumbs */}
         <nav className="breadcrumbs">
-          <a 
-            href="/" 
+          <a
+            href="/"
             className={isDarkMode ? 'dark-mode' : ''}
             onClick={(e) => {
               e.preventDefault();
@@ -646,11 +646,11 @@ const NewsBlogDetailSection = () => {
           >
             Home
           </a> /
-          <a 
-            href="/news-and-blogs" 
+          <a
+            href="/news-and-blogs"
             className={isDarkMode ? 'dark-mode' : ''}
             onClick={handleViewAllBlogs}
-          > 
+          >
             News & Blogs
           </a> /
           <span className={`current ${isDarkMode ? 'dark-mode' : ''}`}>
@@ -668,7 +668,7 @@ const NewsBlogDetailSection = () => {
         <div className="author-block">
           <div className="author-info">
             <div className="author-avatar">
-              <img src="/assets/images/AVAA'S Logo.png" alt="AVAA Logo" />
+              <img src="/assets/images/TMClogo.png" alt="TMC Foodhub Logo" style={{ width: '40px', height: '40px' }} />
             </div>
             <div className="author-details">
               <h3 className={`author-name ${isDarkMode ? 'dark-mode' : ''}`}>{post.author}</h3>
@@ -681,17 +681,17 @@ const NewsBlogDetailSection = () => {
           <div className="article-actions">
             {/* Share Button */}
             <div className="action-wrapper">
-              <button 
-                className={`action-btn ${isDarkMode ? 'dark-mode' : ''} ${copiedToClipboard ? 'copied' : ''}`} 
-                aria-label={copiedToClipboard ? "Copied!" : "Share"} 
+              <button
+                className={`action-btn ${isDarkMode ? 'dark-mode' : ''} ${copiedToClipboard ? 'copied' : ''}`}
+                aria-label={copiedToClipboard ? "Copied!" : "Share"}
                 onClick={handleShareClick}
                 title={copiedToClipboard ? "URL copied to clipboard!" : "Copy link to share"}
               >
-                <img 
-                  src="/assets/images/logo/link.svg" 
-                  alt="Share" 
-                  style={{ 
-                    width: '20px', 
+                <img
+                  src="/assets/images/logo/link.svg"
+                  alt="Share"
+                  style={{
+                    width: '20px',
                     height: '20px',
                     color: 'gray'
                   }}
@@ -701,34 +701,34 @@ const NewsBlogDetailSection = () => {
                 )}
               </button>
             </div>
-            
+
             {/* More Button with Dropdown */}
             <div className="action-wrapper" ref={moreMenuRef}>
-              <button 
+              <button
                 ref={moreButtonRef}
-                className={`action-btn ${isDarkMode ? 'dark-mode' : ''}`} 
-                aria-label="More options" 
+                className={`action-btn ${isDarkMode ? 'dark-mode' : ''}`}
+                aria-label="More options"
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
                 title="More options"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="44" 
-                  height="44" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="#000000" 
-                  strokeWidth="1.75" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="44"
+                  height="44"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#000000"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   className="lucide lucide-ellipsis-icon lucide-ellipsis"
                 >
-                  <circle cx="12" cy="12" r="1"/>
-                  <circle cx="19" cy="12" r="1"/>
-                  <circle cx="5" cy="12" r="1"/>
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="19" cy="12" r="1" />
+                  <circle cx="5" cy="12" r="1" />
                 </svg>
               </button>
-              
+
               {/* Dropdown Menu */}
               {showMoreMenu && (
                 <div className={`dropdown-menu ${isDarkMode ? 'dark-mode' : ''}`}>
@@ -777,7 +777,7 @@ const NewsBlogDetailSection = () => {
           </ul>
         </div>
 
-        <article 
+        <article
           className={`article-body ${isDarkMode ? 'dark-mode' : ''}`}
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
@@ -793,13 +793,13 @@ const NewsBlogDetailSection = () => {
         {relatedBlogs.length > 0 && (
           <section className={`related-posts-section ${isDarkMode ? 'dark-mode' : ''}`}>
             <h2 className="related-section-title">
-              {relatedBlogs.some(blog => blog.tag === post.tag) 
-                ? 'Related posts' 
+              {relatedBlogs.some(blog => blog.tag === post.tag)
+                ? 'Related posts'
                 : 'Latest posts'}
             </h2>
             <div className="row g-4 mt-2">
               {relatedBlogs.map((blog, index) => (
-                <BlogCard 
+                <BlogCard
                   key={blog.id}
                   id={blog.id}
                   tag={blog.tag}
@@ -812,8 +812,8 @@ const NewsBlogDetailSection = () => {
               ))}
             </div>
             <div className="view-all-wrapper">
-              <button 
-                className={`view-all-btn ${isDarkMode ? 'dark-mode' : ''}`} 
+              <button
+                className={`view-all-btn ${isDarkMode ? 'dark-mode' : ''}`}
                 onClick={handleViewAllClick}
               >
                 View all articles
@@ -834,16 +834,16 @@ const NewsBlogDetailSection = () => {
             <p className={`newsletter-subheadline ${isDarkMode ? 'dark-mode' : ''}`}>
               Get the latest insights on resource management and IT workforce trends delivered weekly to your inbox.
             </p>
-            
+
             <form className="newsletter-form" onSubmit={handleSubscribe}>
               <div className="newsletter-input-group">
                 <div className="email-input-wrapper">
-                  <input 
+                  <input
                     type="text"
                     inputMode="email"
-                    placeholder="Enter your work email" 
-                    className={`email-input ${isDarkMode ? 'dark-mode' : ''} ${emailError ? 'error' : ''}`} 
-                    required 
+                    placeholder="Enter your work email"
+                    className={`email-input ${isDarkMode ? 'dark-mode' : ''} ${emailError ? 'error' : ''}`}
+                    required
                     value={email}
                     onChange={handleEmailChange}
                     onBlur={handleEmailBlur}
@@ -857,8 +857,8 @@ const NewsBlogDetailSection = () => {
                     </span>
                   )}
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className={`subscribe-btn ${isDarkMode ? 'dark-mode' : ''}`}
                   disabled={isSubscribed}
                 >

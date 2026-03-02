@@ -2,11 +2,15 @@
   {
     "id": 1,
     "slug": "optimizing-scalability-modern-it-ecosystems",
-    "breadcrumbs": ["Home", "News & Blogs", "System Architecture"],
+    "breadcrumbs": [
+      "Home",
+      "News & Blogs",
+      "System Architecture"
+    ],
     "category": "System Architecture",
     "title": "Optimizing Scalability in Modern IT Ecosystems",
     "author": {
-      "name": "AVAA Tech Team",
+      "name": "TMC Foodhub Tech Team",
       "avatar": "/images/avatars/dev-team.png"
     },
     "publishedDate": "February 3, 2026",
@@ -50,24 +54,36 @@
         "text": "As AI and automation accelerate product iteration, architectures must stay flexible. Scalability is a capability you build into the system, not a patch you apply later."
       }
     ],
-    "bottomTags": ["Architecture", "Scalability", "Infrastructure"],
-    "relatedPosts": [2, 3, 5]
+    "bottomTags": [
+      "Architecture",
+      "Scalability",
+      "Infrastructure"
+    ],
+    "relatedPosts": [
+      2,
+      3,
+      5
+    ]
   },
   {
     "id": 2,
     "slug": "avaa-2-0-release-notes",
-    "breadcrumbs": ["Home", "News & Blogs", "Platform Updates"],
+    "breadcrumbs": [
+      "Home",
+      "News & Blogs",
+      "Platform Updates"
+    ],
     "category": "Platform Updates",
-    "title": "AVAA 2.0 Release Notes: Enhanced Criteria-Based Filtering Engine",
+    "title": "TMC Foodhub 2.0 Release Notes: Enhanced Criteria-Based Filtering Engine",
     "author": {
-      "name": "AVAA Dev Team",
+      "name": "TMC Foodhub Dev Team",
       "avatar": "/images/avatars/dev-team.png"
     },
     "publishedDate": "January 28, 2026",
     "readTime": "5 min read",
-    "summary": "Precision is the core of AVAA. We are excited to roll out our updated filtering engine, powered by a revamped system architecture that introduces semantic matching and sub-100ms query responses.",
+    "summary": "Precision is the core of TMC Foodhub. We are excited to roll out our updated filtering engine, powered by a revamped system architecture that introduces semantic matching and sub-100ms query responses.",
     "mainImage": "/assets/images/dev-team.png",
-    "introContent": "We are thrilled to announce the deployment of AVAA 2.0, a significant update to our core platform infrastructure. The highlight of this release is our new Enhanced Criteria-Based Filtering Engine, designed to close the gap between generic job descriptions and specific engineering realities.",
+    "introContent": "We are thrilled to announce the deployment of TMC Foodhub 2.0, a significant update to our core platform infrastructure. The highlight of this release is our new Enhanced Criteria-Based Filtering Engine, designed to close the gap between generic job descriptions and specific engineering realities.",
     "keyTakeaways": [
       "Semantic matching improves candidate relevance by 40%.",
       "New 'Architectural Context' filters allow for granular searching.",
@@ -107,13 +123,25 @@
         "text": "This update is supported by a complete refactor of our query optimization, ensuring that even as our database of IT professionals grows, your search results remain instantaneous. Precision in IT resourcing is no longer a goal; it is a system default."
       }
     ],
-    "bottomTags": ["Product News", "System Architecture", "Release Notes"],
-    "relatedPosts": [1, 3, 5]
+    "bottomTags": [
+      "Product News",
+      "System Architecture",
+      "Release Notes"
+    ],
+    "relatedPosts": [
+      1,
+      3,
+      5
+    ]
   },
   {
     "id": 3,
     "slug": "case-study-frontend-scaling",
-    "breadcrumbs": ["Home", "News & Blogs", "Case Studies"],
+    "breadcrumbs": [
+      "Home",
+      "News & Blogs",
+      "Case Studies"
+    ],
     "category": "Case Studies",
     "title": "Case Study: Scaling Frontend Teams for a High-Traffic E-Commerce Giant",
     "author": {
@@ -122,7 +150,7 @@
     },
     "publishedDate": "January 15, 2026",
     "readTime": "12 min read",
-    "summary": "When a major retail client needed to overhaul their UI/UX just weeks before Black Friday, manual hiring wasn't an option. By leveraging AVAA’s data-driven selection process, they identified 5 senior developers in under 48 hours.",
+    "summary": "When a major retail client needed to overhaul their UI/UX just weeks before Black Friday, manual hiring wasn't an option. By leveraging TMC Foodhub’s data-driven selection process, they identified 5 senior developers in under 48 hours.",
     "mainImage": "/assets/images/dev-team.png",
     "introContent": "The challenge was clear but daunting: A major retail client needed to completely overhaul their UI/UX and Frontend systems just six weeks before Black Friday. Their existing internal team was at capacity, and traditional recruitment agencies were quoting a 4-week lead time just to source candidates.",
     "keyTakeaways": [
@@ -141,7 +169,7 @@
       },
       {
         "type": "heading",
-        "text": "The AVAA Solution"
+        "text": "The TMC Foodhub Solution"
       },
       {
         "type": "paragraph",
@@ -164,7 +192,15 @@
         "text": "Within 48 hours, the client had selected 5 highly qualified professionals. The new frontend launched two weeks ahead of schedule, handling a 200% spike in traffic with zero downtime. This case study exemplifies our mission: replacing scattered searches with a centralized, intelligent system."
       }
     ],
-    "bottomTags": ["E-Commerce", "React", "Scaling"],
-    "relatedPosts": [1, 2, 4]
+    "bottomTags": [
+      "E-Commerce",
+      "React",
+      "Scaling"
+    ],
+    "relatedPosts": [
+      1,
+      2,
+      4
+    ]
   }
 ]
