@@ -18,10 +18,10 @@ const CompanyEventsAndAnnouncementsSection = () => {
           >
             UPDATES & NOTICES
           </span>
-          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+          <h2 className="mb-3 fw-bold cea-page-heading" style={{ fontSize: '2.2rem' }}>
             Company Events and<br />Announcements
           </h2>
-          <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
+          <p className="text-muted mx-auto cea-page-description" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
             Stay updated with TMC's latest platform updates, service announcements, and company activities.
           </p>
         </div>

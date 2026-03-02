@@ -18,7 +18,8 @@
 .dark-mode .news-blog h2,
 .dark-mode .faq__v2 h2,
 .dark-mode .features__v2 h2,
-.dark-mode .contact__v2 h2 {
+.dark-mode .contact__v2 h2,
+.dark-mode .testimonials__v2 h2 {
     color: #F3F4F6 !important;
 }
 
@@ -94,6 +95,14 @@
 }
 
 /* ---------- EVENTS SECTION ---------- */
+.events-heading {
+    color: #1B1B1B;
+}
+
+.dark-mode .events-heading {
+    color: #F3F4F6 !important;
+}
+
 .dark-mode .events__v1 .service-card {
     background-color: #1F2937 !important;
     border-color: #374151 !important;
@@ -129,6 +138,12 @@
 }
 
 .dark-mode .testimonial-card h5 {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .testimonials__v2 h2,
+.dark-mode .testimonials__v2 p,
+.dark-mode .events__v1 h2 {
     color: #F3F4F6 !important;
 }
 

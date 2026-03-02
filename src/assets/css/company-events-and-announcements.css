@@ -2,6 +2,18 @@
      scroll-margin-top: 100px;
  }
 
+ .cea-page-heading {
+     color: #1B1B1B;
+ }
+
+ .dark-mode .cea-page-heading {
+     color: #F3F4F6 !important;
+ }
+
+ .dark-mode .cea-page-description {
+     color: #D1D5DB !important;
+ }
+
  .cea-spacer {
      height: 60px;
      position: relative;

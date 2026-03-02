@@ -39,7 +39,7 @@ function EventsSection() {
           >
             UPDATES & NOTICES
           </span>
-          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+          <h2 className="mb-3 fw-bold events-heading" style={{ fontSize: '2.2rem' }}>
             Company Events and Announcements
           </h2>
         </div>
