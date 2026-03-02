@@ -1,0 +1,176 @@
+[
+  {
+    "id": "service-expansion-automation",
+    "type": "announcement",
+    "path": "Home / Events & Announcement / General / Service Expansion",
+    "categoryTag": "SERVICE EXPANSION",
+    "title": "Expansion of Automation Specialists Service Line",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "January 10, 2026",
+    "readTime": "8 min read",
+    "summary": "TMC Foodhub officially launches its Automation Specialists Division to help organizations streamline repetitive workflows and implement intelligent process automation. This new service line strengthens our ability to deliver scalable, efficiency-driven digital solutions.",
+    "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+    "takeaways": [
+      "Automation reduces operational delays and manual errors.",
+      "Businesses gain scalable workflow systems.",
+      "Faster turnaround and measurable productivity gains."
+    ],
+    "sections": [
+      {
+        "h2": "Why Automation Matters Now",
+        "content": "Manual processes limit scalability and introduce inefficiencies. Businesses require smarter systems to remain competitive."
+      },
+      {
+        "h2": "What This Service Includes",
+        "content": "Workflow mapping, system integration, automation implementation, and ongoing optimization support."
+      },
+      {
+        "h2": "Expected Impact",
+        "content": "Clients can expect improved efficiency, cost reduction, and better operational visibility."
+      }
+    ]
+  },
+  {
+    "id": "strategic-partnership-cloud",
+    "type": "announcement",
+    "path": "Home / Events & Announcement / General / Strategic Partnership",
+    "categoryTag": "STRATEGIC PARTNERSHIP",
+    "title": "TMC Foodhub Forms Strategic Cloud Infrastructure Alliance",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "February 18, 2026",
+    "readTime": "6 min read",
+    "summary": "TMC Foodhub partners with a leading cloud infrastructure provider to enhance scalability, reliability, and enterprise-grade security across all solutions.",
+    "image": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80",
+    "takeaways": [
+      "Enhanced system uptime.",
+      "Enterprise-level security standards.",
+      "Faster deployment and scaling capabilities."
+    ],
+    "sections": [
+      {
+        "h2": "Why This Partnership Matters",
+        "content": "Cloud infrastructure is critical for performance and resilience."
+      },
+      {
+        "h2": "Benefits for Clients",
+        "content": "Improved performance, reduced downtime, and global scalability."
+      },
+      {
+        "h2": "Long-Term Vision",
+        "content": "The partnership supports TMC Foodhub’s innovation roadmap."
+      }
+    ]
+  },
+  {
+    "id": "tech-innovation-ai",
+    "type": "event",
+    "path": "Home / Events & Announcement / General / Technology Innovation",
+    "categoryTag": "TECHNOLOGY INNOVATION",
+    "title": "AI-Assisted Talent Matching Now Live",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "March 1, 2026",
+    "readTime": "9 min read",
+    "summary": "TMC Foodhub integrates AI-assisted talent matching to improve workforce allocation accuracy and reduce hiring turnaround time.",
+    "image": "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80",
+    "takeaways": [
+      "Predictive analytics enhances hiring decisions.",
+      "Reduced recruitment time.",
+      "Improved workforce alignment."
+    ],
+    "sections": [
+      {
+        "h2": "Smarter Resource Allocation",
+        "content": "AI evaluates skills, performance indicators, and compatibility metrics."
+      },
+      {
+        "h2": "Reducing Hiring Risk",
+        "content": "Data-backed matching increases retention and satisfaction."
+      },
+      {
+        "h2": "Future Enhancements",
+        "content": "Continuous learning models will refine matching precision."
+      }
+    ]
+  },
+  {
+    "id": "system-notice-maintenance",
+    "type": "announcement",
+    "path": "Home / Events & Announcement / General / System Notice",
+    "categoryTag": "SYSTEM NOTICE",
+    "title": "Scheduled Platform Maintenance & Security Upgrade",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "March 10, 2026",
+    "readTime": "4 min read",
+    "summary": "TMC Foodhub will conduct scheduled maintenance to improve system speed, reliability, and data security protocols.",
+    "image": "/assets/images/scheduled_platform_article.png",
+    "takeaways": [
+      "Improved load performance.",
+      "Stronger encryption protocols.",
+      "Reduced vulnerability risks."
+    ],
+    "sections": [
+      {
+        "h2": "Maintenance Schedule",
+        "content": "Date: March 15, 2026 | Time: 12:00 AM – 4:00 AM (PST) | Expected Downtime: Up to 4 hours."
+      },
+      {
+        "h2": "What’s Being Upgraded",
+        "content": "Backend performance optimization, database indexing improvements, and advanced security patch deployment."
+      }
+    ]
+  },
+  {
+    "id": "service-enhancement-support",
+    "type": "announcement",
+    "path": "Home / Events & Announcement / General / Service Enhancement",
+    "categoryTag": "SERVICE ENHANCEMENT",
+    "title": "Expansion of 24/7 Client Support Services",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "June 5, 2026",
+    "readTime": "6 min read",
+    "summary": "TMC Foodhub expands its client support operations to 24/7 availability, ensuring continuous assistance across time zones.",
+    "image": "https://images.unsplash.com/photo-1521791136364-798a7bc0d262",
+    "takeaways": [
+      "24/7 multi-channel support availability.",
+      "Faster issue resolution turnaround.",
+      "Improved global client coverage."
+    ],
+    "sections": [
+      {
+        "h2": "Why 24/7 Support Matters",
+        "content": "Businesses operate beyond traditional working hours. Continuous support minimizes operational disruptions."
+      },
+      {
+        "h2": "Expanded Support Channels",
+        "content": "Live chat, email, and hotline services are now monitored around the clock."
+      }
+    ]
+  },
+  {
+    "id": "corporate-milestone-clients",
+    "type": "event",
+    "path": "Home / Events & Announcement / General / Corporate Milestone",
+    "categoryTag": "CORPORATE MILESTONE",
+    "title": "TMC Foodhub Reaches 1,000 Active Enterprise Clients",
+    "author": "TMC Foodhub Editorial Team",
+    "date": "June 18, 2026",
+    "readTime": "5 min read",
+    "summary": "TMC Foodhub proudly announces reaching 1,000 active enterprise clients worldwide, marking a significant milestone in our growth journey.",
+    "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
+    "takeaways": [
+      "Strong client retention growth.",
+      "Expanding international footprint.",
+      "Increased demand for TMC Foodhub solutions."
+    ],
+    "sections": [
+      {
+        "h2": "Growth Through Trust",
+        "content": "This milestone reflects long-term client partnerships built on results and reliability."
+      },
+      {
+        "h2": "Looking Ahead",
+        "content": "The next phase focuses on scaling innovation and service quality."
+      }
+    ]
+  }
+]
