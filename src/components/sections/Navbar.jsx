@@ -45,9 +45,11 @@ function Navbar() {
         const isEventsPath = location.pathname === '/company-events-announcements';
         const isSupportPath = location.pathname === '/support';
         const isFAQPath = location.pathname === '/faq';
+        const isMenuPath = location.pathname === '/menu';
         const isAnyChildActive =
           (item.id === 'resources-dropdown' && (isNewsPath || isEventsPath)) ||
           (item.id === 'support-dropdown' && (isSupportPath || isFAQPath)) ||
+          (item.id === 'services-dropdown' && (isServicesPath || isMenuPath)) ||
           (isHomePage && item.children.some(c => isActive(c.id)));
 
         return (
@@ -67,11 +69,16 @@ function Navbar() {
                 const isNewsPage = child.id === 'news-blogs' || child.isExternal;
                 const isSupportPage = child.id === 'support';
                 const isFaqPage = child.id === 'faq';
+                const isMenuPage = child.id === 'menu';
+                const isServicesPage = child.id === 'services';
+
                 const isChildActive =
                   (isEventsPage && isEventsPath) ||
                   (isNewsPage && isNewsPath) ||
                   (isSupportPage && isSupportPath) ||
                   (isFaqPage && isFAQPath) ||
+                  (isMenuPage && isMenuPath) ||
+                  (isServicesPage && isServicesPath) ||
                   (isHomePage && isActive(child.id));
 
                 return (
@@ -83,10 +90,12 @@ function Navbar() {
                           isEventsPage ? "/company-events-announcements" :
                             isSupportPage ? "/support" :
                               isFaqPage ? "/faq" :
-                                `/#${child.id}`
+                                isMenuPage ? "/menu" :
+                                  isServicesPage ? "/services" :
+                                    `/#${child.id}`
                       }
                       onClick={(e) => {
-                        if (child.isExternal || isEventsPage || isSupportPage || isFaqPage) {
+                        if (child.isExternal || isEventsPage || isSupportPage || isFaqPage || isMenuPage || isServicesPage) {
                           window.scrollTo(0, 0);
                           if (isMobile) closeMobileMenu();
                         } else {
@@ -104,22 +113,7 @@ function Navbar() {
         );
       }
 
-      if (item.id === 'services') {
-        return (
-          <li key={item.id} className="nav-item">
-            <Link
-              className={`nav-link ${isServicesPath ? 'active' : ''}`}
-              to="/services"
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                if (isMobile) closeMobileMenu();
-              }}
-            >
-              {item.label}
-            </Link>
-          </li>
-        );
-      }
+
 
       const isItemActive = isHomePage ? isActive(item.id) : false;
       return (

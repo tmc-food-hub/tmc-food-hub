@@ -9,7 +9,7 @@ import SupportPage from './pages/SupportPage';
 import AnnouncementDetail from './components/sections/AnnouncementDetail';
 import FAQPage from './pages/FAQPage';
 import ServicesPage from './pages/ServicesPage';
-
+import MenuPage from './pages/MenuPage';
 function App() {
   const { pathname } = useLocation();
 
@@ -40,6 +40,7 @@ function App() {
         <Route path="/event/:title" element={<AnnouncementDetail />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/menu" element={<MenuPage />} />
       </Routes>
     </>
   )
