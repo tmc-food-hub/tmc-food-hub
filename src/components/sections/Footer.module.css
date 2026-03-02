@@ -1,56 +1,61 @@
 .footer {
-  background: #ffffff;
-  color: #1f2933;
-  padding-top: 70px;
-  border: 1px solid #f1f5f9;
+  background-color: var(--bs-body-bg);
+  color: rgba(var(--inverse-color-rgb), 0.9);
+  padding-top: 3.4rem;
+  border-top: 1px solid rgba(var(--inverse-color-rgb), 0.14);
 }
 
 .heading {
-  color: #111724;
-  margin-bottom: 14px;
-  font-size: 1.25rem;
+  color: var(--bs-heading-color);
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .subheading {
-  color: #111724;
-  margin-bottom: 14px;
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--bs-heading-color);
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .description {
-  color: rgba(17, 23, 36, 0.75);
-  font-size: 0.95rem;
-  line-height: 1.7;
-  margin-bottom: 16px;
+  margin-bottom: 1.2rem;
+  color: rgba(var(--inverse-color-rgb), 0.78);
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.socialTitle {
+  margin: 0 0 0.6rem;
+  color: var(--bs-heading-color);
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .socialRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .socialIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #111724;
-  border: 1px solid rgba(17, 23, 36, 0.2);
-  background: rgba(15, 23, 42, 0.04);
   text-decoration: none;
-  transition: all 0.25s ease;
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
+  color: var(--bs-primary);
 }
 
 .socialIcon:hover {
   color: #ffffff;
   border-color: rgba(var(--bs-primary-rgb), 1);
-  background: var(--bs-primary);
-  transform: translateY(-2px);
+  background-color: var(--bs-primary);
 }
 
 .linkList {
@@ -60,13 +65,13 @@
 }
 
 .linkList li {
-  margin-bottom: 10px;
+  margin-bottom: 0.45rem;
 }
 
 .link {
-  color: rgba(17, 23, 36, 0.88);
+  color: rgba(var(--inverse-color-rgb), 0.82);
   text-decoration: none;
-  transition: color 0.25s ease;
+  font-size: 0.77rem;
 }
 
 .link:hover {
@@ -77,37 +82,47 @@
   margin: 0;
   font-style: normal;
   display: grid;
-  gap: 14px;
+  gap: 0.5rem;
 }
 
 .contactInfo p {
   margin: 0;
   display: grid;
-  gap: 4px;
+  gap: 0.12rem;
 }
 
 .contactInfo span {
-  color: rgba(17, 23, 36, 0.65);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  color: rgba(var(--inverse-color-rgb), 0.78);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .contactInfo a {
-  color: #111724;
+  color: rgba(var(--inverse-color-rgb), 0.94);
   text-decoration: none;
+  font-size: 0.76rem;
 }
 
 .contactInfo a:hover {
-  color: rgba(var(--bs-primary-rgb), 1);
+  color: var(--bs-primary);
 }
 
 .bottomBar {
-  margin-top: 26px;
-  border-top: 1px solid #e2e8f0;
-  padding: 16px 0;
-  color: #6b7280;
-  font-size: 0.88rem;
+  margin-top: 0.7rem;
+  border-top: 1px solid rgba(var(--inverse-color-rgb), 0.14);
+  padding: 0.9rem 0 1.1rem;
+  color: rgba(var(--inverse-color-rgb), 0.58);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 991.98px) {
+  .footer {
+    padding-top: 2.5rem;
+  }
+
+  .description {
+    max-width: 360px;
+  }
 }
 
 /* ========== DARK MODE ========== */
