@@ -20,9 +20,14 @@ function SignupPage() {
         address: '',
         contactNumber: '',
         deliveryInstructions: '',
+        restaurantName: '',
+        businessAddress: '',
+        businessContactNumber: '',
+        businessPermit: '',
         termsAccepted: false,
         privacyAccepted: false,
-        marketingAccepted: false
+        marketingAccepted: false,
+        merchantAgreementAccepted: false
     });
 
     const handleCheckboxChange = (e) => {
@@ -56,10 +61,8 @@ function SignupPage() {
         ? "Browse menus, place orders, track deliveries, earn rewards"
         : "List your restaurant, manage your menu, receive and track orders";
 
-    if (step === 2) {
-        customHeroSubtitle = "Create Account as a Customer";
-    } else if (step === 3) {
-        customHeroSubtitle = "Create Account as a Customer"; // Match the mockup
+    if (step === 2 || step === 3) {
+        customHeroSubtitle = role === 'Customer' ? "Create Account as a Customer" : "Create Account as a Restaurant Partner";
     }
 
     return (
@@ -73,21 +76,21 @@ function SignupPage() {
                             Restaurant Partner
                         </>
                     )}
-                    {step === 2 && "Set Your Delivery Information"}
+                    {step === 2 && (role === 'Customer' ? "Set Your Delivery Information" : "Restaurant Information")}
                     {step === 3 && "Almost there!"}
                 </h2>
                 <p className={styles.pageSubtitle} style={{ marginBottom: '2rem' }}>
                     {step === 1 && (
                         <>Already have an account? <Link to="/login" className={styles.switchAccountLink}>Log in</Link></>
                     )}
-                    {step === 2 && "Enter your address and contact information."}
-                    {step === 3 && "Please review and accept our legal agreements to complete your registration and start ordering."}
+                    {step === 2 && (role === 'Customer' ? "Enter your address and contact information." : "Please provide the official details of your establishment for verification.")}
+                    {step === 3 && (role === 'Customer' ? "Please review and accept our legal agreements to complete your registration and start ordering." : "You're almost there! Please review and accept the following agreements to activate your restaurant partnership.")}
                 </p>
 
                 {step > 1 && (
                     <div className={styles.progressContainer}>
                         <div className={styles.progressHeader}>
-                            <span>Step {step} of 3: {step === 2 ? 'Delivery Information' : 'Confirmation'}</span>
+                            <span>Step {step} of 3: {step === 2 ? (role === 'Customer' ? 'Delivery Information' : 'Restaurant Info') : 'Confirmation'}</span>
                             <span>{step === 2 ? '66%' : '100%'} Complete</span>
                         </div>
                         <div className={styles.progressBar}>
@@ -236,7 +239,7 @@ function SignupPage() {
                         </>
                     )}
 
-                    {step === 2 && (
+                    {step === 2 && role === 'Customer' && (
                         <div className={styles.slideInRight}>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>Default Address</label>
@@ -286,7 +289,72 @@ function SignupPage() {
                         </div>
                     )}
 
-                    {step === 3 && (
+                    {step === 2 && role === 'Partner' && (
+                        <div className={styles.slideInRight}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Restaurant Name</label>
+                                <input
+                                    type="text"
+                                    name="restaurantName"
+                                    className={styles.formControl}
+                                    placeholder="e.g. Mama Sita's Kitchen"
+                                    value={formData.restaurantName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Official Business Address</label>
+                                <input
+                                    type="text"
+                                    name="businessAddress"
+                                    className={styles.formControl}
+                                    placeholder="Enter full unit/building number, street, and barangay"
+                                    value={formData.businessAddress}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Business Contact Number</label>
+                                <input
+                                    type="tel"
+                                    name="businessContactNumber"
+                                    className={styles.formControl}
+                                    placeholder="+63 000 000 0000"
+                                    value={formData.businessContactNumber}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Business Permit/BIR Permit</label>
+                                <input
+                                    type="text"
+                                    name="businessPermit"
+                                    className={styles.formControl}
+                                    placeholder="Enter 12-digit BIR TIN or Permit No."
+                                    value={formData.businessPermit}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.actionRow}>
+                                <button type="button" className={styles.btnBack} onClick={handlePrevStep}>
+                                    &larr; Back
+                                </button>
+                                <button type="submit" className={styles.btnNext}>
+                                    Next Step &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && role === 'Customer' && (
                         <div className={styles.slideInRight}>
                             <label className={`${styles.checkboxCard} ${formData.termsAccepted ? styles.selected : ''}`}>
                                 <input
@@ -325,6 +393,62 @@ function SignupPage() {
                                     style={{ borderRadius: '50%' }}
                                 />
                                 <span>Keep me updated with exclusive offers and food news (optional)</span>
+                            </label>
+
+                            <div className={styles.actionRow}>
+                                <button type="button" className={styles.btnBack} onClick={handlePrevStep}>
+                                    &larr; Back
+                                </button>
+                                <button type="submit" className={styles.btnNext}>
+                                    Finish Registration
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && role === 'Partner' && (
+                        <div className={styles.slideInRight}>
+                            <label className={`${styles.checkboxCard} ${formData.termsAccepted ? styles.selected : ''}`}>
+                                <input
+                                    type="checkbox"
+                                    name="termsAccepted"
+                                    checked={formData.termsAccepted}
+                                    onChange={handleCheckboxChange}
+                                    required
+                                />
+                                <div className={styles.checkboxCardContent}>
+                                    <strong>Accept Terms &amp; Conditions</strong>
+                                    <p>I have read and agree to the <Link to="/terms" className={styles.termsText}>Terms of Service</Link> and usage guidelines.</p>
+                                </div>
+                            </label>
+
+                            {/* Using privacyAccepted state but rendering as Privacy Policy to correct the likely mockup copy-paste error */}
+                            <label className={`${styles.checkboxCard} ${formData.privacyAccepted ? styles.selected : ''}`}>
+                                <input
+                                    type="checkbox"
+                                    name="privacyAccepted"
+                                    checked={formData.privacyAccepted}
+                                    onChange={handleCheckboxChange}
+                                    required
+                                />
+                                <div className={styles.checkboxCardContent}>
+                                    <strong>Accept Privacy Policy</strong>
+                                    <p>I agree to the processing of my personal data as described in the <Link to="/privacy" className={styles.termsText}>Privacy Policy</Link>.</p>
+                                </div>
+                            </label>
+
+                            <label className={`${styles.checkboxCard} ${formData.merchantAgreementAccepted ? styles.selected : ''}`}>
+                                <input
+                                    type="checkbox"
+                                    name="merchantAgreementAccepted"
+                                    checked={formData.merchantAgreementAccepted}
+                                    onChange={handleCheckboxChange}
+                                    required
+                                />
+                                <div className={styles.checkboxCardContent}>
+                                    <strong>Agree to Merchant Agreement</strong>
+                                    <p>Commercial terms for restaurant partners</p>
+                                </div>
                             </label>
 
                             <div className={styles.actionRow}>
