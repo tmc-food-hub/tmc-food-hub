@@ -466,3 +466,158 @@
 .slideInRight {
     animation: slideInFromRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
+
+/* Multi-Step Components */
+.progressContainer {
+    margin-bottom: 2rem;
+}
+
+.progressHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.progressHeader span:first-child {
+    color: var(--text-primary);
+}
+
+.progressHeader span:last-child {
+    color: #991B1B;
+}
+
+.progressBar {
+    height: 6px;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background-color: #991B1B;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.checkboxCard {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    background-color: var(--input-bg);
+}
+
+.checkboxCard:hover {
+    border-color: #9CA3AF;
+}
+
+.checkboxCard.selected {
+    border-color: #991B1B;
+    background-color: #FEF2F2;
+}
+
+.darkTheme .checkboxCard.selected {
+    background-color: rgba(153, 27, 27, 0.1);
+}
+
+.checkboxCard input[type="checkbox"] {
+    margin-top: 0.25rem;
+    margin-right: 1rem;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkboxCardContent {
+    flex: 1;
+}
+
+.checkboxCardContent strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.checkboxCardContent p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.checkboxInline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.checkboxInline input[type="checkbox"] {
+    margin-top: 0.15rem;
+}
+
+.actionRow {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btnBack {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btnBack:hover {
+    background-color: var(--toggle-inactive-bg);
+}
+
+.btnNext {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: #991B1B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btnNext:hover {
+    background-color: #7F1D1D;
+}
+
+textarea.formControl {
+    resize: vertical;
+    min-height: 100px;
+}
