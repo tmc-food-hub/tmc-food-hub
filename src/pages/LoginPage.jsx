@@ -8,13 +8,33 @@ function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState({ email: '', password: '' });
 
     const togglePassword = () => setShowPassword(!showPassword);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Login attempt:', { email, password });
-        // Handle actual authentication logic here
+
+        let newErrors = { email: '', password: '' };
+        let hasError = false;
+
+        if (!email || !email.includes('@')) {
+            newErrors.email = 'Please enter a valid email address.';
+            hasError = true;
+        }
+
+        // Mock fail condition
+        if (!password || password !== 'demopassword') {
+            newErrors.password = 'Incorrect password.';
+            hasError = true;
+        }
+
+        setErrors(newErrors);
+
+        if (!hasError) {
+            console.log('Login attempt success:', { email, password });
+            // Handle actual authentication logic here
+        }
     };
 
     return (
@@ -30,13 +50,17 @@ function LoginPage() {
                             <i className={`bi bi-envelope ${styles.inputIcon}`}></i>
                             <input
                                 type="email"
-                                className={`${styles.formControl} ${styles.hasIcon}`}
+                                className={`${styles.formControl} ${styles.hasIcon} ${errors.email ? styles.isInvalid : ''}`}
                                 placeholder="e.g. you@example.com"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    if (errors.email) setErrors({ ...errors, email: '' });
+                                }}
+                                required={false} /* Disabled native validation to show custom error */
                             />
                         </div>
+                        {errors.email && <span className={styles.errorText}>{errors.email}</span>}
                     </div>
 
                     <div className={styles.formGroup}>
@@ -45,11 +69,14 @@ function LoginPage() {
                             <i className={`bi bi-lock ${styles.inputIcon}`}></i>
                             <input
                                 type={showPassword ? "text" : "password"}
-                                className={`${styles.formControl} ${styles.hasIcon} ${styles.hasTrailing}`}
+                                className={`${styles.formControl} ${styles.hasIcon} ${styles.hasTrailing} ${errors.password ? styles.isInvalid : ''}`}
                                 placeholder="Enter your password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (errors.password) setErrors({ ...errors, password: '' });
+                                }}
+                                required={false}
                             />
                             <button
                                 type="button"
@@ -60,6 +87,7 @@ function LoginPage() {
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
+                        {errors.password && <span className={styles.errorText}>{errors.password}</span>}
                     </div>
 
                     <div className={styles.checkboxRow}>

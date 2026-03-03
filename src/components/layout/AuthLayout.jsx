@@ -4,7 +4,7 @@ import { ThemeContext } from '../../components/ui/ThemeContext';
 import styles from '../../pages/AuthPages.module.css';
 import heroImage from '../../assets/home/main_hero.png';
 
-const AuthLayout = ({ children }) => {
+const AuthLayout = ({ children, heroSubtitle }) => {
     const { isDarkMode } = useContext(ThemeContext);
     const location = useLocation();
 
@@ -27,7 +27,7 @@ const AuthLayout = ({ children }) => {
                             Hungry? You're in<br />the Right Place.
                         </h1>
                         <p className={styles.heroSubtitle} style={{ color: '#E5E7EB' }}>
-                            Browse menus, place orders, track deliveries, earn rewards
+                            {heroSubtitle || "Browse menus, place orders, track deliveries, earn rewards"}
                         </p>
 
                         <div className={styles.heroFeatures}>
@@ -66,9 +66,9 @@ const AuthLayout = ({ children }) => {
                         </div>
                     </div>
 
-                    {location.pathname === '/login' && (
+                    {(location.pathname === '/login' || location.pathname === '/forgot-password') && (
                         <footer className={styles.authFooter}>
-                            &copy; {new Date().getFullYear()} TMC Foodhub. All Rights Reserved.
+                            &copy; 2026 TMC Foodhub. All Rights Reserved.
                         </footer>
                     )}
                 </div>
