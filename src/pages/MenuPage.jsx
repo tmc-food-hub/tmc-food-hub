@@ -82,7 +82,7 @@ function MenuPage() {
                     <div className="container-lg">
 
                         {/* Header */}
-                        <div className={styles.pageHeader}>
+                        <div className={styles.pageHeader} data-aos="fade-up">
                             <div className={styles.breadcrumbs}>
                                 <Link to="/">Home</Link> <span className="mx-2">/</span> <span className={styles.current}>Restaurants</span>
                             </div>
@@ -91,7 +91,7 @@ function MenuPage() {
                         </div>
 
                         {/* Search and Sort (Full Width) */}
-                        <div className={styles.searchBarContainer}>
+                        <div className={styles.searchBarContainer} data-aos="fade-up" data-aos-delay="100">
                             <div className={styles.searchInputWrapper}>
                                 <Search className={styles.searchIcon} size={18} />
                                 <input
@@ -119,7 +119,7 @@ function MenuPage() {
                         <div className="row">
 
                             {/* Sidebar */}
-                            <div className="col-lg-3 mb-4 mb-lg-0">
+                            <div className="col-lg-3 mb-4 mb-lg-0" data-aos="fade-right" data-aos-delay="200">
                                 <div className={styles.sidebar}>
                                     <div className={styles.filterHeader}>
                                         <Filter size={20} color="#888" />
@@ -170,7 +170,7 @@ function MenuPage() {
                             </div>
 
                             {/* Main Content Grid */}
-                            <div className="col-lg-9">
+                            <div className="col-lg-9" data-aos="fade-up" data-aos-delay="300">
                                 {/* Grid */}
                                 <div className="row g-4">
                                     {menuItems.map(item => (

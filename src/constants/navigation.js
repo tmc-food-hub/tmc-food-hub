@@ -1,29 +1,24 @@
 export const navigationItems = [
   { id: 'home', label: 'Home' },
-  { id: 'about', label: 'About' },
+  { id: 'about', label: 'About Us' },
+  { id: 'how-it-works', label: 'How It Works' },
   {
     id: 'services-dropdown',
     label: 'Services',
     children: [
       { id: 'services', label: 'Services' },
-      { id: 'menu', label: 'Menu' }
-    ]
+      { id: 'menu', label: 'Menu' },
+    ],
   },
+  { id: 'testimonials', label: 'Testimonials' },
   {
-    id: 'resources-dropdown',
-    label: 'News',
+    id: 'news-blogs-dropdown',
+    label: 'News & Blogs',
     children: [
       { id: 'company-events-announcements', label: 'Events & Announcements' },
       { id: 'news-blogs', label: 'News & Blogs', isExternal: true },
     ],
   },
-  { id: 'testimonials', label: 'Testimonials' },
-  {
-    id: 'support-dropdown',
-    label: 'Support',
-    children: [
-      { id: 'support', label: 'Support' },
-      { id: 'faq', label: 'FAQ' },
-    ],
-  },
+  { id: 'faq', label: 'FAQS' },
+  { id: 'contact', label: 'Contact' },
 ];

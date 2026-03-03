@@ -28,7 +28,7 @@ function FAQSection() {
   return (
     <section className="section faq__v2" id="faq" style={{ backgroundColor: '#FFF5F0' }}>
       <div className="container">
-        <div className="text-center mb-5">
+        <div className="text-center mb-5" data-aos="fade-up">
           <span
             className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
             style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
@@ -44,7 +44,7 @@ function FAQSection() {
         </div>
         <div className="row">
           <div className="col-md-8 mx-auto">
-            <div className="faq-content">
+            <div className="faq-content" data-aos="fade-up" data-aos-delay="200">
               <div className="accordion custom-accordion" id="accordionPanelsStayOpenExample">
                 {faqs.map((faq) => (
                   <FAQItem

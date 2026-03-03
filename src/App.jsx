@@ -14,13 +14,15 @@ function App() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     if (window.AOS) {
       window.AOS.init({
         duration: 800,
         easing: 'slide',
         once: true
       });
-      window.AOS.refresh();
+      // Small timeout guarantees scroll completes before AOS calculating positions
+      setTimeout(() => window.AOS.refresh(), 50);
     }
   }, [pathname]);
 

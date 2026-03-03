@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { ThemeContext } from '../ui/ThemeContext';
-import { Sun, Moon, Menu } from 'lucide-react';
+import { Sun, Moon, Menu, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { navigationItems } from '../../constants/navigation';
 import { useNavbarLogic } from '../../hooks/useNavbarLogic';
@@ -39,44 +39,40 @@ function Navbar() {
     navigationItems.map((item) => {
       const isHomePage = location.pathname === '/';
       const isServicesPath = location.pathname === '/services';
+      const isFAQPath = location.pathname === '/faq';
+      const isSupportPath = location.pathname === '/support';
 
       if (item.children) {
         const isNewsPath = location.pathname === '/news-and-blogs';
         const isEventsPath = location.pathname === '/company-events-announcements';
-        const isSupportPath = location.pathname === '/support';
-        const isFAQPath = location.pathname === '/faq';
         const isMenuPath = location.pathname === '/menu';
         const isAnyChildActive =
-          (item.id === 'resources-dropdown' && (isNewsPath || isEventsPath)) ||
-          (item.id === 'support-dropdown' && (isSupportPath || isFAQPath)) ||
+          (item.id === 'news-blogs-dropdown' && (isNewsPath || isEventsPath)) ||
           (item.id === 'services-dropdown' && (isServicesPath || isMenuPath)) ||
           (isHomePage && item.children.some(c => isActive(c.id)));
 
         return (
-          <li key={item.id} className="nav-item dropdown">
+          <li key={item.id} className="nav-item dropdown px-lg-2">
             <a
-              className={`nav-link dropdown-toggle ${isAnyChildActive ? 'active' : ''}`}
+              className={`nav-link custom-nav-link dropdown-toggle ${isAnyChildActive ? 'active' : ''}`}
               href="#"
               role="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
+              style={{ fontSize: '15px', fontWeight: 500 }}
             >
               {item.label}
             </a>
-            <ul className={`dropdown-menu shadow-sm ${isDarkMode ? 'dropdown-menu-dark' : ''}`}>
+            <ul className={`dropdown-menu shadow-sm ${isDarkMode ? 'dropdown-menu-dark' : ''}`} style={{ border: 'none', borderRadius: '8px' }}>
               {item.children.map((child) => {
                 const isEventsPage = child.id === 'company-events-announcements';
                 const isNewsPage = child.id === 'news-blogs' || child.isExternal;
-                const isSupportPage = child.id === 'support';
-                const isFaqPage = child.id === 'faq';
                 const isMenuPage = child.id === 'menu';
                 const isServicesPage = child.id === 'services';
 
                 const isChildActive =
                   (isEventsPage && isEventsPath) ||
                   (isNewsPage && isNewsPath) ||
-                  (isSupportPage && isSupportPath) ||
-                  (isFaqPage && isFAQPath) ||
                   (isMenuPage && isMenuPath) ||
                   (isServicesPage && isServicesPath) ||
                   (isHomePage && isActive(child.id));
@@ -88,20 +84,18 @@ function Navbar() {
                       to={
                         child.isExternal ? "/news-and-blogs" :
                           isEventsPage ? "/company-events-announcements" :
-                            isSupportPage ? "/support" :
-                              isFaqPage ? "/faq" :
-                                isMenuPage ? "/menu" :
-                                  isServicesPage ? "/services" :
-                                    `/#${child.id}`
+                            isMenuPage ? "/menu" :
+                              isServicesPage ? "/services" :
+                                `/#${child.id}`
                       }
                       onClick={(e) => {
-                        if (child.isExternal || isEventsPage || isSupportPage || isFaqPage || isMenuPage || isServicesPage) {
-                          window.scrollTo(0, 0);
+                        if (child.isExternal || isEventsPage || child.id === 'services' || child.id === 'menu') {
                           if (isMobile) closeMobileMenu();
                         } else {
                           handleInternalLink(child.id, e, isMobile);
                         }
                       }}
+                      style={{ fontSize: '14.5px', padding: '8px 16px' }}
                     >
                       {child.label}
                     </Link>
@@ -113,15 +107,33 @@ function Navbar() {
         );
       }
 
+      const isItemActive = item.id === 'services'
+        ? isServicesPath
+        : item.id === 'faq'
+          ? isFAQPath
+          : item.id === 'contact'
+            ? isSupportPath
+            : (isHomePage ? isActive(item.id) : false);
 
-
-      const isItemActive = isHomePage ? isActive(item.id) : false;
       return (
-        <li key={item.id} className="nav-item">
+        <li key={item.id} className="nav-item px-lg-2">
           <Link
-            className={`nav-link scroll-link ${isItemActive ? 'active' : ''}`}
-            to={item.id === 'home' ? '/' : `/#${item.id}`}
-            onClick={(e) => handleInternalLink(item.id, e, isMobile)}
+            className={`nav-link custom-nav-link scroll-link ${isItemActive ? 'active' : ''}`}
+            to={
+              item.id === 'home' ? '/' :
+                item.id === 'services' ? '/services' :
+                  item.id === 'faq' ? '/faq' :
+                    item.id === 'contact' ? '/support' :
+                      `/#${item.id}`
+            }
+            onClick={(e) => {
+              if (item.id === 'faq' || item.id === 'contact') {
+                if (isMobile) closeMobileMenu();
+              } else {
+                handleInternalLink(item.id, e, isMobile);
+              }
+            }}
+            style={{ fontSize: '15px', fontWeight: 500 }}
           >
             {item.label}
           </Link>
@@ -130,49 +142,104 @@ function Navbar() {
     });
 
   return (
-    <header className={`fbs__net-navbar navbar navbar-expand-lg fixed-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode ? 'active' : ''}`} style={{ padding: '0.1rem 0' }}>
-      <div className="container d-flex align-items-center justify-content-between">
-        <Link className="navbar-brand" to="/" onClick={() => window.scrollTo(0, 0)}>
-          <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '130px', height: '45px', objectFit: 'contain' }} />
-        </Link>
+    <>
+      <style>
+        {`
+          .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link {
+            color: ${isDarkMode ? '#E5E7EB' : '#374151'} !important;
+          }
+          .fbs__net-navbar.active .navbar-nav > li > .nav-link.custom-nav-link {
+            color: ${isDarkMode ? '#E5E7EB' : '#374151'} !important;
+          }
+          .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link:hover,
+          .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link.active {
+            color: #B91C1C !important;
+          }
+          .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link::before {
+            background-color: #B91C1C !important;
+            height: 2px !important;
+          }
+          .custom-login-btn {
+            background-color: transparent !important;
+            color: ${isDarkMode ? '#FFF' : '#111827'} !important;
+            transition: all 0.2s ease-in-out !important;
+          }
+          .custom-login-btn:hover {
+            background-color: ${isDarkMode ? '#374151' : '#F3F4F6'} !important;
+            color: ${isDarkMode ? '#FFF' : '#111827'} !important;
+          }
+          .custom-nav-btn {
+            transition: all 0.2s ease-in-out !important;
+          }
+          .custom-nav-btn:hover {
+            transform: none !important;
+            box-shadow: none !important;
+          }
+        `}
+      </style>
+      <header className={`fbs__net-navbar navbar navbar-expand-lg fixed-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode ? 'active shadow-sm' : ''}`} style={{ padding: '0.75rem 0', backgroundColor: isDarkMode ? '#111827' : '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
+        <div className="container-fluid px-4 px-xl-5 d-flex align-items-center justify-content-between" style={{ maxWidth: '1600px' }}>
+          <Link className="navbar-brand" to="/" onClick={() => window.scrollTo(0, 0)}>
+            <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ height: '45px', width: 'auto', objectFit: 'contain' }} />
+          </Link>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto align-items-center">
-            {renderNavItems()}
-            <li className="nav-item ms-lg-3">
-              <button className="btn-mode d-flex align-items-center justify-content-center" onClick={toggleTheme} style={{ width: '40px', height: '40px', padding: '0', borderRadius: '50%' }}>
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <button className="fbs__net-navbar-toggler d-flex justify-content-center align-items-center ms-auto d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#fbs__net-navbars" style={{ border: 'none', background: 'transparent', color: 'inherit' }}>
-          <Menu size={28} />
-        </button>
-
-        <div className="offcanvas offcanvas-start w-75 d-lg-none" id="fbs__net-navbars" tabIndex="-1">
-          <div className="offcanvas-header border-bottom">
-            <Link to="/" onClick={() => { window.scrollTo(0, 0); closeMobileMenu(); }}>
-              <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ width: '130px', height: '45px', objectFit: 'contain' }} />
-            </Link>
-            <button className={`btn-close ${isDarkMode ? 'btn-close-white' : ''}`} data-bs-dismiss="offcanvas" />
+          {/* Desktop purely flex-center */}
+          <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul className="navbar-nav align-items-center">
+              {renderNavItems()}
+            </ul>
           </div>
-          <div className="offcanvas-body">
-            <ul className="navbar-nav">{renderNavItems(true)}</ul>
-            <div className="mt-4 px-3">
-              <button className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
-                onClick={() => {
-                  toggleTheme();
-                  closeMobileMenu();
-                }}>
-                {isDarkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
-              </button>
+
+          {/* Desktop right buttons */}
+          <div className="d-none d-lg-flex align-items-center gap-2 gap-xl-3">
+            <Link to="/login" className="btn custom-nav-btn custom-login-btn d-flex align-items-center justify-content-center" style={{ border: '1px solid #D1D5DB', padding: '0 1.25rem', height: '42px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }}>
+              Login
+            </Link>
+            <Link to="/signup" className="btn custom-nav-btn d-flex align-items-center justify-content-center" style={{ backgroundColor: '#991B1B', color: 'white', padding: '0 1.25rem', height: '42px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }}>
+              Sign up
+            </Link>
+            <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={toggleTheme} style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button className="custom-nav-btn d-flex align-items-center justify-content-center" style={{ backgroundColor: '#F59E0B', color: 'white', position: 'relative', border: '1px solid transparent', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
+              <ShoppingCart size={20} />
+              <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: '#111827', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</span>
+            </button>
+          </div>
+
+          {/* Mobile toggle */}
+          <button className="fbs__net-navbar-toggler d-flex justify-content-center align-items-center ms-auto d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#fbs__net-navbars" style={{ border: 'none', background: 'transparent', color: 'inherit' }}>
+            <Menu size={28} />
+          </button>
+
+          <div className="offcanvas offcanvas-start w-75 d-lg-none shadow" id="fbs__net-navbars" tabIndex="-1">
+            <div className="offcanvas-header border-bottom">
+              <Link to="/" onClick={() => { window.scrollTo(0, 0); closeMobileMenu(); }}>
+                <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+              </Link>
+              <button className={`btn-close ${isDarkMode ? 'btn-close-white' : ''}`} data-bs-dismiss="offcanvas" />
+            </div>
+            <div className="offcanvas-body d-flex flex-column pb-4">
+              <ul className="navbar-nav mb-auto">{renderNavItems(true)}</ul>
+              <div className="mt-4 px-2 d-flex flex-column gap-3">
+                <Link to="/login" className="btn custom-nav-btn custom-login-btn w-100 d-flex align-items-center justify-content-center" style={{ border: '1px solid #D1D5DB', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={closeMobileMenu}>
+                  Login
+                </Link>
+                <Link to="/signup" className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: '#991B1B', color: 'white', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }} onClick={closeMobileMenu}>
+                  Sign up
+                </Link>
+                <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
+                  {isDarkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
+                </button>
+                <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#F59E0B', color: 'white', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }} onClick={() => closeMobileMenu()}>
+                  <ShoppingCart size={20} /> Cart (2)
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 

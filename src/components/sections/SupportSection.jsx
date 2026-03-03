@@ -36,7 +36,7 @@ function SupportSection() {
   return (
     <section className="support section support-center" id="support">
       <div className="container">
-        <div className="support-heading text-center">
+        <div className="support-heading text-center" data-aos="fade-up">
           <span className="support-tag">SUPPORT CENTER</span>
           <h1>We&apos;re Here to Help</h1>
           <p>
@@ -46,7 +46,7 @@ function SupportSection() {
         </div>
 
         <div className="row g-4 support-main-row">
-          <div className="col-lg-7">
+          <div className="col-lg-7" data-aos="fade-right" data-aos-delay="100">
             <div className="support-card contact-card">
               <h3 className="support-card-title">Contact Our Team</h3>
 
@@ -158,7 +158,7 @@ function SupportSection() {
             </div>
           </div>
 
-          <div className="col-lg-5">
+          <div className="col-lg-5" data-aos="fade-left" data-aos-delay="200">
             <div className="support-sidebar">
               <h3 className="support-links-title">Quick Links</h3>
               <div className="support-quick-links">
@@ -191,7 +191,7 @@ function SupportSection() {
           </div>
         </div>
 
-        <div className="row g-4 office-row">
+        <div className="row g-4 office-row" data-aos="fade-up" data-aos-delay="300">
           <div className="col-lg-6">
             <div className="support-card office-card">
               <h3 className="support-card-title">Our Office</h3>
