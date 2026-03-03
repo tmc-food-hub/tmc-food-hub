@@ -1,0 +1,436 @@
+/* Theme Variables */
+.lightTheme {
+    --bg-color: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --border-color: #E5E7EB;
+    --input-bg: #FFFFFF;
+    --input-border: #D1D5DB;
+    --input-text: #111827;
+    --btn-social-bg: #FFFFFF;
+    --btn-social-border: #E5E7EB;
+    --btn-social-text: #374151;
+    --toggle-inactive-bg: #F3F4F6;
+    --toggle-inactive-text: #6B7280;
+    --footer-text: #9CA3AF;
+}
+
+.darkTheme {
+    --bg-color: #000000;
+    --text-primary: #F3F4F6;
+    --text-secondary: #9CA3AF;
+    --border-color: #1F2937;
+    --input-bg: #FFFFFF;
+    --input-border: #E5E7EB;
+    --input-text: #111827;
+    --btn-social-bg: #111827;
+    --btn-social-border: #374151;
+    --btn-social-text: #E5E7EB;
+    --toggle-inactive-bg: #1F2937;
+    --toggle-inactive-text: #9CA3AF;
+    --footer-text: #6B7280;
+}
+
+/* Left Hero Image Side */
+.imageBackgroundWrapper {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+.coverImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.gradientOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.85) 100%);
+    z-index: 1;
+}
+
+.heroContent {
+    position: relative;
+    z-index: 2;
+    padding: 10% 8% 5% 10%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #FFFFFF !important;
+}
+
+.heroTitle {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
+    font-family: inherit;
+    color: #FFFFFF !important;
+}
+
+.heroSubtitle {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    color: #E5E7EB;
+    max-width: 90%;
+    margin-bottom: 3rem;
+}
+
+.heroFeatures {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.featureIconBox {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    color: #F59E0B;
+    /* Golden yellow */
+    font-size: 1.25rem;
+}
+
+.featureText {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #F9FAFB;
+}
+
+.heroLogoWrapper {
+    margin-top: auto;
+    /* Pushes to bottom */
+    padding-bottom: 2rem;
+}
+
+.heroLogo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Right Form Side */
+.formSide {
+    background-color: var(--bg-color);
+    transition: background-color 0.3s ease;
+}
+
+.formContentWrapper {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Form Typography */
+.pageTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Form Elements */
+.formGroup {
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.formLabel {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.inputIconWrapper {
+    position: relative;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+}
+
+.inputTrailingIcon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.formControl {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--input-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formControl.hasIcon {
+    padding-left: 2.75rem;
+}
+
+.formControl.hasTrailing {
+    padding-right: 2.75rem;
+}
+
+.formControl:focus {
+    outline: none;
+    border-color: #B91C1C;
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+}
+
+.formControl::placeholder {
+    color: #9CA3AF;
+}
+
+/* Checkbox and Links */
+.checkboxRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.customCheckbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.customCheckbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--input-border);
+    cursor: pointer;
+}
+
+.forgotLink {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #B91C1C;
+    text-decoration: none;
+}
+
+.forgotLink:hover {
+    color: #991B1B;
+    text-decoration: underline;
+}
+
+/* Buttons */
+.submitBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #991B1B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 1.5rem;
+}
+
+.submitBtn:hover {
+    background-color: #7F1D1D;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dividerText {
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Social Buttons */
+.socialGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.socialBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: var(--btn-social-bg);
+    border: 1px solid var(--btn-social-border);
+    border-radius: 8px;
+    color: var(--btn-social-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.socialBtn:hover {
+    background-color: var(--toggle-inactive-bg);
+}
+
+/* Switch Account Link */
+.switchAccount {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.switchAccountLink {
+    color: #B91C1C;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
+}
+
+.switchAccountLink:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.authFooter {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--footer-text);
+    width: 100%;
+}
+
+/* Signup Specific Toggle */
+.roleToggleContainer {
+    display: flex;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 2px;
+    margin-bottom: 1rem;
+}
+
+.roleToggleBtn {
+    flex: 1;
+    padding: 0.875rem;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.roleToggleBtn.active {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.darkTheme .roleToggleBtn.active {
+    background-color: #374151;
+}
+
+.termsText {
+    color: #B91C1C;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.termsText:hover {
+    text-decoration: underline;
+}
+
+/* Animations */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slideInLeft {
+    animation: slideInFromLeft 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.slideInRight {
+    animation: slideInFromRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

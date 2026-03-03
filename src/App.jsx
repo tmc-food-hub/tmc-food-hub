@@ -10,6 +10,8 @@ import AnnouncementDetail from './components/sections/AnnouncementDetail';
 import FAQPage from './pages/FAQPage';
 import ServicesPage from './pages/ServicesPage';
 import MenuPage from './pages/MenuPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 function App() {
   const { pathname } = useLocation();
 
@@ -43,6 +45,8 @@ function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/menu" element={<MenuPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
       </Routes>
     </>
   )
