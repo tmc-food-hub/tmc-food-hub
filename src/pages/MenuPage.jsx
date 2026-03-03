@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Star, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CartContext } from '../components/ui/CartContext';
 import Navbar from '../components/sections/Navbar';
 import Footer from '../components/sections/Footer';
 import BackToTop from '../components/ui/BackToTop';
@@ -65,6 +66,7 @@ const menuItems = [
 ];
 
 function MenuPage() {
+    const { addToCart } = useContext(CartContext);
     const [activeCategory, setActiveCategory] = useState('All');
     const [activeDietary, setActiveDietary] = useState('All');
 
@@ -191,7 +193,7 @@ function MenuPage() {
                                                     </div>
                                                     <div className={styles.cardFooter}>
                                                         <span className={styles.price}>${item.price.toFixed(2)}</span>
-                                                        <button className={styles.addBtn} aria-label="Add to cart">
+                                                        <button className={styles.addBtn} aria-label="Add to cart" onClick={() => addToCart(item)}>
                                                             <ShoppingCart size={16} />
                                                         </button>
                                                     </div>

@@ -1,0 +1,373 @@
+/* ================================================
+   CART PAGE STYLES
+   ================================================ */
+
+.cartPage {
+    padding: 120px 0 80px 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ---------- Page Header ---------- */
+.pageHeader {
+    margin-bottom: 2rem;
+}
+
+.breadcrumbs {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+    color: #888;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.current {
+    color: #8B1F1C;
+    font-weight: 500;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* ---------- Empty State ---------- */
+.emptyCart {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.browseBtn {
+    display: inline-block;
+    margin-top: 1.25rem;
+    background-color: #8B1F1C;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.browseBtn:hover {
+    background-color: #6a1614;
+    color: white;
+}
+
+/* ---------- Cart Items Card ---------- */
+.cartItemsCard {
+    background: white;
+    border: 1px solid #ebebeb;
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.cartItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    gap: 1rem;
+}
+
+.cartItemBorder {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.itemLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.itemImage {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.itemName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 0.25rem 0;
+}
+
+.itemPrice {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #8B1F1C;
+}
+
+.itemRight {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Quantity Controls */
+.qtyControl {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.qtyBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.qtyBtn:hover {
+    background-color: #f5f5f5;
+}
+
+.qtyValue {
+    width: 32px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    line-height: 32px;
+}
+
+.deleteBtn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.deleteBtn:hover {
+    background-color: #FDF2F2;
+    color: #8B1F1C;
+    border-color: #f0d0d0;
+}
+
+/* ---------- Order Summary Card ---------- */
+.summaryCard {
+    background: white;
+    border: 1px solid #ebebeb;
+    border-radius: 16px;
+    padding: 1.75rem;
+}
+
+.summaryTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 1.25rem;
+    font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+/* Summary item thumbnails */
+.summaryItems {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summaryItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.summaryItem:last-child {
+    margin-bottom: 0;
+}
+
+.summaryItemImg {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.summaryItemName {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.summaryItemMeta {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Breakdown rows */
+.summaryBreakdown {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.discountValue {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+/* Total */
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.totalLabel {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.totalValue {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #8B1F1C;
+}
+
+/* Checkout Button */
+.checkoutBtn {
+    width: 100%;
+    background-color: #8B1F1C;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 0.75rem;
+}
+
+.checkoutBtn:hover {
+    background-color: #6a1614;
+}
+
+.termsText {
+    font-size: 0.75rem;
+    color: #999;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Promo Code Section */
+.promoSection {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1.25rem;
+}
+
+.promoInputWrapper {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.promoInput {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.promoInput:focus {
+    border-color: #8B1F1C;
+}
+
+.promoInput::placeholder {
+    color: #bbb;
+}
+
+.promoBtn {
+    background-color: #8B1F1C;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.promoBtn:hover {
+    background-color: #6a1614;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 575.98px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .cartItem {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .itemRight {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+
+    .itemImage {
+        width: 56px;
+        height: 56px;
+    }
+}

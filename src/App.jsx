@@ -10,9 +10,14 @@ import AnnouncementDetail from './components/sections/AnnouncementDetail';
 import FAQPage from './pages/FAQPage';
 import ServicesPage from './pages/ServicesPage';
 import MenuPage from './pages/MenuPage';
+<<<<<<< feat/added-cart-checkout-page
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+=======
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+>>>>>>> main
 function App() {
   const { pathname } = useLocation();
 
@@ -46,9 +51,14 @@ function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/menu" element={<MenuPage />} />
+<<<<<<< feat/added-cart-checkout-page
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+=======
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+>>>>>>> main
       </Routes>
     </>
   )
