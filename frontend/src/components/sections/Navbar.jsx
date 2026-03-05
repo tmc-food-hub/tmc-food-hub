@@ -5,6 +5,7 @@ import { Sun, Moon, Menu, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { navigationItems } from '../../constants/navigation';
 import { useNavbarLogic } from '../../hooks/useNavbarLogic';
+import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 
 function Navbar() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
@@ -182,7 +183,7 @@ function Navbar() {
       <header className={`fbs__net-navbar navbar navbar-expand-lg fixed-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode ? 'active shadow-sm' : ''}`} style={{ padding: '0.75rem 0', backgroundColor: isDarkMode ? '#111827' : '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
         <div className="container-fluid px-4 px-xl-5 d-flex align-items-center justify-content-between" style={{ maxWidth: '1600px' }}>
           <Link className="navbar-brand" to="/" onClick={() => window.scrollTo(0, 0)}>
-            <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ height: '45px', width: 'auto', objectFit: 'contain' }} />
+            <img src={tmcLogo} alt="TMC Food Hub banner" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
           </Link>
 
           {/* Desktop purely flex-center */}
@@ -217,7 +218,7 @@ function Navbar() {
           <div className="offcanvas offcanvas-start w-75 d-lg-none shadow" id="fbs__net-navbars" tabIndex="-1">
             <div className="offcanvas-header border-bottom">
               <Link to="/" onClick={() => { window.scrollTo(0, 0); closeMobileMenu(); }}>
-                <img src="/assets/images/TMClogo.png" alt="TMC Food Hub banner" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+                <img src={tmcLogo} alt="TMC Food Hub banner" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
               </Link>
               <button className={`btn-close ${isDarkMode ? 'btn-close-white' : ''}`} data-bs-dismiss="offcanvas" />
             </div>

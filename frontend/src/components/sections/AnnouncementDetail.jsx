@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Check, MoreHorizontal } from "lucide-react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 
 import { useContentBySlug } from "../../hooks/useContentBySlug";
 import Navbar from "../sections/Navbar";
@@ -185,7 +186,7 @@ const AnnouncementDetail = () => {
           <div className="cea-publisher-block d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
               <div className="cea-avatar-circle me-3">
-                <img src="/assets/images/TMClogo.png" alt="TMC Foodhub" className="cea-publisher-logo" />
+                <img src={tmcLogo} alt="TMC Foodhub" className="cea-publisher-logo" />
               </div>
               <div className="cea-author-info">
                 <p className="cea-author-name">TMC Foodhub Editorial Team</p>

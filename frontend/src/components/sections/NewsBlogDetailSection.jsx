@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useContext, useRef } from 'react';
+import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Download,
@@ -668,7 +669,7 @@ const NewsBlogDetailSection = () => {
         <div className="author-block">
           <div className="author-info">
             <div className="author-avatar">
-              <img src="/assets/images/TMClogo.png" alt="TMC Foodhub Logo" style={{ width: '40px', height: '40px' }} />
+              <img src={tmcLogo} alt="TMC Foodhub Logo" style={{ width: '52px', height: '52px' }} />
             </div>
             <div className="author-details">
               <h3 className={`author-name ${isDarkMode ? 'dark-mode' : ''}`}>{post.author}</h3>

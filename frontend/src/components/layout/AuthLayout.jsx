@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeContext } from '../../components/ui/ThemeContext';
 import styles from '../../pages/AuthPages.module.css';
+import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 
 const AuthLayout = ({ children, heroSubtitle }) => {
     const { isDarkMode } = useContext(ThemeContext);
@@ -51,7 +52,7 @@ const AuthLayout = ({ children, heroSubtitle }) => {
                         </div>
 
                         <div className={styles.heroLogoWrapper}>
-                            <img src="/assets/images/TMClogo.png" alt="TMC Logo" className={styles.heroLogo} />
+                            <img src={tmcLogo} alt="TMC Logo" className={styles.heroLogo} />
                         </div>
                     </div>
                 </div>

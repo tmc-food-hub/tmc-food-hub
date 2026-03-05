@@ -21,7 +21,7 @@ const Preloader = () => {
     <div id="preloader" className={isLoaded ? 'fade-out' : ''}>
       <div className="loader-content">
         <img
-          src="/assets/images/TMClogo.png"
+          src="/assets/images/tmc-foodhub-logo.svg"
           alt="TMC Logo"
           className="loader-logo"
         />
