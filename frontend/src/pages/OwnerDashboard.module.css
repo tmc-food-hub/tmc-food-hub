@@ -2084,6 +2084,132 @@
     color: #111827;
 }
 
+/* ─── Inventory Redesign ─── */
+.inventoryContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.inventoryMetricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+.inventoryMetricCard {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.inventoryMetricHeader {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .75rem;
+}
+
+.inventoryIconBoxGray {
+    width: 32px;
+    height: 32px;
+    background: #F3F4F6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inventoryIconBoxRed {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inventoryIconBoxGreen {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inventoryMetricLabel {
+    font-size: .85rem;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.inventoryMetricValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.inventoryMetricSub {
+    font-size: .75rem;
+    color: #9CA3AF;
+}
+
+.inventoryControlsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .5rem;
+}
+
+.inventoryFilters {
+    display: flex;
+    gap: .75rem;
+}
+
+.inventoryFilterBtn {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    padding: .4rem .85rem;
+    border-radius: 8px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #4B5563;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    cursor: pointer;
+    transition: .15s;
+}
+
+.inventoryFilterBtn:hover {
+    background: #F9FAFB;
+    color: #111827;
+}
+
+.inventoryExportBtn {
+    background: #991B1B;
+    color: white;
+    border: none;
+    padding: .4rem 1rem;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    transition: .15s;
+}
+
+.inventoryExportBtn:hover {
+    background: #7F1D1D;
+}
+
 /* ─── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
     .statsGrid {

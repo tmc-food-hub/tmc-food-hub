@@ -464,6 +464,98 @@ function OrdersSection({ store }) {
     );
 }
 
+/* ─── Inventory ──────────────────────────────────────────────────────────── */
+function InventorySection({ store, onUpdate }) {
+    const items = store.menuItems || [];
+
+    // Top Metric stats
+    const totalItems = items.length;
+    const lowStockItems = items.filter(i => i.stockLevel > 0 && i.stockLevel <= (i.minThreshold || 10)).length;
+    const outOfStockItems = items.filter(i => i.stockLevel === 0).length;
+    const availableItems = items.filter(i => i.stockLevel > (i.minThreshold || 10)).length;
+    const coverage = totalItems > 0 ? Math.round(((totalItems - outOfStockItems) / totalItems) * 100) : 0;
+
+    return (
+        <div className={styles.inventoryContainer}>
+            {/* Top Metrics Cards */}
+            <div className={styles.inventoryMetricsGrid}>
+                {/* Total Items */}
+                <div className={styles.inventoryMetricCard}>
+                    <div className={styles.inventoryMetricHeader}>
+                        <div className={styles.inventoryIconBoxGray}>
+                            <FileText size={18} color="#4B5563" />
+                        </div>
+                        <span className={styles.inventoryMetricLabel}>Total Items</span>
+                    </div>
+                    <div className={styles.inventoryMetricValue}>{totalItems}</div>
+                    <div className={styles.inventoryMetricSub}>+4 This week</div>
+                </div>
+
+                {/* Low Stock Alert */}
+                <div className={styles.inventoryMetricCard}>
+                    <div className={styles.inventoryMetricHeader}>
+                        <div className={`${styles.inventoryIconBoxRed} ${styles.bgLightRed}`}>
+                            <AlertCircle size={18} color="#DC2626" />
+                        </div>
+                        <span className={styles.inventoryMetricLabel}>Low Stock Alert</span>
+                    </div>
+                    <div className={styles.inventoryMetricValue}>{lowStockItems}</div>
+                    <div className={styles.inventoryMetricSub}>Needs replenishment</div>
+                </div>
+
+                {/* Out of Stock */}
+                <div className={styles.inventoryMetricCard}>
+                    <div className={styles.inventoryMetricHeader}>
+                        <div className={styles.inventoryIconBoxGray}>
+                            <LogOut size={18} color="#4B5563" style={{ transform: 'rotate(180deg)' }} /> {/* Placeholder for block icon */}
+                        </div>
+                        <span className={styles.inventoryMetricLabel}>Out of Stock</span>
+                    </div>
+                    <div className={styles.inventoryMetricValue}>{outOfStockItems}</div>
+                    <div className={styles.inventoryMetricSub}>Hidden from menu</div>
+                </div>
+
+                {/* Available Now */}
+                <div className={styles.inventoryMetricCard}>
+                    <div className={styles.inventoryMetricHeader}>
+                        <div className={`${styles.inventoryIconBoxGreen} ${styles.bgLightGreen}`}>
+                            <CheckCircle2 size={18} color="#059669" />
+                        </div>
+                        <span className={styles.inventoryMetricLabel}>Available Now</span>
+                    </div>
+                    <div className={styles.inventoryMetricValue}>{availableItems}</div>
+                    <div className={styles.inventoryMetricSub}>{coverage}% Coverage</div>
+                </div>
+            </div>
+
+            {/* Controls Row */}
+            <div className={styles.inventoryControlsRow}>
+                <div className={styles.inventoryFilters}>
+                    <button className={styles.inventoryFilterBtn}>
+                        All Categories <TrendingDown size={14} style={{ marginLeft: 4 }} />
+                    </button>
+                    <button className={styles.inventoryFilterBtn}>
+                        Status: All <TrendingDown size={14} style={{ marginLeft: 4 }} />
+                    </button>
+                    <button className={styles.inventoryFilterBtn}>
+                        <Layers size={14} /> Sort by
+                    </button>
+                </div>
+                <div className={styles.inventoryActionsRight}>
+                    <button className={styles.inventoryExportBtn}>
+                        <span style={{ transform: 'rotate(90deg)' }}><LogOut size={14} /></span> Export
+                    </button>
+                </div>
+            </div>
+
+            {/* Placeholder for Table */}
+            <div className={styles.infoCardDesktop}>
+                <p style={{ padding: '2rem', textAlign: 'center', color: '#6B7280' }}>Inventory Table coming soon</p>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Menu ───────────────────────────────────────────────────────────────── */
 const BLANK = { title: '', description: '', price: '', category: '', available: true, image: IMAGES[0] };
 
@@ -745,6 +837,7 @@ function OwnerDashboard() {
                 <div className={styles.content}>
                     {active === 'overview' && <OverviewSection store={ownerStore} orders={mockOrders} />}
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
+                    {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}
