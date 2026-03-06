@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import {
     Check, Clock, Circle, Phone, PhoneOff,
     Star, X, MessageCircle, ChevronRight
 } from 'lucide-react';
+import { useOrders } from '../context/OrderContext';
 import Navbar from '../components/sections/Navbar';
 import Footer from '../components/sections/Footer';
 import BackToTop from '../components/ui/BackToTop';
@@ -155,7 +156,37 @@ const REMAINING_ROUTE = ROUTE_POINTS.slice(riderIdx);
    Component
    ------------------------------------------------ */
 function OrderTrackingPage() {
-    const [cancelTimer, setCancelTimer] = useState(120); // 2 min countdown
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const orderId = searchParams.get('id');
+    const { orders, cancelOrder } = useOrders();
+
+    // Find order from context or fall back to mock
+    const contextOrder = orders.find(o => o.id === orderId);
+
+    // Build display data merging context order with mock map coords
+    const order = contextOrder ? {
+        id: contextOrder.id,
+        estimatedArrival: contextOrder.estimatedArrival || 8,
+        restaurant: {
+            name: contextOrder.restaurant,
+            coords: ORDER_DATA.restaurant.coords,
+        },
+        rider: { coords: ORDER_DATA.rider.coords },
+        destination: { coords: ORDER_DATA.destination.coords },
+        items: contextOrder.items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price, image: i.image })),
+        subtotal: contextOrder.subtotal,
+        deliveryFee: contextOrder.deliveryFee,
+        discount: contextOrder.discount || 0,
+        promoCode: 'PROMO5',
+        totalAmount: contextOrder.total,
+        rider_info: contextOrder.rider || ORDER_DATA.rider_info,
+        statuses: contextOrder.timeline || ORDER_DATA.statuses,
+        status: contextOrder.status,
+        deliveryAddress: contextOrder.deliveryAddress,
+    } : ORDER_DATA;
+
+    const [cancelTimer, setCancelTimer] = useState(120);
     const timerRef = useRef(null);
 
     useEffect(() => {
@@ -181,7 +212,7 @@ function OrderTrackingPage() {
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    const mapCenter = ORDER_DATA.rider.coords;
+    const mapCenter = order.rider.coords;
 
     const renderStatusIcon = (state) => {
         if (state === 'completed') {
@@ -237,10 +268,10 @@ function OrderTrackingPage() {
                                         <div className={styles.arrivalDot}></div>
                                         <div>
                                             <span className={styles.arrivalTitle}>
-                                                Arriving in {ORDER_DATA.estimatedArrival} mins
+                                                Arriving in {order.estimatedArrival} mins
                                             </span>
                                             <span className={styles.arrivalSub}>
-                                                Order #{ORDER_DATA.id} • On the way
+                                                Order #{order.id} • On the way
                                             </span>
                                         </div>
                                     </div>
@@ -258,17 +289,17 @@ function OrderTrackingPage() {
                                         />
 
                                         {/* Restaurant marker */}
-                                        <Marker position={ORDER_DATA.restaurant.coords} icon={restaurantIcon}>
-                                            <Popup>{ORDER_DATA.restaurant.name}</Popup>
+                                        <Marker position={order.restaurant.coords} icon={restaurantIcon}>
+                                            <Popup>{order.restaurant.name}</Popup>
                                         </Marker>
 
                                         {/* Rider marker */}
-                                        <Marker position={ORDER_DATA.rider.coords} icon={riderIcon}>
-                                            <Popup>Rider: {ORDER_DATA.rider_info.name}</Popup>
+                                        <Marker position={order.rider.coords} icon={riderIcon}>
+                                            <Popup>Rider: {order.rider_info.name}</Popup>
                                         </Marker>
 
                                         {/* Destination marker */}
-                                        <Marker position={ORDER_DATA.destination.coords} icon={destinationIcon}>
+                                        <Marker position={order.destination.coords} icon={destinationIcon}>
                                             <Popup>Your Location</Popup>
                                         </Marker>
 
@@ -294,7 +325,7 @@ function OrderTrackingPage() {
 
                                     {/* Items */}
                                     <div className={styles.summaryItems}>
-                                        {ORDER_DATA.items.map((item) => (
+                                        {order.items.map((item) => (
                                             <div key={item.id} className={styles.summaryItem}>
                                                 <img
                                                     src={item.image}
@@ -316,7 +347,7 @@ function OrderTrackingPage() {
                                         <div className={styles.summaryRow}>
                                             <span>Restaurant Name</span>
                                             <span className={styles.restaurantName}>
-                                                {ORDER_DATA.restaurant.name}
+                                                {order.restaurant.name}
                                             </span>
                                         </div>
                                     </div>
@@ -325,17 +356,17 @@ function OrderTrackingPage() {
                                     <div className={styles.summaryBreakdown}>
                                         <div className={styles.summaryRow}>
                                             <span>Subtotal</span>
-                                            <span>${ORDER_DATA.subtotal.toFixed(2)}</span>
+                                            <span>${order.subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
-                                            <span>${ORDER_DATA.deliveryFee.toFixed(2)}</span>
+                                            <span>${order.deliveryFee.toFixed(2)}</span>
                                         </div>
-                                        {ORDER_DATA.discount > 0 && (
+                                        {order.discount > 0 && (
                                             <div className={styles.summaryRow}>
-                                                <span>Discount ({ORDER_DATA.promoCode})</span>
+                                                <span>Discount ({order.promoCode})</span>
                                                 <span className={styles.discountValue}>
-                                                    -${ORDER_DATA.discount.toFixed(2)}
+                                                    -${order.discount.toFixed(2)}
                                                 </span>
                                             </div>
                                         )}
@@ -345,7 +376,7 @@ function OrderTrackingPage() {
                                     <div className={styles.totalRow}>
                                         <span className={styles.totalLabel}>Total Amount</span>
                                         <span className={styles.totalValue}>
-                                            ${ORDER_DATA.totalAmount.toFixed(2)}
+                                            ${order.totalAmount.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
@@ -361,7 +392,7 @@ function OrderTrackingPage() {
                                     <h2 className={styles.statusCardTitle}>Order Status</h2>
 
                                     <div className={styles.timeline}>
-                                        {ORDER_DATA.statuses.map((status, index) => (
+                                        {order.statuses.map((status, index) => (
                                             <div
                                                 key={index}
                                                 className={`${styles.timelineStep} ${styles[`timeline${status.state.charAt(0).toUpperCase() + status.state.slice(1)}`]}`}
@@ -392,23 +423,23 @@ function OrderTrackingPage() {
                                 <div className={styles.riderCard}>
                                     <div className={styles.riderHeader}>
                                         <img
-                                            src={ORDER_DATA.rider_info.avatar}
-                                            alt={ORDER_DATA.rider_info.name}
+                                            src={order.rider_info.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop'}
+                                            alt={order.rider_info.name}
                                             className={styles.riderAvatar}
                                         />
                                         <div className={styles.riderDetails}>
                                             <div className={styles.riderNameRow}>
                                                 <span className={styles.riderName}>
-                                                    {ORDER_DATA.rider_info.name}
+                                                    {order.rider_info.name}
                                                 </span>
                                                 <span className={styles.riderRating}>
                                                     <Star size={12} fill="#F59E0B" stroke="#F59E0B" />
-                                                    {ORDER_DATA.rider_info.rating}
+                                                    {order.rider_info.rating}
                                                 </span>
                                             </div>
                                             <div className={styles.riderMeta}>
-                                                {ORDER_DATA.rider_info.vehicle} •{' '}
-                                                {ORDER_DATA.rider_info.plate}
+                                                {order.rider_info.vehicle} •{' '}
+                                                {order.rider_info.plate}
                                             </div>
                                         </div>
                                     </div>
@@ -430,7 +461,13 @@ function OrderTrackingPage() {
                                     {/* Cancel Order */}
                                     <button
                                         className={styles.cancelBtn}
-                                        disabled={cancelTimer === 0}
+                                        disabled={cancelTimer === 0 || order.status === 'Cancelled'}
+                                        onClick={() => {
+                                            if (contextOrder && cancelTimer > 0) {
+                                                cancelOrder(contextOrder.id);
+                                                navigate('/my-orders');
+                                            }
+                                        }}
                                     >
                                         <X size={16} />
                                         Cancel Order

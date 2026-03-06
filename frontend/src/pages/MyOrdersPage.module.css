@@ -1,0 +1,366 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.myOrdersPage {
+    padding: 8rem 0 4rem;
+    min-height: 80vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Header ───────────────────────────────────── */
+.pageHeader {
+    margin-bottom: 1.75rem;
+}
+
+.breadcrumbs {
+    font-size: .84rem;
+    margin-bottom: .75rem;
+}
+
+.breadcrumbs a {
+    color: #991B1B;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.current {
+    color: #6B7280;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #111827;
+    margin: 0 0 .35rem;
+    letter-spacing: -.5px;
+}
+
+.subtitle {
+    font-size: .95rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* ── Tabs ─────────────────────────────────────── */
+.tabBar {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #F3F4F6;
+    padding-bottom: 0;
+}
+
+.tabBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .6rem 1.2rem;
+    border: none;
+    background: none;
+    color: #6B7280;
+    font-size: .88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: .15s;
+    font-family: inherit;
+}
+
+.tabBtn:hover {
+    color: #991B1B;
+}
+
+.tabBtnActive {
+    color: #991B1B;
+    border-bottom-color: #991B1B;
+}
+
+.tabCount {
+    background: #F3F4F6;
+    padding: 0 7px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 800;
+    line-height: 19px;
+    color: #6B7280;
+}
+
+.tabBtnActive .tabCount {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+/* ── Orders list ──────────────────────────────── */
+.ordersList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ── Empty state ──────────────────────────────── */
+.emptyState {
+    text-align: center;
+    padding: 3.5rem 2rem;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+}
+
+.emptyState h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 1rem 0 .35rem;
+}
+
+.emptyState p {
+    font-size: .88rem;
+    color: #9CA3AF;
+    margin: 0 0 1.25rem;
+}
+
+.browseBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .6rem 1.4rem;
+    background: #991B1B;
+    color: #fff;
+    border-radius: 9px;
+    font-size: .88rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .18s;
+}
+
+.browseBtn:hover {
+    background: #7F1D1D;
+    color: #fff;
+}
+
+/* ── Order card ───────────────────────────────── */
+.orderCard {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.25rem 1.4rem;
+    transition: .18s;
+}
+
+.orderCard:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .05);
+}
+
+.orderCardTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+    gap: 1rem;
+}
+
+.orderIdRow {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+}
+
+.orderId {
+    font-size: .85rem;
+    font-weight: 800;
+    color: #111827;
+    font-family: 'Courier New', monospace;
+    background: #F3F4F6;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.orderDate {
+    font-size: .76rem;
+    color: #9CA3AF;
+}
+
+.statusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.orderRestaurant {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: .75rem;
+}
+
+/* Items row */
+.orderItemsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .75rem;
+}
+
+.orderItemChip {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    padding: 5px 10px 5px 5px;
+    border-radius: 10px;
+}
+
+.orderItemImg {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.orderItemInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.orderItemName {
+    font-size: .78rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+}
+
+.orderItemQty {
+    font-size: .68rem;
+    color: #9CA3AF;
+    font-weight: 600;
+}
+
+.orderItemMore {
+    display: flex;
+    align-items: center;
+    font-size: .78rem;
+    color: #9CA3AF;
+    font-weight: 600;
+}
+
+/* Bottom row */
+.orderCardBottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.orderMeta {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.orderTotal {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -.3px;
+}
+
+.orderPayment {
+    font-size: .76rem;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+.trackBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .5rem 1rem;
+    background: #991B1B;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.trackBtn:hover {
+    background: #7F1D1D;
+}
+
+.deliveredBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #059669;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.cancelledBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #DC2626;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+/* ETA bar */
+.etaBar {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .75rem;
+    padding: .45rem .85rem;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #92400E;
+}
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 768px) {
+    .myOrdersPage {
+        padding: 6rem 0 2rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .tabBar {
+        overflow-x: auto;
+    }
+
+    .orderCardBottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .trackBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}

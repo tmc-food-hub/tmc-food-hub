@@ -1,17 +1,19 @@
 import { useContext } from 'react';
 import { ThemeContext } from '../ui/ThemeContext';
 import { CartContext } from '../ui/CartContext';
-import { Sun, Moon, Menu, ShoppingCart } from 'lucide-react';
+import { Sun, Moon, Menu, ShoppingCart, ClipboardList } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { navigationItems } from '../../constants/navigation';
 import { useNavbarLogic } from '../../hooks/useNavbarLogic';
 import { useAuth } from '../../context/AuthContext';
+import { useOrders } from '../../context/OrderContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 
 function Navbar() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const { cartCount } = useContext(CartContext);
   const { user, isAuthenticated, logout } = useAuth();
+  const { activeOrders } = useOrders();
   const location = useLocation();
   const navigate = useNavigate();
   const { isScrolled, isActive, handleNavClick } = useNavbarLogic(isDarkMode);
@@ -219,6 +221,10 @@ function Navbar() {
             <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={toggleTheme} style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={() => navigate('/my-orders')} style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', position: 'relative', border: '1px solid #D1D5DB', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
+              <ClipboardList size={20} />
+              {activeOrders.length > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: '#991B1B', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{activeOrders.length}</span>}
+            </button>
             <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={() => navigate('/cart')} style={{ backgroundColor: '#F59E0B', color: 'white', position: 'relative', border: '1px solid transparent', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
               <ShoppingCart size={20} />
               {cartCount > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: '#111827', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{cartCount}</span>}
@@ -261,6 +267,9 @@ function Navbar() {
                 )}
                 <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
                   {isDarkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
+                </button>
+                <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box', position: 'relative' }} onClick={() => { closeMobileMenu(); navigate('/my-orders'); }}>
+                  <ClipboardList size={20} /> My Orders{activeOrders.length > 0 ? ` (${activeOrders.length})` : ''}
                 </button>
                 <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ backgroundColor: '#F59E0B', color: 'white', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }} onClick={() => { closeMobileMenu(); navigate('/cart'); }}>
                   <ShoppingCart size={20} /> Cart{cartCount > 0 ? ` (${cartCount})` : ''}

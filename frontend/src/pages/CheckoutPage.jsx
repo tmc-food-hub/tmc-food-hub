@@ -4,13 +4,15 @@ import { MapPin, CreditCard, Banknote } from 'lucide-react';
 import gcashLogo from '../assets/imgs/gcash-logo.png';
 import mayaLogo from '../assets/imgs/maya-logo.jpg';
 import { CartContext } from '../components/ui/CartContext';
+import { useOrders } from '../context/OrderContext';
 import Navbar from '../components/sections/Navbar';
 import Footer from '../components/sections/Footer';
 import BackToTop from '../components/ui/BackToTop';
 import styles from './CheckoutPage.module.css';
 
 function CheckoutPage() {
-    const { cartItems, cartSubtotal } = useContext(CartContext);
+    const { cartItems, cartSubtotal, clearCart } = useContext(CartContext);
+    const { placeOrder } = useOrders();
     const navigate = useNavigate();
 
     const [contactNumber, setContactNumber] = useState('');
@@ -194,7 +196,23 @@ function CheckoutPage() {
                                         <span className={styles.totalValue}>${totalAmount.toFixed(2)}</span>
                                     </div>
 
-                                    <button className={styles.placeOrderBtn}>Place Order</button>
+                                    <button className={styles.placeOrderBtn} onClick={() => {
+                                        const storeName = cartItems[0]?.storeName || 'Restaurant';
+                                        const order = placeOrder({
+                                            items: cartItems.map(i => ({ id: i.id, name: i.title, quantity: i.quantity, price: i.price, image: i.image })),
+                                            restaurant: storeName,
+                                            subtotal: cartSubtotal,
+                                            deliveryFee,
+                                            discount,
+                                            total: totalAmount,
+                                            paymentMethod,
+                                            deliveryAddress: '123 Quezon Avenue, Unit 4B, Brgy. South Triangle, Quezon City, Metro Manila',
+                                            contactNumber,
+                                            specialInstructions,
+                                        });
+                                        clearCart();
+                                        navigate(`/order-tracking?id=${order.id}`);
+                                    }}>Place Order</button>
                                     <p className={styles.termsText}>
                                         By placing an order, you agree to TMC Foodhub's Terms and Conditions.
                                     </p>
