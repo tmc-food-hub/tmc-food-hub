@@ -39,7 +39,7 @@ function LoginPage() {
         setIsLoading(true);
         try {
             await login(email, password);
-            navigate('/');
+            navigate('/profile');
         } catch (err) {
             const message = err.response?.data?.message || 'Login failed. Please try again.';
             setErrors({ email: message, password: '' });

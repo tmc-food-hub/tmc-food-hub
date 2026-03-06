@@ -1,0 +1,427 @@
+/* ══════════════════
+   ProfilePage.module.css
+   ══════════════════ */
+
+/* ─── Outer page wrapper ─── */
+.profilePage {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    background: #F3F4F6;
+}
+
+.profilePageDark {
+    background: #0D1117;
+}
+
+/* ─── Main body content ─── */
+.profileBody {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 7rem 2rem 5rem;
+}
+
+/* ─── Identity row: avatar + name + actions ─── */
+.identityRow {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.profilePageDark .identityRow {
+    border-bottom-color: #21262D;
+}
+
+.avatarCircle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+    border: 5px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #991B1B;
+    letter-spacing: -1px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profilePageDark .avatarCircle {
+    border-color: #0D1117;
+    background: linear-gradient(135deg, rgba(153, 27, 27, 0.3), rgba(153, 27, 27, 0.15));
+}
+
+.avatarCircle:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.identityMeta {
+    flex: 1;
+    padding-bottom: 0.5rem;
+}
+
+.userName {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 0.2rem;
+    letter-spacing: -0.5px;
+}
+
+.profilePageDark .userName {
+    color: #F9FAFB;
+}
+
+.userEmail {
+    font-size: 0.9rem;
+    color: #6B7280;
+    margin: 0 0 0.75rem;
+}
+
+.profilePageDark .userEmail {
+    color: #9CA3AF;
+}
+
+.badgeRow {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.badgeActive {
+    background: #ECFDF5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
+}
+
+.profilePageDark .badgeActive {
+    background: rgba(5, 150, 105, 0.12);
+    border-color: rgba(5, 150, 105, 0.25);
+}
+
+.badgePulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10B981;
+    animation: blink 2s ease infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+}
+
+.badgeMember {
+    background: #FFF7ED;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+}
+
+.profilePageDark .badgeMember {
+    background: rgba(180, 83, 9, 0.1);
+    border-color: rgba(180, 83, 9, 0.25);
+    color: #F59E0B;
+}
+
+.identityActions {
+    display: flex;
+    gap: 0.65rem;
+    align-self: flex-end;
+    padding-bottom: 0.5rem;
+}
+
+.btnOutline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.55rem 1.2rem;
+    border-radius: 10px;
+    border: 1.5px solid #D1D5DB;
+    background: #fff;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnOutline:hover {
+    border-color: #9CA3AF;
+    background: #F9FAFB;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profilePageDark .btnOutline {
+    background: #1F2937;
+    border-color: #374151;
+    color: #E5E7EB;
+}
+
+.profilePageDark .btnOutline:hover {
+    background: #253343;
+}
+
+.btnRed {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.55rem 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #991B1B;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnRed:hover {
+    background: #7F1D1D;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(153, 27, 27, 0.38);
+}
+
+/* ─── Horizontal rule ─── */
+.divider {
+    height: 1px;
+    background: #E5E7EB;
+    margin-bottom: 2rem;
+}
+
+.profilePageDark .divider {
+    background: #21262D;
+}
+
+/* ─── Card grid ─── */
+.cardsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.cardFull {
+    grid-column: 1 / -1;
+}
+
+/* ─── Single card ─── */
+.infoCard {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.infoCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #991B1B, #DC2626);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.infoCard:hover::before {
+    opacity: 1;
+}
+
+.infoCard:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+    transform: translateY(-2px);
+}
+
+.profilePageDark .infoCard {
+    background: #161B22;
+    border-color: #21262D;
+}
+
+.profilePageDark .infoCard:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.profilePageDark .cardHeader {
+    border-bottom-color: #21262D;
+}
+
+.cardIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FEE2E2, #FED7AA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #991B1B;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.profilePageDark .cardIcon {
+    background: rgba(153, 27, 27, 0.15);
+}
+
+.cardTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.profilePageDark .cardTitle {
+    color: #F9FAFB;
+}
+
+.cardSubtitle {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    margin: 2px 0 0;
+}
+
+/* ─── Field grid inside cards ─── */
+.fieldList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.fieldListSingle {
+    grid-template-columns: 1fr;
+}
+
+.fieldItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0.8rem 1rem;
+    background: #F8F9FF;
+    border-radius: 10px;
+    border: 1px solid #EEF0F8;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.fieldItem:hover {
+    background: #EFF0FA;
+    border-color: #D8DAEE;
+}
+
+.profilePageDark .fieldItem {
+    background: #0D1117;
+    border-color: #21262D;
+}
+
+.profilePageDark .fieldItem:hover {
+    background: #161B22;
+    border-color: #30363D;
+}
+
+.fieldLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+}
+
+.fieldValue {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #111827;
+    word-break: break-word;
+}
+
+.profilePageDark .fieldValue {
+    color: #E5E7EB;
+}
+
+.fieldEmpty {
+    font-size: 0.88rem;
+    color: #D1D5DB;
+    font-style: italic;
+}
+
+.profilePageDark .fieldEmpty {
+    color: #374151;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .heroBanner {
+        height: 150px;
+    }
+
+    .profileBody {
+        padding: 0 1rem 4rem;
+    }
+
+    .identityRow {
+        flex-wrap: wrap;
+        margin-top: -40px;
+        gap: 1rem;
+    }
+
+    .identityActions {
+        width: 100%;
+        padding-bottom: 0;
+    }
+
+    .btnOutline,
+    .btnRed {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .cardsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .fieldList {
+        grid-template-columns: 1fr;
+    }
+}

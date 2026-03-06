@@ -1,0 +1,77 @@
+name: Deploy to Hostinger via SSH
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # --- BACKEND (LARAVEL) BUILD ---
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: |
+          cd backend
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      # --- FRONTEND (REACT) BUILD ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install and Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # --- DEPLOYMENT ---
+      - name: Deploy to Hostinger via rsync
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          ARGS: "-avz --delete"
+          REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
+          REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          
+          # Deploy Backend
+          SOURCE: "backend/"
+          TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/backend-app/"
+        
+      - name: Deploy Frontend to public_html
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          ARGS: "-avz --delete"
+          REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
+          REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          
+          # Deploy Frontend
+          SOURCE: "frontend/dist/"
+          TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/public_html/"
+
+      # --- POST-DEPLOYMENT COMMANDS (Optional but recommended) ---
+      - name: Run Laravel Migrations and Clear Cache
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTINGER_SERVER_IP }}
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/backend-app/
+            php artisan optimize:clear
+            php artisan migrate --force
