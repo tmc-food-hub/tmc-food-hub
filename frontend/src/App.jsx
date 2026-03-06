@@ -22,6 +22,7 @@ import OwnerLoginPage from './pages/OwnerLoginPage';
 import OwnerDashboard from './pages/OwnerDashboard';
 import { OwnerAuthProvider } from './context/OwnerAuthContext';
 import { OrderProvider } from './context/OrderContext';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   const { pathname } = useLocation();
@@ -39,9 +40,10 @@ function App() {
   }, [pathname]);
 
   return (
-    <OrderProvider>
-      <OwnerAuthProvider>
-        <>
+    <AuthProvider>
+      <OrderProvider>
+        <OwnerAuthProvider>
+          <>
           <Preloader />
           <Routes>
             <Route path="/" element={<Homepage />} />
@@ -68,9 +70,10 @@ function App() {
             <Route path="/owner-login" element={<OwnerLoginPage />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
           </Routes>
-        </>
-      </OwnerAuthProvider>
-    </OrderProvider>
+          </>
+        </OwnerAuthProvider>
+      </OrderProvider>
+    </AuthProvider>
   )
 }
 

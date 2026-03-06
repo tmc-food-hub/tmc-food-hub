@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../components/layout/AuthLayout';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,8 @@ function LoginPage() {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const signupSuccess = location.state?.signupSuccess;
 
     const togglePassword = () => setShowPassword(!showPassword);
 
@@ -53,6 +55,12 @@ function LoginPage() {
             <div className={styles.slideInRight}>
                 <h2 className={styles.pageTitle}>Welcome back!</h2>
                 <p className={styles.pageSubtitle}>Please enter your details to access your account.</p>
+
+                {signupSuccess && (
+                    <div className="alert alert-success py-2 mb-3" style={{ fontSize: '0.9rem', borderRadius: '8px' }}>
+                        <strong>Account created successfully!</strong> Please log in with your credentials.
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>

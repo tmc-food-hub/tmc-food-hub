@@ -37,6 +37,60 @@ class AuthController extends Controller
     }
 
     /**
+     * Handle registration and return a Sanctum token.
+     */
+    public function register(Request $request)
+    {
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:customer,partner',
+            'terms_accepted' => 'accepted',
+            'privacy_accepted' => 'accepted',
+        ];
+
+        if ($request->role === 'customer') {
+            $rules['address'] = 'required|string|max:500';
+            $rules['phone'] = 'required|string|max:20';
+        }
+
+        if ($request->role === 'partner') {
+            $rules['restaurant_name'] = 'required|string|max:255';
+            $rules['business_address'] = 'required|string|max:500';
+            $rules['business_contact_number'] = 'required|string|max:20';
+            $rules['business_permit'] = 'required|string|max:255';
+            $rules['merchant_agreement_accepted'] = 'accepted';
+        }
+
+        $validated = $request->validate($rules);
+
+        $user = User::create([
+            'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+            'role' => $validated['role'],
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'delivery_instructions' => $request->delivery_instructions,
+            'restaurant_name' => $validated['restaurant_name'] ?? null,
+            'business_address' => $validated['business_address'] ?? null,
+            'business_contact_number' => $validated['business_contact_number'] ?? null,
+            'business_permit' => $validated['business_permit'] ?? null,
+        ]);
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ], 201);
+    }
+
+    /**
      * Return the authenticated user.
      */
     public function user(Request $request)
