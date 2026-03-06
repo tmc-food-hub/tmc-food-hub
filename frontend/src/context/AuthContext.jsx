@@ -40,6 +40,11 @@ export function AuthProvider({ children }) {
         return userData;
     };
 
+    const register = async (formData) => {
+        const res = await api.post('/register', formData);
+        return res.data;
+    };
+
     const logout = async () => {
         try {
             await api.post('/logout');
@@ -58,6 +63,7 @@ export function AuthProvider({ children }) {
         loading,
         isAuthenticated: !!user,
         login,
+        register,
         logout,
     };
 

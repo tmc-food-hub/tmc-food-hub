@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../components/layout/AuthLayout';
+import { useAuth } from '../context/AuthContext';
 import styles from './AuthPages.module.css';
 
 function SignupPage() {
@@ -9,6 +10,11 @@ function SignupPage() {
     const [role, setRole] = useState('Customer'); // 'Customer' or 'Partner'
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+
+    const { register } = useAuth();
+    const navigate = useNavigate();
 
     // Form fields
     const [formData, setFormData] = useState({
@@ -50,10 +56,54 @@ function SignupPage() {
         setStep(step - 1);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Final Signup attempt:', { role, ...formData });
-        // Handle actual registration logic here
+        setErrors({});
+        setIsLoading(true);
+
+        const payload = {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            password: formData.password,
+            password_confirmation: formData.confirmPassword,
+            role: role.toLowerCase(),
+            terms_accepted: formData.termsAccepted,
+            privacy_accepted: formData.privacyAccepted,
+        };
+
+        if (role === 'Customer') {
+            payload.address = formData.address;
+            payload.phone = formData.contactNumber;
+            payload.delivery_instructions = formData.deliveryInstructions;
+        }
+
+        if (role === 'Partner') {
+            payload.restaurant_name = formData.restaurantName;
+            payload.business_address = formData.businessAddress;
+            payload.business_contact_number = formData.businessContactNumber;
+            payload.business_permit = formData.businessPermit;
+            payload.merchant_agreement_accepted = formData.merchantAgreementAccepted;
+        }
+
+        try {
+            await register(payload);
+            navigate('/login', { state: { signupSuccess: true } });
+        } catch (err) {
+            if (err.response?.data?.errors) {
+                setErrors(err.response.data.errors);
+                // Jump back to the step that has the first error
+                const errorKeys = Object.keys(err.response.data.errors);
+                const step1Fields = ['first_name', 'last_name', 'email', 'password'];
+                if (errorKeys.some(k => step1Fields.includes(k))) {
+                    setStep(1);
+                }
+            } else {
+                setErrors({ general: [err.response?.data?.message || 'Registration failed. Please try again.'] });
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Dynamic subtext for left banner based on Role & Step
@@ -103,6 +153,13 @@ function SignupPage() {
                 )}
 
                 <form onSubmit={step === 3 ? handleSubmit : handleNextStep}>
+                    {Object.keys(errors).length > 0 && (
+                        <div className="alert alert-danger py-2 mb-3" style={{ fontSize: '0.85rem', borderRadius: '8px' }}>
+                            {errors.general
+                                ? errors.general[0]
+                                : 'Please fix the errors below and try again.'}
+                        </div>
+                    )}
                     {step === 1 && (
                         <>
                             {/* Role Switcher */}
@@ -134,23 +191,25 @@ function SignupPage() {
                                     <input
                                         type="text"
                                         name="firstName"
-                                        className={styles.formControl}
+                                        className={`${styles.formControl} ${errors.first_name ? styles.isInvalid : ''}`}
                                         placeholder="First Name"
                                         value={formData.firstName}
                                         onChange={handleChange}
                                         required
                                     />
+                                    {errors.first_name && <span className={styles.errorText}>{errors.first_name[0]}</span>}
                                 </div>
                                 <div className="col-12 col-sm-6">
                                     <input
                                         type="text"
                                         name="lastName"
-                                        className={styles.formControl}
+                                        className={`${styles.formControl} ${errors.last_name ? styles.isInvalid : ''}`}
                                         placeholder="Last Name"
                                         value={formData.lastName}
                                         onChange={handleChange}
                                         required
                                     />
+                                    {errors.last_name && <span className={styles.errorText}>{errors.last_name[0]}</span>}
                                 </div>
                             </div>
 
@@ -161,12 +220,13 @@ function SignupPage() {
                                 <input
                                     type="email"
                                     name="email"
-                                    className={styles.formControl}
+                                    className={`${styles.formControl} ${errors.email ? styles.isInvalid : ''}`}
                                     placeholder="Enter your email"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.email && <span className={styles.errorText}>{errors.email[0]}</span>}
                             </div>
 
                             <div className={styles.formGroup} style={{ marginBottom: '0.5rem' }}>
@@ -191,6 +251,7 @@ function SignupPage() {
                                     </button>
                                 </div>
                             </div>
+                            {errors.password && <span className={styles.errorText}>{errors.password[0]}</span>}
                             <small className="text-muted d-block mb-3" style={{ fontSize: '0.75rem' }}>
                                 Must be at least 8 characters with a symbol & number
                             </small>
@@ -399,8 +460,8 @@ function SignupPage() {
                                 <button type="button" className={styles.btnBack} onClick={handlePrevStep}>
                                     &larr; Back
                                 </button>
-                                <button type="submit" className={styles.btnNext}>
-                                    Finish Registration
+                                <button type="submit" className={styles.btnNext} disabled={isLoading}>
+                                    {isLoading ? 'Registering...' : 'Finish Registration'}
                                 </button>
                             </div>
                         </div>
@@ -455,8 +516,8 @@ function SignupPage() {
                                 <button type="button" className={styles.btnBack} onClick={handlePrevStep}>
                                     &larr; Back
                                 </button>
-                                <button type="submit" className={styles.btnNext}>
-                                    Finish Registration
+                                <button type="submit" className={styles.btnNext} disabled={isLoading}>
+                                    {isLoading ? 'Registering...' : 'Finish Registration'}
                                 </button>
                             </div>
                         </div>
