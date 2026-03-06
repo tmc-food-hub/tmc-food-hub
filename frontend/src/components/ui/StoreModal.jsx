@@ -1,7 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { X, Star, MapPin, Clock, Phone, ShoppingCart, Info, ChevronLeft } from 'lucide-react';
+import { X, Star, MapPin, Clock, Phone, ShoppingCart, Info, ChevronLeft, MessageSquare, Tag } from 'lucide-react';
 import { CartContext } from './CartContext';
 import styles from './StoreModal.module.css';
+import { getStores, saveStores } from '../../data/storesData';
 
 function StarRow({ rating, size = 14 }) {
     return (
@@ -72,6 +73,51 @@ function StoreModal({ store, onClose }) {
     const allCategories = ['All', ...new Set(store.menuItems.map(i => i.category))];
     const [activeMenuCat, setActiveMenuCat] = useState('All');
 
+    // Review form state
+    const [isWritingReview, setIsWritingReview] = useState(false);
+    const [reviewForm, setReviewForm] = useState({ rating: 0, text: '', tags: [] });
+    const REVIEW_TAGS = ['Great Food', 'Fast Delivery', 'Friendly Service', 'Good Value', 'Hot & Fresh', 'Nice Packaging'];
+    const [localReviews, setLocalReviews] = useState(store.reviews);
+
+    const handleTagToggle = (tag) => {
+        setReviewForm(prev => ({
+            ...prev,
+            tags: prev.tags.includes(tag) ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag]
+        }));
+    };
+
+    const submitReview = (e) => {
+        e.preventDefault();
+        if (reviewForm.rating === 0) return alert('Please select a rating');
+        if (!reviewForm.text.trim()) return alert('Please write a comment');
+
+        const newReview = {
+            id: Date.now(),
+            name: 'Current User', // Mock user
+            avatar: 'U',
+            rating: reviewForm.rating,
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            text: reviewForm.text,
+            tags: reviewForm.tags
+        };
+
+        const updatedReviews = [newReview, ...localReviews];
+        setLocalReviews(updatedReviews);
+
+        // Save to global stores
+        const allStores = getStores();
+        const storeIndex = allStores.findIndex(s => s.id === store.id);
+        if (storeIndex !== -1) {
+            allStores[storeIndex].reviews = updatedReviews;
+            // recalculate rating
+            allStores[storeIndex].rating = Number((updatedReviews.reduce((s, r) => s + r.rating, 0) / updatedReviews.length).toFixed(1));
+            saveStores(allStores);
+        }
+
+        setIsWritingReview(false);
+        setReviewForm({ rating: 0, text: '', tags: [] });
+    };
+
     const visibleItems = activeMenuCat === 'All'
         ? store.menuItems
         : store.menuItems.filter(i => i.category === activeMenuCat);
@@ -89,8 +135,8 @@ function StoreModal({ store, onClose }) {
         return () => window.removeEventListener('keydown', handler);
     }, [onClose, selectedItem]);
 
-    const avgRating = store.reviews.length
-        ? (store.reviews.reduce((s, r) => s + r.rating, 0) / store.reviews.length).toFixed(1)
+    const avgRating = localReviews.length
+        ? (localReviews.reduce((s, r) => s + r.rating, 0) / localReviews.length).toFixed(1)
         : store.rating;
 
     const handleAddToCart = (item) => {
@@ -124,7 +170,7 @@ function StoreModal({ store, onClose }) {
                     <div className={styles.ratingRow}>
                         <StarRow rating={avgRating} size={14} />
                         <span className={styles.ratingNum}>{avgRating}</span>
-                        <span className={styles.ratingCount}>({store.reviews.length} reviews)</span>
+                        <span className={styles.ratingCount}>({localReviews.length} reviews)</span>
                         <span className={store.status === 'Operational' ? styles.statusOpen : styles.statusClosed}>
                             ● {store.status}
                         </span>
@@ -140,7 +186,7 @@ function StoreModal({ store, onClose }) {
                             onClick={() => { setActiveTab(tab); setSelectedItem(null); }}
                         >
                             {tab === 'info' ? <><Info size={13} /> Info</> : tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            {tab === 'reviews' && ` (${store.reviews.length})`}
+                            {tab === 'reviews' && ` (${localReviews.length})`}
                         </button>
                     ))}
                 </div>
@@ -205,15 +251,83 @@ function StoreModal({ store, onClose }) {
                     {/* ── REVIEWS TAB ── */}
                     {activeTab === 'reviews' && (
                         <div>
-                            <div className={styles.reviewSummary}>
-                                <div className={styles.reviewBigNum}>{avgRating}</div>
-                                <div>
-                                    <StarRow rating={avgRating} size={20} />
-                                    <p className={styles.reviewTotal}>Based on {store.reviews.length} reviews</p>
+                            {!isWritingReview && (
+                                <div className={styles.reviewHeaderActions}>
+                                    <div className={styles.reviewSummary}>
+                                        <div className={styles.reviewBigNum}>{avgRating}</div>
+                                        <div>
+                                            <StarRow rating={avgRating} size={20} />
+                                            <p className={styles.reviewTotal}>Based on {localReviews.length} reviews</p>
+                                        </div>
+                                    </div>
+                                    <button className={styles.leaveReviewBtn} onClick={() => setIsWritingReview(true)}>
+                                        <MessageSquare size={16} /> Write a Review
+                                    </button>
                                 </div>
-                            </div>
+                            )}
+
+                            {isWritingReview && (
+                                <div className={styles.reviewFormCard}>
+                                    <h3 className={styles.reviewFormTitle}>Rate your experience</h3>
+                                    <div className={styles.starSelectRow}>
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                className={styles.starSelectBtn}
+                                                onClick={() => setReviewForm(p => ({ ...p, rating: star }))}
+                                                onMouseEnter={(e) => {
+                                                    const btns = e.currentTarget.parentNode.children;
+                                                    for (let i = 0; i < btns.length; i++) {
+                                                        btns[i].querySelector('svg').style.fill = i < star ? '#F59E0B' : 'none';
+                                                        btns[i].querySelector('svg').style.color = i < star ? '#F59E0B' : '#D1D5DB';
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    const btns = e.currentTarget.parentNode.children;
+                                                    for (let i = 0; i < btns.length; i++) {
+                                                        btns[i].querySelector('svg').style.fill = i < reviewForm.rating ? '#F59E0B' : 'none';
+                                                        btns[i].querySelector('svg').style.color = i < reviewForm.rating ? '#F59E0B' : '#D1D5DB';
+                                                    }
+                                                }}
+                                            >
+                                                <Star size={28} fill={star <= reviewForm.rating ? '#F59E0B' : 'none'} color={star <= reviewForm.rating ? '#F59E0B' : '#D1D5DB'} />
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <h4 className={styles.reviewFormSubtitle}>What did you like? (Optional)</h4>
+                                    <div className={styles.reviewTagsRow}>
+                                        {REVIEW_TAGS.map(tag => (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                className={`${styles.reviewTagBtn} ${reviewForm.tags.includes(tag) ? styles.reviewTagBtnActive : ''}`}
+                                                onClick={() => handleTagToggle(tag)}
+                                            >
+                                                <Tag size={12} /> {tag}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <h4 className={styles.reviewFormSubtitle}>Add a comment</h4>
+                                    <textarea
+                                        className={styles.reviewTextarea}
+                                        placeholder="Tell us about your order, the food quality, speed of delivery, etc."
+                                        rows={4}
+                                        value={reviewForm.text}
+                                        onChange={e => setReviewForm(p => ({ ...p, text: e.target.value }))}
+                                    />
+
+                                    <div className={styles.reviewFormActions}>
+                                        <button className={styles.reviewCancelBtn} onClick={() => setIsWritingReview(false)}>Cancel</button>
+                                        <button className={styles.reviewSubmitBtn} onClick={submitReview}>Post Review</button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className={styles.reviewList}>
-                                {store.reviews.map(r => (
+                                {localReviews.map(r => (
                                     <div key={r.id} className={styles.reviewItem}>
                                         <div className={styles.reviewAvatar}>{r.avatar}</div>
                                         <div className={styles.reviewBody}>
@@ -222,6 +336,11 @@ function StoreModal({ store, onClose }) {
                                                 <span className={styles.reviewDate}>{r.date}</span>
                                             </div>
                                             <StarRow rating={r.rating} size={12} />
+                                            {r.tags && r.tags.length > 0 && (
+                                                <div className={styles.reviewItemTags}>
+                                                    {r.tags.map(t => <span key={t} className={styles.reviewItemTag}>{t}</span>)}
+                                                </div>
+                                            )}
                                             <p className={styles.reviewText}>{r.text}</p>
                                         </div>
                                     </div>
