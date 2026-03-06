@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../components/layout/AuthLayout';
-import { useAuth } from '../context/AuthContext';
+import { useOwnerAuth } from '../context/OwnerAuthContext';
 import styles from './AuthPages.module.css';
 
-function LoginPage() {
+function OwnerLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login } = useOwnerAuth();
     const navigate = useNavigate();
 
     const togglePassword = () => setShowPassword(!showPassword);
@@ -37,22 +37,22 @@ function LoginPage() {
         if (hasError) return;
 
         setIsLoading(true);
-        try {
-            await login(email, password);
-            navigate('/profile');
-        } catch (err) {
-            const message = err.response?.data?.message || 'Login failed. Please try again.';
-            setErrors({ email: message, password: '' });
-        } finally {
-            setIsLoading(false);
+        await new Promise(r => setTimeout(r, 600));
+        const result = login(email, password);
+        setIsLoading(false);
+
+        if (result.success) {
+            navigate('/owner-dashboard');
+        } else {
+            setErrors({ email: result.message, password: '' });
         }
     };
 
     return (
         <AuthLayout>
             <div className={styles.slideInRight}>
-                <h2 className={styles.pageTitle}>Welcome back!</h2>
-                <p className={styles.pageSubtitle}>Please enter your details to access your account.</p>
+                <h2 className={styles.pageTitle}>Restaurant Owner Portal</h2>
+                <p className={styles.pageSubtitle}>Sign in to manage your branch, menu, and operating hours.</p>
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>
@@ -62,13 +62,13 @@ function LoginPage() {
                             <input
                                 type="email"
                                 className={`${styles.formControl} ${styles.hasIcon} ${errors.email ? styles.isInvalid : ''}`}
-                                placeholder="e.g. you@example.com"
+                                placeholder="yourstore@tmcfoodhub.com"
                                 value={email}
                                 onChange={(e) => {
                                     setEmail(e.target.value);
                                     if (errors.email) setErrors({ ...errors, email: '' });
                                 }}
-                                required={false} /* Disabled native validation to show custom error */
+                                required={false}
                             />
                         </div>
                         {errors.email && <span className={styles.errorText}>{errors.email}</span>}
@@ -79,7 +79,7 @@ function LoginPage() {
                         <div className={styles.inputIconWrapper}>
                             <i className={`bi bi-lock ${styles.inputIcon}`}></i>
                             <input
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? 'text' : 'password'}
                                 className={`${styles.formControl} ${styles.hasIcon} ${styles.hasTrailing} ${errors.password ? styles.isInvalid : ''}`}
                                 placeholder="Enter your password"
                                 value={password}
@@ -101,50 +101,29 @@ function LoginPage() {
                         {errors.password && <span className={styles.errorText}>{errors.password}</span>}
                     </div>
 
-                    <div className={styles.checkboxRow}>
-                        <label className={styles.customCheckbox}>
-                            <input type="checkbox" />
-                            Remember Me
-                        </label>
-                        <Link to="/forgot-password" className={styles.forgotLink}>
-                            Forgot Password
-                        </Link>
-                    </div>
-
                     <button type="submit" className={styles.submitBtn} disabled={isLoading}>
-                        {isLoading ? 'Logging in...' : 'Login'}
+                        {isLoading ? 'Signing in...' : 'Sign In to Dashboard'}
                     </button>
                 </form>
 
                 <div className={styles.divider}>
-                    <span className={styles.dividerText}>Or continue with</span>
+                    <span className={styles.dividerText}>Demo credentials</span>
                 </div>
 
-                <div className={styles.socialGrid}>
-                    <button type="button" className={styles.socialBtn}>
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" height="18" />
-                        Google
-                    </button>
-                    <button type="button" className={styles.socialBtn}>
-                        <i className="bi bi-linkedin text-primary"></i>
-                        LinkedIn
-                    </button>
+                <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 10, padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#6B7280' }}>
+                    <strong style={{ color: '#374151', display: 'block', marginBottom: 4 }}>Example — Jollibee owner:</strong>
+                    <code style={{ background: '#E5E7EB', padding: '2px 6px', borderRadius: 4, color: '#374151' }}>
+                        jollibee@tmcfoodhub.com / jollibee123
+                    </code>
                 </div>
 
-                <p className={styles.switchAccount}>
-                    Don't have an account?
-                    <Link to="/signup" className={styles.switchAccountLink}>Sign up</Link>
-                </p>
-
-                <p className={styles.switchAccount} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#9CA3AF' }}>
-                    Restaurant owner?&nbsp;
-                    <Link to="/owner-login" className={styles.switchAccountLink} style={{ fontSize: '0.8rem' }}>
-                        Access your dashboard →
-                    </Link>
+                <p className={styles.switchAccount} style={{ marginTop: '1.25rem' }}>
+                    Not a restaurant owner?&nbsp;
+                    <Link to="/login" className={styles.switchAccountLink}>Customer Login</Link>
                 </p>
             </div>
         </AuthLayout>
     );
 }
 
-export default LoginPage;
+export default OwnerLoginPage;

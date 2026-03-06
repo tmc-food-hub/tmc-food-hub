@@ -20,23 +20,43 @@ function StarRow({ rating, size = 14 }) {
 function ItemDetail({ item, onBack, onAddToCart }) {
     return (
         <div className={styles.itemDetail}>
+            {/* Back button */}
             <button className={styles.backBtn} onClick={onBack}>
                 <ChevronLeft size={16} /> Back to Menu
             </button>
-            <img src={item.image} alt={item.title} className={styles.itemDetailImg} />
-            <div className={styles.itemDetailBody}>
-                <div className={styles.itemDetailCatTag}>{item.category}</div>
-                <h3 className={styles.itemDetailName}>{item.title}</h3>
-                <p className={styles.itemDetailDesc}>{item.description}</p>
-                <div className={styles.itemDetailMeta}>
-                    <span className={styles.itemDetailTag}><Clock size={12} /> 15–25 min prep</span>
-                    <span className={styles.itemDetailTag}>🌿 Fresh daily</span>
+
+            {/* Two-column layout */}
+            <div className={styles.itemDetailLayout}>
+                {/* Left: image */}
+                <div className={styles.itemDetailImgWrap}>
+                    <img src={item.image} alt={item.title} className={styles.itemDetailImg} />
                 </div>
-                <div className={styles.itemDetailFooter}>
-                    <span className={styles.itemDetailPrice}>${item.price.toFixed(2)}</span>
-                    <button className={styles.itemAddBtn} onClick={() => onAddToCart(item)}>
-                        <ShoppingCart size={15} /> Add to Cart
-                    </button>
+
+                {/* Right: info */}
+                <div className={styles.itemDetailInfo}>
+                    <div className={styles.itemDetailCatTag}>{item.category}</div>
+                    <h3 className={styles.itemDetailName}>{item.title}</h3>
+                    <p className={styles.itemDetailDesc}>{item.description}</p>
+
+                    <div className={styles.itemDetailMeta}>
+                        <span className={styles.itemDetailTag}><Clock size={12} /> 15–25 min prep</span>
+                        <span className={styles.itemDetailTag}>🌿 Fresh daily</span>
+                        <span className={styles.itemDetailTag}>⭐ Customer favourite</span>
+                    </div>
+
+                    <div className={styles.itemNutrition}>
+                        <div className={styles.nutritionItem}><span>Cal</span><strong>480 kcal</strong></div>
+                        <div className={styles.nutritionItem}><span>Protein</span><strong>24g</strong></div>
+                        <div className={styles.nutritionItem}><span>Carbs</span><strong>35g</strong></div>
+                        <div className={styles.nutritionItem}><span>Fat</span><strong>18g</strong></div>
+                    </div>
+
+                    <div className={styles.itemDetailFooter}>
+                        <span className={styles.itemDetailPrice}>${item.price.toFixed(2)}</span>
+                        <button className={styles.itemAddBtn} onClick={() => onAddToCart(item)}>
+                            <ShoppingCart size={15} /> Add to Cart
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
