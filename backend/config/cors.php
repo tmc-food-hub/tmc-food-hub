@@ -16,6 +16,7 @@ return [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'https://tmc-backend.test',
+        'https://foodhub.tmc-innovations.com',
     ],
 
     'allowed_origins_patterns' => [],
