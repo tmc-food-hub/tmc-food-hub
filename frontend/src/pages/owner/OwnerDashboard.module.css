@@ -4065,3 +4065,561 @@
     border-color: #991B1B;
     box-shadow: 0 0 0 2px rgba(153, 27, 27, 0.1);
 }
+
+/* ─── Analytics Section ────────────────────────────────────────────────────── */
+
+/* Header & Filters */
+.headerActionsRight {
+    display: flex;
+    margin-left: auto;
+    /* push export button to right edge */
+}
+
+.analyticsFilterBtn {
+    background: white;
+    border: 1px solid #D1D5DB;
+    padding: 0.5rem 0.875rem;
+    border-radius: 6px;
+    font-size: .875rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.analyticsFilterBtn:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+}
+
+/* Custom Dropdown Filter */
+.categoryDropdownWrapper {
+    position: relative;
+}
+
+.categoryDropdownMenu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 260px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdownSearchWrap {
+    padding: 0.75rem;
+    border-bottom: 1px solid #E5E7EB;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdownSearchIcon {
+    position: absolute;
+    left: 1.25rem;
+    color: #9CA3AF;
+}
+
+.dropdownSearchInput {
+    width: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    border: none;
+    background: #F3F4F6;
+    border-radius: 6px;
+    font-size: .875rem;
+    outline: none;
+}
+
+.dropdownOptionsList {
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+.dropdownCheckboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: .875rem;
+    color: #374151;
+    transition: background 0.15s;
+}
+
+.dropdownCheckboxLabel:hover {
+    background: #F9FAFB;
+}
+
+.customCheckbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    transition: all 0.2s;
+}
+
+.customCheckbox.checked {
+    background: #991B1B;
+    border-color: #991B1B;
+    color: white;
+}
+
+/* Make selected row in dropdown reddish to match design */
+.dropdownCheckboxLabel:has(.checked) {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.boldLabel {
+    font-weight: 600;
+}
+
+.dropdownFooter {
+    padding: 0.75rem;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.dropdownFooter button {
+    flex: 1;
+    padding: 0.5rem;
+}
+
+/* Analytics Metrics Grid */
+.analyticsMetricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.analyticsMetricCard {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.metricHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.metricBigValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.trendBadgePositive {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #059669;
+    background: #D1FAE5;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.trendBadgeNegative {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #DC2626;
+    background: #FEE2E2;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+/* Layout Grids */
+.analyticsGridMain {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.analyticsGridBottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.cardSection {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+/* Sales Revenue Bar Chart */
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.chartTitle {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.chartLegendWrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .75rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.legendDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.chartBigValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 2rem;
+}
+
+.barChartContainer {
+    display: flex;
+    height: 250px;
+    gap: 1rem;
+}
+
+.yAxisLabels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #9CA3AF;
+    font-size: .75rem;
+    font-weight: 500;
+    padding-bottom: 24px;
+    /* Space for x-axis labels */
+    align-items: flex-end;
+    width: 32px;
+}
+
+.chartBarsArea {
+    flex: 1;
+    position: relative;
+}
+
+.chartGridLines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    /* Space for x-axis labels */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.gridLine {
+    height: 1px;
+    background: #F3F4F6;
+    border-bottom: 1px dashed #E5E7EB;
+    width: 100%;
+}
+
+.barColumnsContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 0 1rem;
+}
+
+.barColumnWrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: 40px;
+}
+
+.barTrack {
+    position: relative;
+    width: 24px;
+    height: calc(100% - 24px);
+    /* Minus label height */
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.barPrevious {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #FDE8E8;
+    border-radius: 4px;
+    transition: height 0.5s ease;
+}
+
+.barCurrent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #991B1B;
+    border-radius: 4px;
+    transition: height 0.5s ease;
+    z-index: 2;
+}
+
+.barXLabel {
+    font-size: .75rem;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+/* Top Selling Items */
+.textBtn {
+    background: transparent;
+    border: none;
+    color: #991B1B;
+    font-size: .875rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.textBtn:hover {
+    text-decoration: underline;
+}
+
+.topSellingList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.topSellingItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topSellingImg {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #F3F4F6;
+}
+
+.topSellingDetails {
+    flex: 1;
+}
+
+.topSellingRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.topSellingName {
+    font-size: .875rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.topSellingCount {
+    font-size: .875rem;
+    color: #991B1B;
+    font-weight: 700;
+}
+
+.progressBarBg {
+    width: 100%;
+    height: 6px;
+    background: #F3F4F6;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: #991B1B;
+    border-radius: 999px;
+}
+
+/* Order Patterns Heatmap */
+.heatmapContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.heatmapRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.heatmapLabel {
+    width: 32px;
+    font-size: .75rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.heatmapHour {
+    flex: 1;
+    text-align: center;
+    font-size: .75rem;
+    color: #4B5563;
+    font-weight: 600;
+}
+
+.heatmapCell {
+    flex: 1;
+    height: 24px;
+    border-radius: 4px;
+    transition: transform 0.1s;
+}
+
+.heatmapCell:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+/* Heat levels matching the Figma design colors */
+.heatLevel0 {
+    background: #FEF2F2;
+}
+
+.heatLevel1 {
+    background: #FDE8E8;
+}
+
+.heatLevel2 {
+    background: #FCA5A5;
+}
+
+.heatLevel3 {
+    background: #DC2626;
+}
+
+.heatLevel4 {
+    background: #991B1B;
+}
+
+.heatmapLegend {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: .75rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.heatmapCellSmall {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* Recent High Value Orders Table */
+.highValueTableWrap {
+    overflow-x: auto;
+}
+
+.highValueTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.highValueTable th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: .75rem;
+    font-weight: 500;
+    color: #9CA3AF;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.highValueTable td {
+    padding: 1rem;
+    border-bottom: 1px solid #E5E7EB;
+    vertical-align: middle;
+}
+
+.highValueTable tr:last-child td {
+    border-bottom: none;
+}
+
+.highValueId {
+    font-size: .875rem;
+    color: #4B5563;
+    font-weight: 500;
+}
+
+.customerCell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.customerAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #F3F4F6;
+}
+
+.customerName {
+    font-size: .875rem;
+    color: #111827;
+    font-weight: 500;
+}
+
+.highValueTotal {
+    font-size: .875rem;
+    color: #111827;
+    font-weight: 700;
+}
