@@ -47,10 +47,12 @@ jobs:
           ARGS: "-avz --delete"
           REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
           REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          PORT: 65002
           
           # Deploy Backend
           SOURCE: "backend/"
           TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/backend-app/"
+          EXCLUDE: "/node_modules/, .env, .git/, /storage/logs/*, /storage/framework/cache/*"
         
       - name: Deploy Frontend to public_html
         uses: easingthemes/ssh-deploy@main
@@ -59,10 +61,12 @@ jobs:
           ARGS: "-avz --delete"
           REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
           REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          PORT: 65002
           
           # Deploy Frontend
           SOURCE: "frontend/dist/"
           TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/public_html/"
+          EXCLUDE: ".git/"
 
       # --- POST-DEPLOYMENT COMMANDS (Optional but recommended) ---
       - name: Run Laravel Migrations and Clear Cache
@@ -70,6 +74,7 @@ jobs:
         with:
           host: ${{ secrets.HOSTINGER_SERVER_IP }}
           username: ${{ secrets.HOSTINGER_SSH_USER }}
+          port: 65002
           key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/backend-app/
