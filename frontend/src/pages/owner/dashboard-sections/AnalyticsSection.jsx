@@ -38,13 +38,8 @@ function AnalyticsSection() {
 
     return (
         <div className={styles.sectionContainer}>
-            {/* Header Area */}
-            <div className={styles.sectionHeader}>
-                <div>
-                    <h2 className={styles.sectionTitle}>Analytics</h2>
-                    <p className={styles.sectionSubtitle}>Analyze sales trends, customer behavior, and order patterns to make informed decisions.</p>
-                </div>
-
+            {/* Header Actions */}
+            <div className={styles.sectionHeader} style={{ justifyContent: 'flex-end' }}>
                 <div className={styles.headerActions}>
                     <button className={styles.analyticsFilterBtn}>
                         <Calendar size={16} />

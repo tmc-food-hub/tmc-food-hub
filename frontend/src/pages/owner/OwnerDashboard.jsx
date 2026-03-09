@@ -5,7 +5,8 @@ import {
     Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Save, X, Check,
     Package, DollarSign, ShoppingBag, Truck, Bell,
     AlertCircle, CheckCircle2, Timer, MapPin, FileText, Tag,
-    Hash, Layers, ExternalLink, Search, TrendingUp, TrendingDown, Star
+    Hash, Layers, ExternalLink, Search, TrendingUp, TrendingDown, Star,
+    Receipt, Wallet, CreditCard
 } from 'lucide-react';
 import { useOwnerAuth } from '../../context/OwnerAuthContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
@@ -20,6 +21,7 @@ import SettingsSection from './dashboard-sections/SettingsSection';
 import PromotionsSection from './dashboard-sections/PromotionsSection';
 import CategoriesSection from './dashboard-sections/CategoriesSection';
 import AnalyticsSection from './dashboard-sections/AnalyticsSection';
+import EarningsSection from './dashboard-sections/EarningsSection';
 import { buildOrders } from './dashboard-sections/shared';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -49,7 +51,16 @@ const NAV_GROUPS = [
         label: 'Finance',
         items: [
             { key: 'analytics', label: 'Analytics', icon: <FileText size={18} /> },
-            { key: 'earnings', label: 'Earnings', icon: <DollarSign size={18} /> },
+            {
+                key: 'earnings',
+                label: 'Earnings',
+                icon: <Wallet size={18} />,
+                subItems: [
+                    { key: 'transactions', label: 'Transactions', icon: <Receipt size={14} /> },
+                    { key: 'payout', label: 'Payout', icon: <Wallet size={14} /> },
+                    { key: 'payment-settings', label: 'Payment Settings', icon: <CreditCard size={14} /> }
+                ]
+            },
         ]
     },
     {
@@ -73,10 +84,33 @@ function OwnerDashboard() {
     const pendingCount = mockOrders.filter(o => o.status === 'Pending').length;
 
     let activeLabel = 'Dashboard';
+    let subTitle = `Welcome back, ${ownerStore.branchName}!`;
+
     NAV_GROUPS.forEach(g => {
-        const found = g.items.find(i => i.key === active);
-        if (found) activeLabel = found.label;
+        g.items.forEach(i => {
+            if (i.key === active) activeLabel = i.label;
+            if (i.subItems) {
+                const foundSub = i.subItems.find(s => s.key === active);
+                if (foundSub) {
+                    activeLabel = foundSub.label;
+                }
+            }
+        });
     });
+
+    if (active === 'earnings' || active === 'transactions' || active === 'payout' || active === 'payment-settings') {
+        activeLabel = 'Earnings';
+        subTitle = 'Track your revenue, payouts, and financial performance over time.';
+    } else if (active === 'analytics') {
+        subTitle = 'Monitor your store\'s performance and sales metrics.';
+    }
+
+    // Check if a parent item is "active" because one of its subItems is active
+    const isItemExpanded = (item) => {
+        if (active === item.key) return true;
+        if (item.subItems && item.subItems.some(s => s.key === active)) return true;
+        return false;
+    };
 
     return (
         <div className={styles.shell}>
@@ -95,13 +129,40 @@ function OwnerDashboard() {
                     {NAV_GROUPS.map(group => (
                         <div key={group.label} className={styles.navGroup}>
                             <div className={styles.navLabel}>{group.label}</div>
-                            {group.items.map(n => (
-                                <button key={n.key} className={`${styles.navBtn} ${active === n.key ? styles.navBtnActive : ''}`} onClick={() => setActive(n.key)}>
-                                    <span className={styles.navIcon}>{n.icon}</span>
-                                    <span>{n.label}</span>
-                                    {n.key === 'orders' && pendingCount > 0 && <span className={styles.badge}>{pendingCount}</span>}
-                                </button>
-                            ))}
+                            {group.items.map(n => {
+                                const expanded = isItemExpanded(n);
+                                return (
+                                    <div key={n.key} className={styles.navItemWrapper}>
+                                        <button
+                                            className={`${styles.navBtn} ${expanded ? styles.navBtnActive : ''}`}
+                                            onClick={() => setActive(n.key)}
+                                        >
+                                            <span className={styles.navIcon}>{n.icon}</span>
+                                            <span>{n.label}</span>
+                                            {n.key === 'orders' && pendingCount > 0 && <span className={styles.badge}>{pendingCount}</span>}
+                                        </button>
+
+                                        {/* Render Sub Items if expanded */}
+                                        {expanded && n.subItems && (
+                                            <div className={styles.navSubItemsGroup}>
+                                                {n.subItems.map(s => (
+                                                    <button
+                                                        key={s.key}
+                                                        className={`${styles.navSubBtn} ${active === s.key ? styles.navSubBtnActive : ''}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActive(s.key);
+                                                        }}
+                                                    >
+                                                        <span className={styles.navSubIcon}>{s.icon}</span>
+                                                        <span>{s.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     ))}
                 </nav>
@@ -134,12 +195,12 @@ function OwnerDashboard() {
                 <div className={styles.topBar}>
                     <div>
                         <h1 className={styles.topTitle}>{active === 'overview' ? 'Dashboard' : activeLabel}</h1>
-                        <p className={styles.topSub}>Welcome back, {ownerStore.branchName}!</p>
+                        <p className={styles.topSub}>{subTitle}</p>
                     </div>
                     <div className={styles.topRight}>
                         <div className={styles.searchWrap}>
                             <Search className={styles.searchIcon} size={16} />
-                            <input type="text" placeholder="Search orders, menu..." className={styles.searchInput} />
+                            <input type="text" placeholder="Search items..." className={styles.searchInput} />
                         </div>
                         <button className={styles.notificationBtn}>
                             <Bell size={20} />
@@ -155,6 +216,10 @@ function OwnerDashboard() {
                     {active === 'categories' && <CategoriesSection />}
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
+                    {active === 'earnings' && <EarningsSection />}
+                    {active === 'transactions' && <EarningsSection />}
+                    {active === 'payout' && <EarningsSection />}
+                    {active === 'payment-settings' && <EarningsSection />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}
                 </div>
