@@ -1,0 +1,13 @@
+Options -MultiViews
+RewriteEngine On
+
+# Route /api/* requests to the Laravel PHP entry point
+RewriteCond %{REQUEST_URI} ^/api(/.*)?$ [NC]
+RewriteRule ^ laravel-entry.php [L]
+
+# Serve existing static files directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Fallback to React SPA index.html for all other routes
+RewriteRule ^ index.html [L]
