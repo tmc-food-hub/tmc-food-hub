@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import AuthLayout from '../components/layout/AuthLayout';
-import { useOwnerAuth } from '../context/OwnerAuthContext';
-import styles from './AuthPages.module.css';
+import AuthLayout from '../../components/layout/AuthLayout';
+import { useOwnerAuth } from '../../context/OwnerAuthContext';
+import styles from '../customer/AuthPages.module.css';
 
 function OwnerLoginPage() {
     const [showPassword, setShowPassword] = useState(false);

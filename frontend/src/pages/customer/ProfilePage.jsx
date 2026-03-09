@@ -1,9 +1,9 @@
 import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { ThemeContext } from '../components/ui/ThemeContext';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
+import { useAuth } from '../../context/AuthContext';
+import { ThemeContext } from '../../components/ui/ThemeContext';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {

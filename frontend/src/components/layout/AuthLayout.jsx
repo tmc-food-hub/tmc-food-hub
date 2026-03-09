@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeContext } from '../../components/ui/ThemeContext';
-import styles from '../../pages/AuthPages.module.css';
+import styles from '../../pages/customer/AuthPages.module.css';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 
 const AuthLayout = ({ children, heroSubtitle }) => {

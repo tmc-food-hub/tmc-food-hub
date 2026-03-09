@@ -1,7 +1,7 @@
 import React from 'react';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import CompanyEventsAndAnnouncementsSection from '../components/sections/CompanyEventsAndAnnouncementsSection';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import CompanyEventsAndAnnouncementsSection from '../../components/sections/CompanyEventsAndAnnouncementsSection';
 
 const CompanyEventsAndAnnouncements = () => {
   return (

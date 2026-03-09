@@ -1,7 +1,7 @@
 import React from 'react';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
- import AnnouncementDetail from '../components/sections/AnnouncementDetail';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+ import AnnouncementDetail from '../../components/sections/AnnouncementDetail';
 const AnnouncementDetailPage = () => {
   return (
     <div className="site-wrap">

@@ -1,7 +1,7 @@
-import Navbar from '../components/sections/Navbar';
-import NewsBlogDetailSection from '../components/sections/NewsBlogDetailSection'; 
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
+import Navbar from '../../components/sections/Navbar';
+import NewsBlogDetailSection from '../../components/sections/NewsBlogDetailSection'; 
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
 
 function NewsBlogDetailPage() {
   return (

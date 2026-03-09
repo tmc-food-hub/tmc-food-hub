@@ -6,10 +6,10 @@ import {
     Check, Clock, Circle, Phone, PhoneOff,
     Star, X, MessageCircle, ChevronRight
 } from 'lucide-react';
-import { useOrders } from '../context/OrderContext';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
+import { useOrders } from '../../context/OrderContext';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
 import styles from './OrderTrackingPage.module.css';
 
 /* ------------------------------------------------

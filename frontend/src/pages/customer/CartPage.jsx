@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { CartContext } from '../components/ui/CartContext';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
+import { CartContext } from '../../components/ui/CartContext';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
 import styles from './CartPage.module.css';
 
 function CartPage() {

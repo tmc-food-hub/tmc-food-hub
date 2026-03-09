@@ -4,10 +4,10 @@ import {
     Package, Clock, CheckCircle2, XCircle, MapPin,
     ShoppingBag, ChevronRight, Truck, Star
 } from 'lucide-react';
-import { useOrders } from '../context/OrderContext';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
+import { useOrders } from '../../context/OrderContext';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
 import styles from './MyOrdersPage.module.css';
 
 const TABS = [

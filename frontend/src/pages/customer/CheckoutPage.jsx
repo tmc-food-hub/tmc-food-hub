@@ -1,13 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, CreditCard, Banknote } from 'lucide-react';
-import gcashLogo from '../assets/imgs/gcash-logo.png';
-import mayaLogo from '../assets/imgs/maya-logo.jpg';
-import { CartContext } from '../components/ui/CartContext';
-import { useOrders } from '../context/OrderContext';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
+import gcashLogo from '../../assets/imgs/gcash-logo.png';
+import mayaLogo from '../../assets/imgs/maya-logo.jpg';
+import { CartContext } from '../../components/ui/CartContext';
+import { useOrders } from '../../context/OrderContext';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
 import styles from './CheckoutPage.module.css';
 
 function CheckoutPage() {

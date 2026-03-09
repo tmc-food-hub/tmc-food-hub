@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import AuthLayout from '../components/layout/AuthLayout';
-import { useAuth } from '../context/AuthContext';
+import AuthLayout from '../../components/layout/AuthLayout';
+import { useAuth } from '../../context/AuthContext';
 import styles from './AuthPages.module.css';
 
 function LoginPage() {

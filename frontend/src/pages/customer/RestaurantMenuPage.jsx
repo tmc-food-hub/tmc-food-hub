@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight, PenLine, ThumbsUp, X, UploadCloud, CheckCircle2, ShoppingCart } from 'lucide-react';
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
-import { CartContext } from '../components/ui/CartContext';
-import { getStores } from '../data/storesData';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
+import { CartContext } from '../../components/ui/CartContext';
+import { getStores } from '../../data/storesData';
 import styles from './RestaurantMenuPage.module.css';
 
 function StarRow({ rating, size = 14 }) {

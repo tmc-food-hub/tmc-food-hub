@@ -1,9 +1,9 @@
-import Navbar from '../components/sections/Navbar';
+import Navbar from '../../components/sections/Navbar';
 
-import Footer from '../components/sections/Footer';
+import Footer from '../../components/sections/Footer';
 
-import BackToTop from '../components/ui/BackToTop';
-import SupportSection from '../components/sections/SupportSection';
+import BackToTop from '../../components/ui/BackToTop';
+import SupportSection from '../../components/sections/SupportSection';
 
 function SupportPage() {
   return (

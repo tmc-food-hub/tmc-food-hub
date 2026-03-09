@@ -1,7 +1,7 @@
-import Navbar from '../components/sections/Navbar';
-import Footer from '../components/sections/Footer';
-import BackToTop from '../components/ui/BackToTop';
-import FAQSection from '../components/sections/FAQSection';
+import Navbar from '../../components/sections/Navbar';
+import Footer from '../../components/sections/Footer';
+import BackToTop from '../../components/ui/BackToTop';
+import FAQSection from '../../components/sections/FAQSection';
 
 function FAQPage() {
   return (
