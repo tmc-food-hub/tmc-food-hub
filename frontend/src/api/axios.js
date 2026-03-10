@@ -1,12 +1,17 @@
 import axios from 'axios';
 
-// Use Herd .test domain or standard localhost:8000 in dev, production backend URL when deployed
+// API base URL resolution:
+// 1. If VITE_API_URL is set in frontend/.env, use that (e.g. https://tmc-backend.test/api for Herd users)
+// 2. If accessed via a .test domain, use the Herd backend
+// 3. If on localhost, default to php artisan serve (http://127.0.0.1:8000/api)
+// 4. Otherwise, use the production backend
 const hostname = window.location.hostname;
-const baseURL = hostname.endsWith('.test')
-    ? 'https://tmc-backend.test/api'
-    : (hostname === 'localhost' || hostname === '127.0.0.1')
-        ? 'http://127.0.0.1:8000/api'
-        : 'https://foodhub.tmc-innovations.com/api';
+const baseURL = import.meta.env.VITE_API_URL
+    || (hostname.endsWith('.test')
+        ? 'https://tmc-backend.test/api'
+        : (hostname === 'localhost' || hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://foodhub.tmc-innovations.com/api');
 
 const api = axios.create({
     baseURL: baseURL,

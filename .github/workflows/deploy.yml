@@ -90,6 +90,15 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
 
+            MAIL_MAILER=smtp
+            MAIL_SCHEME=smtps
+            MAIL_HOST=${{ secrets.MAIL_HOST }}
+            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+            MAIL_FROM_ADDRESS="${{ secrets.MAIL_FROM_ADDRESS }}"
+            MAIL_FROM_NAME="TMC Food Hub"
+
             CACHE_DRIVER=file
             SESSION_DRIVER=file
             QUEUE_DRIVER=sync
