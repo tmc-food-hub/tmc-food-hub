@@ -112,7 +112,7 @@ function ProfilePage() {
                             <div className={styles.fieldList}>
                                 <Field label="Full Name" value={user?.name} />
                                 <Field label="Email Address" value={user?.email} />
-                                <Field label="Contact Number" value={user?.contactNumber} />
+                                <Field label="Contact Number" value={user?.phone} />
                                 <Field label="Account Role" value={user?.role || 'Customer'} />
                             </div>
                         </div>
@@ -150,7 +150,7 @@ function ProfilePage() {
                             </div>
                             <div className={styles.fieldList}>
                                 <Field label="Default Address" value={user?.address} />
-                                <Field label="Delivery Instructions" value={user?.deliveryInstructions} />
+                                <Field label="Delivery Instructions" value={user?.delivery_instructions} />
                             </div>
                         </div>
 
@@ -165,10 +165,10 @@ function ProfilePage() {
                                     </div>
                                 </div>
                                 <div className={styles.fieldList}>
-                                    <Field label="Restaurant Name" value={user?.restaurantName} />
-                                    <Field label="Business Contact" value={user?.businessContactNumber} />
-                                    <Field label="Business Address" value={user?.businessAddress} />
-                                    <Field label="Permit / TIN" value={user?.businessPermit} />
+                                    <Field label="Restaurant Name" value={user?.restaurant_name} />
+                                    <Field label="Business Contact" value={user?.business_contact_number} />
+                                    <Field label="Business Address" value={user?.business_address} />
+                                    <Field label="Permit / TIN" value={user?.business_permit} />
                                 </div>
                             </div>
                         )}

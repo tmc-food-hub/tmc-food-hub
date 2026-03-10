@@ -45,6 +45,16 @@ export function AuthProvider({ children }) {
         return res.data;
     };
 
+    const sendOtp = async (email) => {
+        const res = await api.post('/send-otp', { email });
+        return res.data;
+    };
+
+    const verifyOtp = async (email, otp) => {
+        const res = await api.post('/verify-otp', { email, otp });
+        return res.data;
+    };
+
     const logout = async () => {
         try {
             await api.post('/logout');
@@ -64,6 +74,8 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!user,
         login,
         register,
+        sendOtp,
+        verifyOtp,
         logout,
     };
 

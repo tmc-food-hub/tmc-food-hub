@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Use localhost backend in dev, production backend URL when deployed
+// Use Herd .test domain in dev, production backend URL when deployed
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const baseURL = isLocalhost ? 'http://127.0.0.1:8000/api' : 'https://foodhub.tmc-innovations.com/api';
+const baseURL = isLocalhost ? 'https://tmc-backend.test/api' : 'https://foodhub.tmc-innovations.com/api';
 
 const api = axios.create({
     baseURL: baseURL,
