@@ -22,6 +22,7 @@ import PromotionsSection from './dashboard-sections/PromotionsSection';
 import CategoriesSection from './dashboard-sections/CategoriesSection';
 import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
+import PayoutSection from './dashboard-sections/PayoutSection';
 import { buildOrders } from './dashboard-sections/shared';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -76,6 +77,7 @@ function OwnerDashboard() {
     const navigate = useNavigate();
     const [active, setActive] = useState('overview');
     const [profileOpen, setProfileOpen] = useState(false);
+    const [payoutViewData, setPayoutViewData] = useState(null);
 
     if (!currentOwner) { navigate('/owner-login'); return null; }
     if (!ownerStore) return <p>Store not found.</p>;
@@ -192,23 +194,25 @@ function OwnerDashboard() {
 
             {/* ── Main ── */}
             <div className={styles.main}>
-                <div className={styles.topBar}>
-                    <div>
-                        <h1 className={styles.topTitle}>{active === 'overview' ? 'Dashboard' : activeLabel}</h1>
-                        <p className={styles.topSub}>{subTitle}</p>
-                    </div>
-                    <div className={styles.topRight}>
-                        <div className={styles.searchWrap}>
-                            <Search className={styles.searchIcon} size={16} />
-                            <input type="text" placeholder="Search items..." className={styles.searchInput} />
+                {active !== 'payout' && (
+                    <div className={styles.topBar}>
+                        <div>
+                            <h1 className={styles.topTitle}>{active === 'overview' ? 'Dashboard' : activeLabel}</h1>
+                            <p className={styles.topSub}>{subTitle}</p>
                         </div>
-                        <button className={styles.notificationBtn}>
-                            <Bell size={20} />
-                            <span className={styles.notificationBadge}></span>
-                        </button>
+                        <div className={styles.topRight}>
+                            <div className={styles.searchWrap}>
+                                <Search className={styles.searchIcon} size={16} />
+                                <input type="text" placeholder="Search items..." className={styles.searchInput} />
+                            </div>
+                            <button className={styles.notificationBtn}>
+                                <Bell size={20} />
+                                <span className={styles.notificationBadge}></span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div className={styles.content}>
+                )}
+                <div className={styles.content} style={active === 'payout' ? { padding: '1.5rem', background: '#FAFAFA' } : {}}>
                     {active === 'overview' && <OverviewSection store={ownerStore} orders={mockOrders} />}
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
                     {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
@@ -216,9 +220,9 @@ function OwnerDashboard() {
                     {active === 'categories' && <CategoriesSection />}
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
-                    {active === 'earnings' && <EarningsSection />}
-                    {active === 'transactions' && <EarningsSection />}
-                    {active === 'payout' && <EarningsSection />}
+                    {active === 'earnings' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
+                    {active === 'transactions' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
+                    {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
                     {active === 'payment-settings' && <EarningsSection />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}

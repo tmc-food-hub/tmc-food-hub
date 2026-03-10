@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Download, Search, Wallet, Clock, DollarSign, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
 
-function EarningsSection() {
+function EarningsSection({ onViewPayoutDetails }) {
     const [dateRange, setDateRange] = useState('Today');
     const [hoveredBar, setHoveredBar] = useState(null);
 
@@ -271,8 +271,19 @@ function EarningsSection() {
                                 { id: 'PAY-2026-9842', range: 'Feb 8 - Feb 28', date: 'Feb 28, 2026', amount: '₱32,450.00', status: 'Completed', statusClass: 'statusDelivered' },
                                 { id: 'PAY-2026-9104', range: 'Jan 4 - Feb 7', date: 'Feb 7, 2026', amount: '₱28,910.00', status: 'Completed', statusClass: 'statusDelivered' }
                             ].map(payout => (
-                                <tr key={payout.id}>
-                                    <td className={styles.highValueId} style={{ fontWeight: 700, color: '#111827' }}>{payout.id}</td>
+                                <tr
+                                    key={payout.id}
+                                    onClick={() => onViewPayoutDetails && onViewPayoutDetails({
+                                        id: payout.id.replace('PAY-', ''),
+                                        date: payout.date,
+                                        amount: payout.amount,
+                                        method: 'Bank Transfer',
+                                        status: payout.status,
+                                        numTx: 43
+                                    })}
+                                    style={{ cursor: onViewPayoutDetails ? 'pointer' : 'default' }}
+                                >
+                                    <td className={styles.highValueId} style={{ fontWeight: 700, color: '#111827' }}>#{payout.id}</td>
                                     <td style={{ fontSize: '.875rem', fontWeight: 600, color: '#4B5563' }}>{payout.range}</td>
                                     <td style={{ fontSize: '.875rem', fontWeight: 600, color: '#111827' }}>{payout.date}</td>
                                     <td className={styles.highValueTotal}>{payout.amount}</td>
@@ -287,7 +298,7 @@ function EarningsSection() {
                     </table>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
