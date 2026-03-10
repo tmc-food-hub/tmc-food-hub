@@ -5,6 +5,17 @@ import styles from '../OwnerDashboard.module.css';
 function AnalyticsSection() {
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState(['All Categories']);
+    const [hoveredBar, setHoveredBar] = useState(null);
+
+    const salesBarData = [
+        { day: 'Feb 27', current: 35, previous: 45, revenue: '₱14,820', orders: 98, trend: '+8%' },
+        { day: 'Feb 28', current: 55, previous: 65, revenue: '₱22,350', orders: 142, trend: '+12%' },
+        { day: 'Mar 1', current: 25, previous: 55, revenue: '₱10,500', orders: 74, trend: '-5%' },
+        { day: 'Mar 2', current: 75, previous: 60, revenue: '₱31,280', orders: 198, trend: '+18%' },
+        { day: 'Mar 3', current: 65, previous: 80, revenue: '₱27,950', orders: 176, trend: '+14%' },
+        { day: 'Mar 4', current: 55, previous: 70, revenue: '₱22,410', orders: 155, trend: '+10%' },
+        { day: 'Mar 5', current: 90, previous: 85, revenue: '₱42,910', orders: 241, trend: '+22%' },
+    ];
 
     const ALL_CATEGORIES = [
         'Main Courses',
@@ -180,25 +191,51 @@ function AnalyticsSection() {
 
                             {/* Bar Columns */}
                             <div className={styles.barColumnsContainer}>
-                                {[
-                                    { day: 'Feb 27', current: 35, previous: 45 },
-                                    { day: 'Feb 28', current: 55, previous: 65 },
-                                    { day: 'Mar 1', current: 25, previous: 55 },
-                                    { day: 'Mar 2', current: 75, previous: 60 },
-                                    { day: 'Mar 3', current: 65, previous: 80 },
-                                    { day: 'Mar 4', current: 55, previous: 70 },
-                                    { day: 'Mar 5', current: 90, previous: 85 }
-                                ].map((data, idx) => (
+                                {salesBarData.map((data, idx) => (
                                     <div key={idx} className={styles.barColumnWrapper}>
                                         <div className={styles.barTrack}>
+                                            {/* Previous period bar */}
                                             <div
                                                 className={styles.barPrevious}
-                                                style={{ height: `${data.previous}%` }}
+                                                style={{
+                                                    height: `${data.previous}%`,
+                                                    background: 'linear-gradient(to bottom, #F9A8A8, #FDE8E8)',
+                                                }}
                                             ></div>
+                                            {/* Current period bar with hover */}
                                             <div
                                                 className={styles.barCurrent}
-                                                style={{ height: `${data.current}%` }}
-                                            ></div>
+                                                style={{
+                                                    height: `${data.current}%`,
+                                                    background: hoveredBar === idx
+                                                        ? 'linear-gradient(to bottom, #7F1D1D, #991B1B)'
+                                                        : 'linear-gradient(to bottom, #8B3A2A, #D4845A)',
+                                                    cursor: 'pointer',
+                                                    transition: 'background 0.2s ease',
+                                                    borderTopLeftRadius: '4px',
+                                                    borderTopRightRadius: '4px',
+                                                }}
+                                                onMouseEnter={() => setHoveredBar(idx)}
+                                                onMouseLeave={() => setHoveredBar(null)}
+                                            >
+                                                {hoveredBar === idx && (
+                                                    <div className={styles.chartTooltip}>
+                                                        <div className={styles.chartTooltipDate}>{data.day}, 2026</div>
+                                                        <div className={styles.tooltipRow}>
+                                                            <span className={styles.tooltipLabel}>Revenue</span>
+                                                            <span className={styles.tooltipValue}>{data.revenue}</span>
+                                                        </div>
+                                                        <div className={styles.tooltipRow} style={{ marginBottom: '0.625rem' }}>
+                                                            <span className={styles.tooltipLabel}>Orders</span>
+                                                            <span className={styles.tooltipValue}>{data.orders}</span>
+                                                        </div>
+                                                        <div className={styles.trendBadgePositive} style={{ display: 'inline-block' }}>
+                                                            ↗ {data.trend} vs last week
+                                                        </div>
+                                                        <div className={styles.tooltipArrow}></div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className={styles.barXLabel}>{data.day}</div>
                                     </div>
