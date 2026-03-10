@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="95" fill="#134E4A"/>
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#5EEAD4" stroke-width="2"/>
+  <!-- Bowl shape -->
+  <path d="M55 105 Q55 145 100 150 Q145 145 145 105 Z" fill="#0D9488" opacity="0.6"/>
+  <ellipse cx="100" cy="105" rx="45" ry="12" fill="#0D9488"/>
+  <!-- Steam lines -->
+  <path d="M80 85 Q78 75 82 65" stroke="#5EEAD4" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M100 80 Q98 70 102 60" stroke="#5EEAD4" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M120 85 Q118 75 122 65" stroke="#5EEAD4" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <text x="100" y="178" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#FFFFFF">TÉ HANA</text>
+  <text x="100" y="193" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#5EEAD4" letter-spacing="2">RAMEN</text>
+</svg>

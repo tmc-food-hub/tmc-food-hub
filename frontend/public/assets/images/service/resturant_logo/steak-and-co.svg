@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="95" fill="#1C1C1C"/>
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#C5955A" stroke-width="3"/>
+  <text x="100" y="78" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="#C5955A">STEAK</text>
+  <line x1="50" y1="90" x2="150" y2="90" stroke="#C5955A" stroke-width="1.5"/>
+  <text x="100" y="115" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="#FFFFFF">&amp; CO.</text>
+  <text x="100" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#C5955A" letter-spacing="3">STEAKHOUSE</text>
+</svg>
