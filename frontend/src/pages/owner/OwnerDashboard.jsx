@@ -22,6 +22,7 @@ import PromotionsSection from './dashboard-sections/PromotionsSection';
 import CategoriesSection from './dashboard-sections/CategoriesSection';
 import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
+import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
 import { buildOrders } from './dashboard-sections/shared';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
@@ -223,7 +224,7 @@ function OwnerDashboard() {
                     {active === 'earnings' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
                     {active === 'transactions' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
                     {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
-                    {active === 'payment-settings' && <EarningsSection />}
+                    {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}
                 </div>

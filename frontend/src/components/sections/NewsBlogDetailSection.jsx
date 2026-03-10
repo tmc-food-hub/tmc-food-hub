@@ -408,9 +408,6 @@ const NewsBlogDetailSection = () => {
       const foundBlog = findBlogBySlug();
 
       if (foundBlog) {
-        const newsTags = ["Platform Updates", "System Architecture", "Data Analytics", "Newsletter"];
-        const basePath = newsTags.includes(foundBlog.tag) ? '/news' : '/blogs';
-
         // Set the post directly without navigation to avoid loops
         const category = foundBlog.tag;
 

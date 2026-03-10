@@ -8,7 +8,6 @@ function BlogCard({
   date,
   readTime,
   delay = 0,
-  image,
   summary,
   author,
   keyTakeaways,

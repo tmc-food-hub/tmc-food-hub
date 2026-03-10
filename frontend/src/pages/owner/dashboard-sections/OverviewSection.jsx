@@ -6,9 +6,6 @@ import styles from '../OwnerDashboard.module.css';
 export default function OverviewSection({ store, orders }) {
     const [hoveredBar, setHoveredBar] = useState(null);
 
-    const pending = orders.filter(o => o.status === 'Pending').length;
-    const todayRev = orders.filter(o => o.status === 'Delivered').reduce((s, o) => s + o.total, 0);
-
     const salesBarData = [
         { day: 'Mon', revenue: '₱3,000', orders: 24, current: 20, trend: '+5%' },
         { day: 'Tue', revenue: '₱9,750', orders: 68, current: 65, trend: '+18%' },

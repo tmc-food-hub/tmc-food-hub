@@ -1,0 +1,44 @@
+﻿
+> avaa-frontend@0.0.0 lint
+> eslint .
+
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\components\sections\NewsBlogDetailSection.jsx
+  412:15  error  'basePath' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\components\ui\BlogCard.jsx
+  11:3  error  'image' is defined but never used  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\components\ui\Input.jsx
+  13:19  error  'e' is defined but never used  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\hooks\useSupportPageLogic.js
+   6:41  error  'process' is not defined          no-undef
+   6:56  error  'process' is not defined          no-undef
+   7:12  error  'process' is not defined          no-undef
+  90:49  error  Unnecessary escape character: \/  no-useless-escape
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\customer\MenuPage.jsx
+  22:11  error  'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\owner\dashboard-sections\InventorySection.jsx
+   7:20  error  'setSearch' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  56:18  error  'e' is defined but never used                                                              no-unused-vars
+  81:18  error  'e' is defined but never used                                                              no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\owner\dashboard-sections\MenuSection.jsx
+  46:18  error  'err' is defined but never used  no-unused-vars
+  72:18  error  'err' is defined but never used  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\owner\dashboard-sections\OrdersSection.jsx
+  7:20  error  'setOrders' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\owner\dashboard-sections\OverviewSection.jsx
+   9:11  error  'pending' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u   no-unused-vars
+  10:11  error  'todayRev' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\owner\dashboard-sections\PaymentSettings.jsx
+  21:11  error  'handleMethodSelect' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+Γ£û 17 problems (17 errors, 0 warnings)
+

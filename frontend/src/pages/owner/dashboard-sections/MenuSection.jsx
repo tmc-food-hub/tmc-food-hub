@@ -43,7 +43,7 @@ export default function MenuSection({ store, onUpdate }) {
             setAddOpen(false);
             setError('');
             setDialog({ type: 'success', title: 'Item Added Successfully', desc: `${form.title} has been added to your menu and is now live.` });
-        } catch (err) {
+        } catch {
             setDialog({ type: 'error', title: 'Failed to Add Item', desc: `We couldn't add ${form.title} to your menu due to a technical error. Please check your connection and try again.` });
         }
     }
@@ -69,7 +69,7 @@ export default function MenuSection({ store, onUpdate }) {
             const updatedTitle = editForm.title;
             setEditId(null);
             setDialog({ type: 'success', title: 'Item Updated Successfully', desc: `${updatedTitle} has been updated.` });
-        } catch (err) {
+        } catch {
             setDialog({ type: 'error', title: 'Failed to Update Item', desc: `We couldn't update ${editForm.title} due to a technical error.` });
         }
     }

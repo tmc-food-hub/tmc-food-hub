@@ -10,7 +10,7 @@ function Input({
   required = false,
   className = "",
   ref = null,
-  onChangeFunc = (e) => {},
+  onChangeFunc = () => { },
   ...props
 }) {
   return (

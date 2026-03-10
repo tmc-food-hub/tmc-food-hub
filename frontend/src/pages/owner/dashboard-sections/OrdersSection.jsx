@@ -4,7 +4,7 @@ import { buildOrders, STATUS_ORDER } from './shared';
 import styles from '../OwnerDashboard.module.css';
 
 export default function OrdersSection({ store }) {
-    const [orders, setOrders] = useState(() => buildOrders(store));
+    const [orders] = useState(() => buildOrders(store));
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
 

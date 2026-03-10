@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, MapPin, Clock, Star, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
@@ -19,7 +19,6 @@ const CUISINE_CATEGORIES = [
 ];
 
 function MenuPage() {
-    const navigate = useNavigate();
     const [stores, setStores] = useState(() => getStores());
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCuisines, setActiveCuisines] = useState([]);

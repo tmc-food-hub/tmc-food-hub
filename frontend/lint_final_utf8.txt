@@ -1,0 +1,16 @@
+﻿
+> avaa-frontend@0.0.0 lint
+> eslint .
+
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\components\sections\NewsBlogDetailSection.jsx
+  411:15  error  'newsTags' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\hooks\useSupportPageLogic.js
+  92:49  error  Unnecessary escape character: \/  no-useless-escape
+
+C:\Users\david\Desktop\Ojt\tmc-foodhub\frontend\src\pages\customer\MenuPage.jsx
+  2:16  error  'useNavigate' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+Γ£û 3 problems (3 errors, 0 warnings)
+

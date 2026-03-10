@@ -3,7 +3,9 @@ import { useState, useRef, useEffect } from "react";
 export function getApiUrl() {
   if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL)
     return import.meta.env.VITE_API_URL;
+  // eslint-disable-next-line no-undef
   if (typeof process !== "undefined" && process.env && process.env.API_URL)
+    // eslint-disable-next-line no-undef
     return process.env.API_URL;
   return "http://localhost:8000";
 }
@@ -75,8 +77,8 @@ export const useSupportPageLogic = () => {
 
   // Validation helpers
   const validateName = (name) => /^[A-Za-z\s]+$/.test(name);
- const validateEmail = (email) =>
-  /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+  const validateEmail = (email) =>
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 
 
   // Form field change handler with real-time sanitization
@@ -87,6 +89,7 @@ export const useSupportPageLogic = () => {
     // Sanitize email input in real-time
     if (name === "email") {
       // Remove unsafe characters commonly used in XSS/SQL injection
+      // eslint-disable-next-line no-useless-escape
       sanitizedValue = value.replace(/[<>"'();\\\/]/g, "");
     }
 

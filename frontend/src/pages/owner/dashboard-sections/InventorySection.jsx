@@ -4,7 +4,7 @@ import styles from '../OwnerDashboard.module.css';
 
 export default function InventorySection({ store, onUpdate }) {
     const items = store.menuItems || [];
-    const [search, setSearch] = useState('');
+    const [search] = useState('');
     const [editItem, setEditItem] = useState(null);
     const [refillItem, setRefillItem] = useState(null);
 
@@ -53,7 +53,7 @@ export default function InventorySection({ store, onUpdate }) {
             onUpdate({ ...store, menuItems: updatedItems });
             setEditItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${editItem.title} have been successfully saved.` });
-        } catch (e) {
+        } catch {
             setDialog({ type: 'error', title: 'Update Failed', desc: `We couldn't save the changes to ${editItem.title}. Please try again.` });
         }
     };
@@ -78,7 +78,7 @@ export default function InventorySection({ store, onUpdate }) {
             onUpdate({ ...store, menuItems: updatedItems });
             setRefillItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${refillItem.title} have been successfully saved.` });
-        } catch (e) {
+        } catch {
             setDialog({ type: 'error', title: 'Update Failed', desc: `We couldn't save the changes to ${refillItem.title}. Please try again.` });
         }
     };
