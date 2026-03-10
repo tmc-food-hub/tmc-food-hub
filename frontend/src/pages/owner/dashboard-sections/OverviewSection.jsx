@@ -1,11 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShoppingBag, Package, DollarSign, AlertCircle, TrendingUp, TrendingDown, Star } from 'lucide-react';
 import { statusMeta } from './shared';
 import styles from '../OwnerDashboard.module.css';
 
 export default function OverviewSection({ store, orders }) {
+    const [hoveredBar, setHoveredBar] = useState(null);
+
     const pending = orders.filter(o => o.status === 'Pending').length;
     const todayRev = orders.filter(o => o.status === 'Delivered').reduce((s, o) => s + o.total, 0);
+
+    const salesBarData = [
+        { day: 'Mon', revenue: '₱3,000', orders: 24, current: 20, trend: '+5%' },
+        { day: 'Tue', revenue: '₱9,750', orders: 68, current: 65, trend: '+18%' },
+        { day: 'Wed', revenue: '₱5,250', orders: 42, current: 35, trend: '+8%' },
+        { day: 'Thu', revenue: '₱8,250', orders: 58, current: 55, trend: '+12%' },
+        { day: 'Fri', revenue: '₱6,000', orders: 48, current: 40, trend: '+9%' },
+        { day: 'Sat', revenue: '₱11,250', orders: 86, current: 75, trend: '+22%' },
+        { day: 'Sun', revenue: '₱13,500', orders: 102, current: 90, trend: '+28%' },
+    ];
 
     // Example metrics mapping to the design shown
     const stats = [
@@ -161,15 +173,45 @@ export default function OverviewSection({ store, orders }) {
                             <span>$5k</span>
                             <span>0</span>
                         </div>
-                        <div className={styles.chartBars}>
-                            {/* Mon - Sun */}
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '20%' }}></div><span className={styles.chartDay}>Mon</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '65%' }}></div><span className={styles.chartDay}>Tue</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '35%' }}></div><span className={styles.chartDay}>Wed</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '55%' }}></div><span className={styles.chartDay}>Thu</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '40%' }}></div><span className={styles.chartDay}>Fri</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '75%' }}></div><span className={styles.chartDay}>Sat</span></div>
-                            <div className={styles.chartCol}><div className={styles.chartBar} style={{ height: '90%' }}></div><span className={styles.chartDay}>Sun</span></div>
+                        <div className={styles.chartBars} style={{ gap: '6px' }}>
+                            {salesBarData.map((data, idx) => (
+                                <div key={idx} className={styles.chartCol} style={{ flex: 1, position: 'relative' }}>
+                                    <div
+                                        className={styles.chartBar}
+                                        style={{
+                                            height: `${data.current}%`,
+                                            background: hoveredBar === idx
+                                                ? 'linear-gradient(to bottom, #7F1D1D, #991B1B)'
+                                                : 'linear-gradient(to bottom, #8B3A2A, #D4845A)',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s ease',
+                                            borderRadius: '4px 4px 0 0',
+                                            position: 'relative',
+                                        }}
+                                        onMouseEnter={() => setHoveredBar(idx)}
+                                        onMouseLeave={() => setHoveredBar(null)}
+                                    >
+                                        {hoveredBar === idx && (
+                                            <div className={styles.chartTooltip}>
+                                                <div className={styles.chartTooltipDate}>{data.day}</div>
+                                                <div className={styles.tooltipRow}>
+                                                    <span className={styles.tooltipLabel}>Revenue</span>
+                                                    <span className={styles.tooltipValue}>{data.revenue}</span>
+                                                </div>
+                                                <div className={styles.tooltipRow} style={{ marginBottom: '0.625rem' }}>
+                                                    <span className={styles.tooltipLabel}>Orders</span>
+                                                    <span className={styles.tooltipValue}>{data.orders}</span>
+                                                </div>
+                                                <div className={styles.trendBadgePositive} style={{ display: 'inline-block' }}>
+                                                    ↗ {data.trend} vs last week
+                                                </div>
+                                                <div className={styles.tooltipArrow}></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className={styles.chartDay}>{data.day}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -204,3 +246,4 @@ export default function OverviewSection({ store, orders }) {
         </div>
     );
 }
+
