@@ -425,3 +425,282 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Logout Confirmation Modal ── */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+}
+
+.modalBox {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem 2.25rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: scaleIn 0.2s ease;
+}
+
+.profilePageDark .modalBox {
+    background: #1e1e2e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.modalIcon {
+    font-size: 2rem;
+    color: #dc3545;
+    margin-bottom: 0.75rem;
+}
+
+.modalTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: #1a1a2e;
+}
+
+.profilePageDark .modalTitle {
+    color: #f0f0f0;
+}
+
+.modalText {
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0 0 1.5rem;
+}
+
+.profilePageDark .modalText {
+    color: #aaa;
+}
+
+.modalActions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.modalActions .btnOutline,
+.modalActions .btnRed {
+    flex: 1;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Edit Profile Modal ── */
+
+.editModalBox {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem 2.25rem;
+    max-width: 560px;
+    width: 92%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: scaleIn 0.2s ease;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.profilePageDark .editModalBox {
+    background: #1e1e2e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.editModalHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.profilePageDark .editModalHeader {
+    border-bottom-color: #30363D;
+}
+
+.editModalIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FEE2E2, #FED7AA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #991B1B;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.profilePageDark .editModalIcon {
+    background: rgba(153, 27, 27, 0.15);
+}
+
+.editModalTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.profilePageDark .editModalTitle {
+    color: #F9FAFB;
+}
+
+.editModalSubtitle {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    margin: 2px 0 0;
+}
+
+.editFormGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.editFormFull {
+    grid-column: 1 / -1;
+}
+
+.editFormGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.editLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.profilePageDark .editLabel {
+    color: #9CA3AF;
+}
+
+.editInput {
+    padding: 0.6rem 0.85rem;
+    border-radius: 10px;
+    border: 1.5px solid #D1D5DB;
+    background: #F9FAFB;
+    font-size: 0.9rem;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+.editInput:focus {
+    border-color: #991B1B;
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
+}
+
+.profilePageDark .editInput {
+    background: #0D1117;
+    border-color: #30363D;
+    color: #E5E7EB;
+}
+
+.profilePageDark .editInput:focus {
+    border-color: #991B1B;
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.2);
+}
+
+.editTextarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.editError {
+    font-size: 0.75rem;
+    color: #DC2626;
+    margin-top: 2px;
+}
+
+.editServerError {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #991B1B;
+}
+
+.profilePageDark .editServerError {
+    background: rgba(153, 27, 27, 0.1);
+    border-color: rgba(153, 27, 27, 0.25);
+}
+
+.editActions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.editActions .btnOutline {
+    min-width: 100px;
+    justify-content: center;
+}
+
+.btnSave {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.55rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    background: #991B1B;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
+    transition: all 0.2s ease;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.btnSave:hover:not(:disabled) {
+    background: #7F1D1D;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(153, 27, 27, 0.38);
+}
+
+.btnSave:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .editFormGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .editModalBox {
+        width: 95%;
+        padding: 1.5rem;
+    }
+}

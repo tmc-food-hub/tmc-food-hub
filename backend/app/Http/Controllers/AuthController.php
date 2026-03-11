@@ -238,6 +238,51 @@ class AuthController extends Controller
     }
 
     /**
+     * Update the authenticated user's profile.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $rules = [
+            'first_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
+            'last_name'  => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
+            'phone'      => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
+        ];
+
+        if ($user->role === 'customer') {
+            $rules['address'] = 'nullable|string|min:5|max:500';
+            $rules['delivery_instructions'] = 'nullable|string|max:500';
+        }
+
+        if ($user->role === 'partner') {
+            $rules['restaurant_name'] = ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\d\s\-\'\&\.]+$/u'];
+            $rules['business_address'] = 'required|string|min:5|max:500';
+            $rules['business_contact_number'] = ['required', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'];
+            $rules['business_permit'] = 'nullable|string|max:255';
+        }
+
+        $validated = $request->validate($rules, [
+            'first_name.regex' => 'First name must only contain letters, spaces, hyphens, or apostrophes.',
+            'last_name.regex'  => 'Last name must only contain letters, spaces, hyphens, or apostrophes.',
+            'first_name.min'   => 'First name must be at least 2 characters.',
+            'last_name.min'    => 'Last name must be at least 2 characters.',
+            'phone.regex'      => 'Phone number must contain only digits, spaces, dashes, or parentheses.',
+            'phone.min'        => 'Phone number must be at least 7 characters.',
+            'restaurant_name.regex' => 'Restaurant name contains invalid characters.',
+            'business_contact_number.regex' => 'Business contact must contain only digits, spaces, dashes, or parentheses.',
+            'address.min'      => 'Address must be at least 5 characters.',
+            'business_address.min' => 'Business address must be at least 5 characters.',
+        ]);
+
+        $validated['name'] = $validated['first_name'] . ' ' . $validated['last_name'];
+
+        $user->update($validated);
+
+        return response()->json($user->fresh());
+    }
+
+    /**
      * Revoke the current token (logout).
      */
     public function logout(Request $request)

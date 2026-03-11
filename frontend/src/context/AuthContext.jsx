@@ -55,6 +55,14 @@ export function AuthProvider({ children }) {
         return res.data;
     };
 
+    const updateProfile = async (data) => {
+        const res = await api.put('/user', data);
+        const updatedUser = res.data;
+        setUser(updatedUser);
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+        return updatedUser;
+    };
+
     const logout = async () => {
         try {
             await api.post('/logout');
@@ -76,6 +84,7 @@ export function AuthProvider({ children }) {
         register,
         sendOtp,
         verifyOtp,
+        updateProfile,
         logout,
     };
 

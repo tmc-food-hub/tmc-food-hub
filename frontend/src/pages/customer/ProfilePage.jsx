@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeContext } from '../../components/ui/ThemeContext';
@@ -7,9 +7,15 @@ import Footer from '../../components/sections/Footer';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
-    const { user, isAuthenticated, loading, logout } = useAuth();
+    const { user, isAuthenticated, loading, logout, updateProfile } = useAuth();
     const { isDarkMode } = useContext(ThemeContext);
     const navigate = useNavigate();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({});
+    const [editErrors, setEditErrors] = useState({});
+    const [editServerError, setEditServerError] = useState('');
+    const [editLoading, setEditLoading] = useState(false);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -30,6 +36,114 @@ function ProfilePage() {
     const handleLogout = async () => {
         await logout();
         navigate('/');
+    };
+
+    const openEditModal = () => {
+        setEditForm({
+            first_name: user?.first_name || '',
+            last_name: user?.last_name || '',
+            phone: user?.phone || '',
+            ...(user?.role === 'customer' || !user?.role ? {
+                address: user?.address || '',
+                delivery_instructions: user?.delivery_instructions || '',
+            } : {}),
+            ...(user?.role === 'partner' ? {
+                restaurant_name: user?.restaurant_name || '',
+                business_address: user?.business_address || '',
+                business_contact_number: user?.business_contact_number || '',
+                business_permit: user?.business_permit || '',
+            } : {}),
+        });
+        setEditErrors({});
+        setEditServerError('');
+        setShowEditModal(true);
+    };
+
+    const handleEditChange = (field, value) => {
+        setEditForm(prev => ({ ...prev, [field]: value }));
+        if (editErrors[field]) {
+            setEditErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+        }
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        const errors = {};
+        const nameRegex = /^[A-Za-z\u00C0-\u024F\s\-']+$/;
+        const phoneRegex = /^[+]?[\d\s\-()]+$/;
+
+        // First name
+        if (!editForm.first_name?.trim()) {
+            errors.first_name = 'First name is required';
+        } else if (editForm.first_name.trim().length < 2) {
+            errors.first_name = 'First name must be at least 2 characters';
+        } else if (!nameRegex.test(editForm.first_name.trim())) {
+            errors.first_name = 'First name must only contain letters, spaces, hyphens, or apostrophes';
+        }
+
+        // Last name
+        if (!editForm.last_name?.trim()) {
+            errors.last_name = 'Last name is required';
+        } else if (editForm.last_name.trim().length < 2) {
+            errors.last_name = 'Last name must be at least 2 characters';
+        } else if (!nameRegex.test(editForm.last_name.trim())) {
+            errors.last_name = 'Last name must only contain letters, spaces, hyphens, or apostrophes';
+        }
+
+        // Phone (optional but must be valid if provided)
+        if (editForm.phone?.trim()) {
+            if (editForm.phone.trim().length < 7) {
+                errors.phone = 'Phone number must be at least 7 characters';
+            } else if (!phoneRegex.test(editForm.phone.trim())) {
+                errors.phone = 'Phone number must contain only digits, spaces, dashes, or parentheses';
+            }
+        }
+
+        // Address (optional but must be meaningful if provided)
+        if (editForm.address?.trim() && editForm.address.trim().length < 5) {
+            errors.address = 'Address must be at least 5 characters';
+        }
+
+        // Partner fields
+        if (user?.role === 'partner') {
+            if (!editForm.restaurant_name?.trim()) {
+                errors.restaurant_name = 'Restaurant name is required';
+            } else if (editForm.restaurant_name.trim().length < 2) {
+                errors.restaurant_name = 'Restaurant name must be at least 2 characters';
+            }
+            if (!editForm.business_address?.trim()) {
+                errors.business_address = 'Business address is required';
+            } else if (editForm.business_address.trim().length < 5) {
+                errors.business_address = 'Business address must be at least 5 characters';
+            }
+            if (!editForm.business_contact_number?.trim()) {
+                errors.business_contact_number = 'Business contact is required';
+            } else if (!phoneRegex.test(editForm.business_contact_number.trim())) {
+                errors.business_contact_number = 'Must contain only digits, spaces, dashes, or parentheses';
+            } else if (editForm.business_contact_number.trim().length < 7) {
+                errors.business_contact_number = 'Must be at least 7 characters';
+            }
+        }
+
+        if (Object.keys(errors).length) { setEditErrors(errors); return; }
+
+        setEditLoading(true);
+        setEditServerError('');
+        try {
+            await updateProfile(editForm);
+            setShowEditModal(false);
+        } catch (err) {
+            if (err.response?.status === 422) {
+                const serverErrors = err.response.data.errors || {};
+                const mapped = {};
+                Object.entries(serverErrors).forEach(([key, msgs]) => { mapped[key] = msgs[0]; });
+                setEditErrors(mapped);
+            } else {
+                setEditServerError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+            }
+        } finally {
+            setEditLoading(false);
+        }
     };
 
     const getInitials = (name) => {
@@ -86,10 +200,10 @@ function ProfilePage() {
                         </div>
 
                         <div className={styles.identityActions}>
-                            <button className={styles.btnOutline}>
+                            <button className={styles.btnOutline} onClick={openEditModal}>
                                 <i className="bi bi-pencil-square" /> Edit Profile
                             </button>
-                            <button className={styles.btnRed} onClick={handleLogout}>
+                            <button className={styles.btnRed} onClick={() => setShowLogoutModal(true)}>
                                 <i className="bi bi-box-arrow-right" /> Logout
                             </button>
                         </div>
@@ -177,6 +291,151 @@ function ProfilePage() {
             </div>
 
             <Footer />
+
+            {showLogoutModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowLogoutModal(false)}>
+                    <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalIcon}>
+                            <i className="bi bi-box-arrow-right" />
+                        </div>
+                        <h3 className={styles.modalTitle}>Confirm Logout</h3>
+                        <p className={styles.modalText}>Are you sure you want to log out of your account?</p>
+                        <div className={styles.modalActions}>
+                            <button className={styles.btnOutline} onClick={() => setShowLogoutModal(false)}>
+                                Cancel
+                            </button>
+                            <button className={styles.btnRed} onClick={handleLogout}>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showEditModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+                    <div className={styles.editModalBox} onClick={e => e.stopPropagation()}>
+                        <div className={styles.editModalHeader}>
+                            <div className={styles.editModalIcon}>
+                                <i className="bi bi-pencil-square" />
+                            </div>
+                            <div>
+                                <h3 className={styles.editModalTitle}>Edit Profile</h3>
+                                <p className={styles.editModalSubtitle}>Update your personal information</p>
+                            </div>
+                        </div>
+
+                        {editServerError && (
+                            <div className={styles.editServerError}>{editServerError}</div>
+                        )}
+
+                        <form onSubmit={handleEditSubmit}>
+                            <div className={styles.editFormGrid}>
+                                <div className={styles.editFormGroup}>
+                                    <label className={styles.editLabel}>First Name</label>
+                                    <input
+                                        className={styles.editInput}
+                                        value={editForm.first_name || ''}
+                                        onChange={e => handleEditChange('first_name', e.target.value)}
+                                    />
+                                    {editErrors.first_name && <span className={styles.editError}>{editErrors.first_name}</span>}
+                                </div>
+                                <div className={styles.editFormGroup}>
+                                    <label className={styles.editLabel}>Last Name</label>
+                                    <input
+                                        className={styles.editInput}
+                                        value={editForm.last_name || ''}
+                                        onChange={e => handleEditChange('last_name', e.target.value)}
+                                    />
+                                    {editErrors.last_name && <span className={styles.editError}>{editErrors.last_name}</span>}
+                                </div>
+                                <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                    <label className={styles.editLabel}>Phone Number</label>
+                                    <input
+                                        className={styles.editInput}
+                                        value={editForm.phone || ''}
+                                        onChange={e => handleEditChange('phone', e.target.value)}
+                                    />
+                                    {editErrors.phone && <span className={styles.editError}>{editErrors.phone}</span>}
+                                </div>
+
+                                {(user?.role === 'customer' || !user?.role) && (
+                                    <>
+                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                            <label className={styles.editLabel}>Address</label>
+                                            <input
+                                                className={styles.editInput}
+                                                value={editForm.address || ''}
+                                                onChange={e => handleEditChange('address', e.target.value)}
+                                            />
+                                            {editErrors.address && <span className={styles.editError}>{editErrors.address}</span>}
+                                        </div>
+                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                            <label className={styles.editLabel}>Delivery Instructions</label>
+                                            <textarea
+                                                className={`${styles.editInput} ${styles.editTextarea}`}
+                                                value={editForm.delivery_instructions || ''}
+                                                onChange={e => handleEditChange('delivery_instructions', e.target.value)}
+                                            />
+                                            {editErrors.delivery_instructions && <span className={styles.editError}>{editErrors.delivery_instructions}</span>}
+                                        </div>
+                                    </>
+                                )}
+
+                                {user?.role === 'partner' && (
+                                    <>
+                                        <div className={styles.editFormGroup}>
+                                            <label className={styles.editLabel}>Restaurant Name</label>
+                                            <input
+                                                className={styles.editInput}
+                                                value={editForm.restaurant_name || ''}
+                                                onChange={e => handleEditChange('restaurant_name', e.target.value)}
+                                            />
+                                            {editErrors.restaurant_name && <span className={styles.editError}>{editErrors.restaurant_name}</span>}
+                                        </div>
+                                        <div className={styles.editFormGroup}>
+                                            <label className={styles.editLabel}>Business Contact</label>
+                                            <input
+                                                className={styles.editInput}
+                                                value={editForm.business_contact_number || ''}
+                                                onChange={e => handleEditChange('business_contact_number', e.target.value)}
+                                            />
+                                            {editErrors.business_contact_number && <span className={styles.editError}>{editErrors.business_contact_number}</span>}
+                                        </div>
+                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                            <label className={styles.editLabel}>Business Address</label>
+                                            <input
+                                                className={styles.editInput}
+                                                value={editForm.business_address || ''}
+                                                onChange={e => handleEditChange('business_address', e.target.value)}
+                                            />
+                                            {editErrors.business_address && <span className={styles.editError}>{editErrors.business_address}</span>}
+                                        </div>
+                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                            <label className={styles.editLabel}>Permit / TIN</label>
+                                            <input
+                                                className={styles.editInput}
+                                                value={editForm.business_permit || ''}
+                                                onChange={e => handleEditChange('business_permit', e.target.value)}
+                                            />
+                                            {editErrors.business_permit && <span className={styles.editError}>{editErrors.business_permit}</span>}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className={styles.editActions}>
+                                <button type="button" className={styles.btnOutline} onClick={() => setShowEditModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className={styles.btnSave} disabled={editLoading}>
+                                    {editLoading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
