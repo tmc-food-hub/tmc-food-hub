@@ -71,7 +71,7 @@ function CartPage() {
                                 <div className="col-lg-7 mb-4 mb-lg-0">
                                     <div className={styles.cartItemsCard}>
                                         {cartItems.map((item, index) => (
-                                            <div key={item.id} className={`${styles.cartItem} ${index < cartItems.length - 1 ? styles.cartItemBorder : ''}`}>
+                                            <div key={item.cartItemId} className={`${styles.cartItem} ${index < cartItems.length - 1 ? styles.cartItemBorder : ''}`}>
                                                 <div className={styles.itemLeft}>
                                                     <img src={item.image} alt={item.title} className={styles.itemImage} />
                                                     <div>
@@ -87,15 +87,15 @@ function CartPage() {
                                                 </div>
                                                 <div className={styles.itemRight}>
                                                     <div className={styles.qtyControl}>
-                                                        <button className={styles.qtyBtn} onClick={() => decrement(item.id)} aria-label="Decrease quantity">
+                                                        <button className={styles.qtyBtn} onClick={() => decrement(item.cartItemId)} aria-label="Decrease quantity">
                                                             <Minus size={14} />
                                                         </button>
                                                         <span className={styles.qtyValue}>{item.quantity}</span>
-                                                        <button className={styles.qtyBtn} onClick={() => increment(item.id)} aria-label="Increase quantity">
+                                                        <button className={styles.qtyBtn} onClick={() => increment(item.cartItemId)} aria-label="Increase quantity">
                                                             <Plus size={14} />
                                                         </button>
                                                     </div>
-                                                    <button className={styles.deleteBtn} onClick={() => removeFromCart(item.id)} aria-label="Remove item">
+                                                    <button className={styles.deleteBtn} onClick={() => removeFromCart(item.cartItemId)} aria-label="Remove item">
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
@@ -112,7 +112,7 @@ function CartPage() {
                                         {/* Item thumbnails */}
                                         <div className={styles.summaryItems}>
                                             {cartItems.map(item => (
-                                                <div key={item.id} className={styles.summaryItem}>
+                                                <div key={item.cartItemId} className={styles.summaryItem}>
                                                     <img src={item.image} alt={item.title} className={styles.summaryItemImg} />
                                                     <div>
                                                         <div className={styles.summaryItemName}>{item.title}</div>

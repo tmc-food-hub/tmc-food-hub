@@ -208,7 +208,7 @@ function CheckoutPage() {
 
                                     <div className={styles.summaryItems}>
                                         {cartItems.map(item => (
-                                            <div key={item.id} className={styles.summaryItem}>
+                                            <div key={item.cartItemId} className={styles.summaryItem}>
                                                 <img src={item.image} alt={item.title} className={styles.summaryItemImg} />
                                                 <div>
                                                     <div className={styles.summaryItemName}>{item.title}</div>
