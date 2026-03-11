@@ -224,9 +224,9 @@ function EarningsSection({ onViewPayoutDetails }) {
 
                     <div className={styles.topSellingList}>
                         {[
-                            { id: 1, name: 'Double Cheese Burger', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=64&h=64', revenue: '₱42,500', max: 50000, current: 42500 },
-                            { id: 2, name: 'Grilled Steak', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&q=80&w=64&h=64', revenue: '₱31,200', max: 50000, current: 31200 },
-                            { id: 3, name: 'Black Iced Coffee', image: 'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&q=80&w=64&h=64', revenue: '₱28,900', max: 50000, current: 28900 }
+                            { id: 1, name: 'Double Cheese Burger', image: '/assets/images/service/burger.webp', revenue: '₱42,500', max: 50000, current: 42500 },
+                            { id: 2, name: 'Grilled Steak', image: '/assets/images/service/steak.webp', revenue: '₱31,200', max: 50000, current: 31200 },
+                            { id: 3, name: 'Black Iced Coffee', image: '/assets/images/service/juice.webp', revenue: '₱28,900', max: 50000, current: 28900 }
                         ].map(item => (
                             <div key={item.id} className={styles.topSellingItem}>
                                 <img src={item.image} alt={item.name} className={styles.topSellingImg} />

@@ -7,15 +7,16 @@ import BackToTop from '../../components/ui/BackToTop';
 import { getStores } from '../../data/storesData';
 import styles from './MenuPage.module.css';
 
-// Cuisine category icons mapping (placeholders using simple spans or lucide)
+import { Pizza, Utensils, Coffee, Cake, IceCream, Soup, Drumstick } from 'lucide-react';
+
 const CUISINE_CATEGORIES = [
-    { name: 'Pizza', icon: '🍕' },
-    { name: 'Burgers', icon: '🍔' },
-    { name: 'Coffee', icon: '☕' },
-    { name: 'Cakes', icon: '🍰' },
-    { name: 'Ice Cream', icon: '🍦' },
-    { name: 'Ramen', icon: '🍜' },
-    { name: 'Chicken', icon: '🍗' },
+    { name: 'Pizza', icon: <Pizza size={28} strokeWidth={1.5} /> },
+    { name: 'Burgers', icon: <Utensils size={28} strokeWidth={1.5} /> },
+    { name: 'Coffee', icon: <Coffee size={28} strokeWidth={1.5} /> },
+    { name: 'Cakes', icon: <Cake size={28} strokeWidth={1.5} /> },
+    { name: 'Ice Cream', icon: <IceCream size={28} strokeWidth={1.5} /> },
+    { name: 'Ramen', icon: <Soup size={28} strokeWidth={1.5} /> },
+    { name: 'Chicken', icon: <Drumstick size={28} strokeWidth={1.5} /> },
 ];
 
 function MenuPage() {

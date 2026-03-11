@@ -356,11 +356,22 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    transform: scale(1.35);
+    /* makes most SVG images bigger */
     transition: transform 0.3s ease;
 }
 
+.spaghettiImg {
+    transform: scale(0.9) !important;
+    /* ensures spaghetti does not get too big */
+}
+
 .menuCard:hover .menuCardImg {
-    transform: scale(1.05);
+    transform: scale(1.45);
+}
+
+.menuCard:hover .spaghettiImg {
+    transform: scale(1.0) !important;
 }
 
 .bestSellerBadge {

@@ -188,36 +188,38 @@
 }
 
 .cuisineIconBox {
-    width: 80px;
-    height: 80px;
-    background: #FAF5F5;
+    width: 64px;
+    height: 64px;
+    background: #FDF2F2;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    border: 1px solid transparent;
+    font-size: 1.8rem;
+    color: #8B1F1C;
+    border: 1px solid #EAD8D8;
     transition: all 0.2s;
 }
 
 .cuisineItem:hover .cuisineIconBox {
-    background: #FDF2F2;
+    background: #F8E5E5;
+    border-color: #8B1F1C;
     transform: translateY(-2px);
 }
 
 .cuisineItemActive .cuisineIconBox {
     border-color: #8B1F1C;
-    background: #FDF2F2;
+    background: #FCEDED;
 }
 
 .cuisineName {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: #555;
+    font-weight: 700;
+    color: #8B1F1C;
 }
 
 .cuisineItemActive .cuisineName {
-    color: #8B1F1C;
+    color: #6a1614;
 }
 
 
@@ -263,12 +265,18 @@
     width: 100%;
     overflow: hidden;
     border-radius: 12px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f0f0f0;
 }
 
 .cardImage {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 15px;
     transition: transform 0.35s ease;
 }
 

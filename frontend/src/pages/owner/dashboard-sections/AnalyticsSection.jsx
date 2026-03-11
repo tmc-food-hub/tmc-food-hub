@@ -254,9 +254,9 @@ function AnalyticsSection() {
 
                     <div className={styles.topSellingList}>
                         {[
-                            { id: 1, name: 'Double Cheese Burger', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=64&h=64', orders: 852, max: 1000 },
-                            { id: 2, name: 'Grilled Steak', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&q=80&w=64&h=64', orders: 242, max: 1000 },
-                            { id: 3, name: 'Black Iced Coffee', image: 'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&q=80&w=64&h=64', orders: 188, max: 1000 }
+                            { id: 1, name: 'Double Cheese Burger', image: '/assets/images/service/burger.webp', orders: 852, max: 1000 },
+                            { id: 2, name: 'Grilled Steak', image: '/assets/images/service/steak.webp', orders: 242, max: 1000 },
+                            { id: 3, name: 'Black Iced Coffee', image: '/assets/images/service/juice.webp', orders: 188, max: 1000 }
                         ].map(item => (
                             <div key={item.id} className={styles.topSellingItem}>
                                 <img src={item.image} alt={item.name} className={styles.topSellingImg} />
