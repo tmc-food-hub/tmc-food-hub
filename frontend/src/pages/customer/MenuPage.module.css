@@ -421,3 +421,173 @@
 .pageIconBtn {
     color: #8B1F1C;
 }
+
+/* ══════════════════════════════════════
+   DARK MODE OVERRIDES
+   ══════════════════════════════════════ */
+
+:global(.dark-mode) .menuPage {
+    background: transparent;
+}
+
+:global(.dark-mode) .breadcrumbs a {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .breadcrumbs {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .breadcrumbs .current {
+    color: #F87171;
+}
+
+/* Search Bar */
+:global(.dark-mode) .searchInputBig {
+    background: #1F2937;
+    color: #F3F4F6;
+    border: 1px solid #374151;
+}
+
+:global(.dark-mode) .searchInputBig::placeholder {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .searchInputBig:focus {
+    background: #1F2937;
+    box-shadow: 0 0 0 2px #8B1F1C;
+}
+
+:global(.dark-mode) .searchIcon {
+    color: #6B7280;
+}
+
+/* Sidebar */
+:global(.dark-mode) .sidebar {
+    background: #1E1E1E;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+:global(.dark-mode) .filterHeader {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .filterGroupTitle {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .sidebarSearchInput {
+    background: #2A2A2A;
+    border-color: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .sidebarSearchInput::placeholder {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .radioLabel,
+:global(.dark-mode) .checkboxLabel {
+    color: #D1D5DB;
+}
+
+:global(.dark-mode) .showMoreBtn {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .clearFiltersBtn {
+    background-color: rgba(139, 31, 28, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+:global(.dark-mode) .clearFiltersBtn:hover {
+    background-color: rgba(139, 31, 28, 0.25);
+}
+
+/* Section Titles */
+:global(.dark-mode) .sectionTitleMain {
+    color: #F3F4F6;
+}
+
+/* Cuisines Carousel */
+:global(.dark-mode) .cuisineIconBox {
+    background: rgba(139, 31, 28, 0.15);
+    border-color: #374151;
+    color: #F87171;
+}
+
+:global(.dark-mode) .cuisineItem:hover .cuisineIconBox {
+    background: rgba(139, 31, 28, 0.25);
+    border-color: #8B1F1C;
+}
+
+:global(.dark-mode) .cuisineItemActive .cuisineIconBox {
+    background: rgba(139, 31, 28, 0.25);
+    border-color: #8B1F1C;
+}
+
+:global(.dark-mode) .cuisineName {
+    color: #F87171;
+}
+
+/* Cards */
+:global(.dark-mode) .productCard {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .cardImageWrapper {
+    background-color: #1F2937;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .cardTitle {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .cardDesc {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .statusBadgeOpen {
+    color: #F87171;
+}
+
+:global(.dark-mode) .statusBadgeClosed {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .metaText {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .metaDot {
+    color: #4B5563;
+}
+
+:global(.dark-mode) .metaIcon {
+    color: #6B7280;
+}
+
+/* Pagination */
+:global(.dark-mode) .pageBtn {
+    background: #1F2937;
+    border-color: #374151;
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .pageBtn:hover:not(.active) {
+    background: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .pageBtn.active {
+    background: #8B1F1C;
+    border-color: #8B1F1C;
+    color: #fff;
+}
+
+:global(.dark-mode) .pageIconBtn {
+    color: #F87171;
+}
