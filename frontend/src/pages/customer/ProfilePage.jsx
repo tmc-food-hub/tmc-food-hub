@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeContext } from '../../components/ui/ThemeContext';
@@ -10,6 +10,7 @@ function ProfilePage() {
     const { user, isAuthenticated, loading, logout } = useAuth();
     const { isDarkMode } = useContext(ThemeContext);
     const navigate = useNavigate();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -89,7 +90,7 @@ function ProfilePage() {
                             <button className={styles.btnOutline}>
                                 <i className="bi bi-pencil-square" /> Edit Profile
                             </button>
-                            <button className={styles.btnRed} onClick={handleLogout}>
+                            <button className={styles.btnRed} onClick={() => setShowLogoutModal(true)}>
                                 <i className="bi bi-box-arrow-right" /> Logout
                             </button>
                         </div>
@@ -177,6 +178,26 @@ function ProfilePage() {
             </div>
 
             <Footer />
+
+            {showLogoutModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowLogoutModal(false)}>
+                    <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalIcon}>
+                            <i className="bi bi-box-arrow-right" />
+                        </div>
+                        <h3 className={styles.modalTitle}>Confirm Logout</h3>
+                        <p className={styles.modalText}>Are you sure you want to log out of your account?</p>
+                        <div className={styles.modalActions}>
+                            <button className={styles.btnOutline} onClick={() => setShowLogoutModal(false)}>
+                                Cancel
+                            </button>
+                            <button className={styles.btnRed} onClick={handleLogout}>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
