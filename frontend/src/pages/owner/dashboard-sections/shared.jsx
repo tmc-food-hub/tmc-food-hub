@@ -2,12 +2,12 @@ import React from 'react';
 import { Bell, Timer, Truck, CheckCircle2 } from 'lucide-react';
 
 export const IMAGES = [
-    '/assets/images/service/fries.webp',
-    '/assets/images/service/spag.webp',
-    '/assets/images/service/burger.webp',
-    '/assets/images/service/juice.webp',
-    '/assets/images/service/steak.webp',
-    '/assets/images/service/sushi.webp',
+    '/assets/images/service/old images/fries.png',
+    '/assets/images/service/old images/spag.png',
+    '/assets/images/service/old images/burger.png',
+    '/assets/images/service/old images/juice.png',
+    '/assets/images/service/old images/steak.png',
+    '/assets/images/service/old images/sushi.png',
 ];
 
 export function buildOrders(store) {

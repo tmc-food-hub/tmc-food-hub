@@ -71,25 +71,31 @@ function CartPage() {
                                 <div className="col-lg-7 mb-4 mb-lg-0">
                                     <div className={styles.cartItemsCard}>
                                         {cartItems.map((item, index) => (
-                                            <div key={item.id} className={`${styles.cartItem} ${index < cartItems.length - 1 ? styles.cartItemBorder : ''}`}>
+                                            <div key={item.cartItemId} className={`${styles.cartItem} ${index < cartItems.length - 1 ? styles.cartItemBorder : ''}`}>
                                                 <div className={styles.itemLeft}>
                                                     <img src={item.image} alt={item.title} className={styles.itemImage} />
                                                     <div>
                                                         <h3 className={styles.itemName}>{item.title}</h3>
+                                                        {(item.variation || (item.addOns && item.addOns.length > 0)) && (
+                                                            <div style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '2px' }}>
+                                                                {item.variation && <span style={{ display: 'block' }}>{item.variation.name}</span>}
+                                                                {item.addOns && item.addOns.length > 0 && <span style={{ display: 'block' }}>+ {item.addOns.map(a => a.name).join(', ')}</span>}
+                                                            </div>
+                                                        )}
                                                         <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                                 <div className={styles.itemRight}>
                                                     <div className={styles.qtyControl}>
-                                                        <button className={styles.qtyBtn} onClick={() => decrement(item.id)} aria-label="Decrease quantity">
+                                                        <button className={styles.qtyBtn} onClick={() => decrement(item.cartItemId)} aria-label="Decrease quantity">
                                                             <Minus size={14} />
                                                         </button>
                                                         <span className={styles.qtyValue}>{item.quantity}</span>
-                                                        <button className={styles.qtyBtn} onClick={() => increment(item.id)} aria-label="Increase quantity">
+                                                        <button className={styles.qtyBtn} onClick={() => increment(item.cartItemId)} aria-label="Increase quantity">
                                                             <Plus size={14} />
                                                         </button>
                                                     </div>
-                                                    <button className={styles.deleteBtn} onClick={() => removeFromCart(item.id)} aria-label="Remove item">
+                                                    <button className={styles.deleteBtn} onClick={() => removeFromCart(item.cartItemId)} aria-label="Remove item">
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
@@ -106,10 +112,16 @@ function CartPage() {
                                         {/* Item thumbnails */}
                                         <div className={styles.summaryItems}>
                                             {cartItems.map(item => (
-                                                <div key={item.id} className={styles.summaryItem}>
+                                                <div key={item.cartItemId} className={styles.summaryItem}>
                                                     <img src={item.image} alt={item.title} className={styles.summaryItemImg} />
                                                     <div>
                                                         <div className={styles.summaryItemName}>{item.title}</div>
+                                                        {(item.variation || (item.addOns && item.addOns.length > 0)) && (
+                                                            <div style={{ fontSize: '0.75rem', color: '#6B7280', margin: '2px 0' }}>
+                                                                {item.variation && <span>{item.variation.name}</span>}
+                                                                {item.addOns && item.addOns.length > 0 && <span> • {item.addOns.length} add-ons</span>}
+                                                            </div>
+                                                        )}
                                                         <div className={styles.summaryItemMeta}>x{item.quantity} • ${item.price.toFixed(2)}</div>
                                                     </div>
                                                 </div>

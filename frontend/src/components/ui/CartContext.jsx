@@ -9,27 +9,35 @@ export const CartContext = createContext();
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const existing = state.find(item => item.id === action.payload.id);
+      // Create a unique compound ID based on the base ID, selected variation, and add-ons
+      const varId = action.payload.variation ? action.payload.variation.id : 'default';
+      const addOnsId = action.payload.addOns && action.payload.addOns.length
+        ? action.payload.addOns.map(a => a.id).sort().join('-')
+        : 'none';
+
+      const cartItemId = `${action.payload.id}_${varId}_${addOnsId}`;
+
+      const existing = state.find(item => item.cartItemId === cartItemId);
       if (existing) {
         return state.map(item =>
-          item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + 1 }
+          item.cartItemId === cartItemId
+            ? { ...item, quantity: item.quantity + (action.payload.quantity || 1) }
             : item
         );
       }
-      return [...state, { ...action.payload, quantity: 1 }];
+      return [...state, { ...action.payload, cartItemId, quantity: action.payload.quantity || 1 }];
     }
     case 'REMOVE_ITEM':
-      return state.filter(item => item.id !== action.payload);
+      return state.filter(item => item.cartItemId !== action.payload);
     case 'INCREMENT':
       return state.map(item =>
-        item.id === action.payload
+        item.cartItemId === action.payload
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
     case 'DECREMENT':
       return state.map(item =>
-        item.id === action.payload
+        item.cartItemId === action.payload
           ? { ...item, quantity: Math.max(1, item.quantity - 1) }
           : item
       );
@@ -43,7 +51,17 @@ const cartReducer = (state, action) => {
 const initCart = () => {
   try {
     const localData = localStorage.getItem('tmc_cart');
-    return localData ? JSON.parse(localData) : [];
+    if (!localData) return [];
+    const parsed = JSON.parse(localData);
+
+    // Invalidate cart if it contains old deprecated image paths that have been removed
+    const hasOldImages = parsed.some(item => item.image && (item.image.includes('.webp') || item.image.includes('fries.png') || item.image.includes('burger.png')));
+    if (hasOldImages) {
+      localStorage.removeItem('tmc_cart');
+      return [];
+    }
+
+    return parsed;
   } catch (e) {
     return [];
   }
@@ -65,7 +83,20 @@ export function CartProvider({ children }) {
       setShowLoginPrompt(true);
       return;
     }
-    dispatch({ type: 'ADD_ITEM', payload: { id: item.id, title: item.title, image: item.image, price: item.price, storeName: item.storeName } });
+    dispatch({
+      type: 'ADD_ITEM',
+      payload: {
+        id: item.id,
+        title: item.title,
+        image: item.image,
+        price: item.price,
+        originalPrice: item.originalPrice,
+        storeName: item.storeName,
+        variation: item.variation,
+        addOns: item.addOns,
+        quantity: item.quantity
+      }
+    });
     showNotification(`${item.title} added to cart!`, 'success');
   }, [showNotification, isAuthenticated]);
 

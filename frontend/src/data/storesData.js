@@ -315,11 +315,12 @@ export function getStores() {
         const saved = localStorage.getItem('tmcStores');
         if (saved) {
             const parsed = JSON.parse(saved);
-            // Invalidate cache if it contains old stores that were replaced or old images
+            // Invalidate cache if it contains old stores that were replaced or old images or food cover images
             const hasOldStores = parsed.some(s => s.name === 'Steak & Co.' || s.name === 'Té Hana Ramen' || s.name === 'Patty Shack');
             const hasOldImages = parsed.some(s => s.menuItems && s.menuItems.some(m => m.image && (m.image.includes('fries.png') || m.image.includes('burger.png'))));
+            const hasFoodCovers = parsed.some(s => s.cover && (s.cover.includes('Chickenjoy-Bucket') || s.cover.includes('Big-Mac') || s.cover.includes('Party-Platter')));
 
-            if (hasOldStores || hasOldImages) {
+            if (hasOldStores || hasOldImages || hasFoodCovers) {
                 localStorage.removeItem('tmcStores');
                 return defaultStores;
             }

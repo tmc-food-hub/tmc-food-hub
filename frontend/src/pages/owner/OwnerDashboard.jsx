@@ -184,7 +184,11 @@ function OwnerDashboard() {
                         </div>
                     )}
                     <button className={styles.storeProfileBtn} onClick={() => setProfileOpen(!profileOpen)}>
-                        <div className={styles.storeAvatar}>{ownerStore.name.charAt(0)}</div>
+                        {ownerStore.cover ? (
+                            <img src={ownerStore.cover} alt={ownerStore.name} className={styles.storeAvatar} style={{ objectFit: 'contain', background: '#fff', border: '1px solid #E5E7EB' }} />
+                        ) : (
+                            <div className={styles.storeAvatar}>{ownerStore.name.charAt(0)}</div>
+                        )}
                         <div className={styles.storeDetails}>
                             <div className={styles.storeName}>{ownerStore.branchName}</div>
                             <div className={styles.branchName}>Store Manager</div>

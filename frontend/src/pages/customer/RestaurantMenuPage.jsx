@@ -5,6 +5,7 @@ import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import { CartContext } from '../../components/ui/CartContext';
+import AddToCartModal from '../../components/ui/AddToCartModal';
 import { getStores } from '../../data/storesData';
 import styles from './RestaurantMenuPage.module.css';
 
@@ -35,6 +36,10 @@ function RestaurantMenuPage() {
     const [isReviewModalOpen, setReviewModalOpen] = useState(false);
     const [reviewRating, setReviewRating] = useState(0);
 
+    // Modal state for Add To Cart Variations
+    const [selectedItemForModal, setSelectedItemForModal] = useState(null);
+    const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+
     useEffect(() => {
         window.scrollTo(0, 0);
         const stores = getStores();
@@ -63,8 +68,15 @@ function RestaurantMenuPage() {
         return matchCat && matchSearch;
     });
 
-    const handleAddToCart = (item) => {
-        addToCart({ ...item, storeName: store.name });
+    const handleAddToCartClick = (item) => {
+        setSelectedItemForModal({ ...item, storeName: store.name });
+        setIsCartModalOpen(true);
+    };
+
+    const handleModalConfirm = (customizedItem) => {
+        addToCart(customizedItem);
+        setIsCartModalOpen(false);
+        setSelectedItemForModal(null);
     };
 
     const avgRating = store.reviews.length
@@ -199,8 +211,8 @@ function RestaurantMenuPage() {
                                                     <div className={styles.menuCardRating}>
                                                         <Star size={14} fill="#F5A623" color="#F5A623" /> {item.rating || 4.8} <span>({item.reviews || 152})</span>
                                                     </div>
-                                                    <button className={styles.addBtnIcon} onClick={() => handleAddToCart(item)}>
-                                                        <ShoppingCart size={16} />
+                                                    <button className={styles.addBtnIcon} onClick={() => handleAddToCartClick(item)}>
+                                                        <Plus size={16} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -401,6 +413,14 @@ function RestaurantMenuPage() {
                 <Footer />
             </div>
 
+            <AddToCartModal
+                isOpen={isCartModalOpen}
+                onClose={() => setIsCartModalOpen(false)}
+                item={selectedItemForModal}
+                onConfirm={handleModalConfirm}
+            />
+
+            {/* Success Modal */}
             <BackToTop />
         </>
     );

@@ -490,16 +490,23 @@
 
 .cardImageWrapper {
     position: relative;
-    height: 160px;
+    height: 180px;
     width: 100%;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #8B1F1C;
+    /* The slight red line to distinguish the border */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
 }
 
 .cardImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .cardBody {
