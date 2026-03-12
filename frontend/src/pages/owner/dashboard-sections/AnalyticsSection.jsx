@@ -8,13 +8,13 @@ function AnalyticsSection() {
     const [hoveredBar, setHoveredBar] = useState(null);
 
     const salesBarData = [
-        { day: 'Feb 27', current: 35, previous: 45, revenue: '₱14,820', orders: 98, trend: '+8%' },
-        { day: 'Feb 28', current: 55, previous: 65, revenue: '₱22,350', orders: 142, trend: '+12%' },
-        { day: 'Mar 1', current: 25, previous: 55, revenue: '₱10,500', orders: 74, trend: '-5%' },
-        { day: 'Mar 2', current: 75, previous: 60, revenue: '₱31,280', orders: 198, trend: '+18%' },
-        { day: 'Mar 3', current: 65, previous: 80, revenue: '₱27,950', orders: 176, trend: '+14%' },
-        { day: 'Mar 4', current: 55, previous: 70, revenue: '₱22,410', orders: 155, trend: '+10%' },
-        { day: 'Mar 5', current: 90, previous: 85, revenue: '₱42,910', orders: 241, trend: '+22%' },
+        { day: 'Feb 27', current: 35, previous: 45, revenue: '$14,820', orders: 98, trend: '+8%' },
+        { day: 'Feb 28', current: 55, previous: 65, revenue: '$22,350', orders: 142, trend: '+12%' },
+        { day: 'Mar 1', current: 25, previous: 55, revenue: '$10,500', orders: 74, trend: '-5%' },
+        { day: 'Mar 2', current: 75, previous: 60, revenue: '$31,280', orders: 198, trend: '+18%' },
+        { day: 'Mar 3', current: 65, previous: 80, revenue: '$27,950', orders: 176, trend: '+14%' },
+        { day: 'Mar 4', current: 55, previous: 70, revenue: '$22,410', orders: 155, trend: '+10%' },
+        { day: 'Mar 5', current: 90, previous: 85, revenue: '$42,910', orders: 241, trend: '+22%' },
     ];
 
     const ALL_CATEGORIES = [
@@ -118,16 +118,16 @@ function AnalyticsSection() {
                         <span className={styles.metricLabel}>Total Revenue</span>
                         <span className={styles.trendBadgePositive}>↗ +12.5%</span>
                     </div>
-                    <div className={styles.metricBigValue}>₱42,910.00</div>
-                    <div className={styles.metricSubtext}>vs. ₱38,120 last month</div>
+                    <div className={styles.metricBigValue}>$42,910.00</div>
+                    <div className={styles.metricSubtext}>vs. $38,120 last month</div>
                 </div>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricHeaderRow}>
                         <span className={styles.metricLabel}>Avg. Order Value</span>
                         <span className={styles.trendBadgePositive}>↗ +5.8%</span>
                     </div>
-                    <div className={styles.metricBigValue}>₱152.40</div>
-                    <div className={styles.metricSubtext}>vs. ₱205.10 last month</div>
+                    <div className={styles.metricBigValue}>$152.40</div>
+                    <div className={styles.metricSubtext}>vs. $205.10 last month</div>
                 </div>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricHeaderRow}>
@@ -166,15 +166,15 @@ function AnalyticsSection() {
                         </div>
                     </div>
 
-                    <div className={styles.chartBigValue}>₱42,910.00</div>
+                    <div className={styles.chartBigValue}>$42,910.00</div>
 
                     <div className={styles.barChartContainer}>
                         {/* Y-Axis Labels */}
                         <div className={styles.yAxisLabels}>
-                            <span>₱50k</span>
-                            <span>₱25k</span>
-                            <span>₱10k</span>
-                            <span>₱5k</span>
+                            <span>$50k</span>
+                            <span>$25k</span>
+                            <span>$10k</span>
+                            <span>$5k</span>
                             <span>0</span>
                         </div>
 
@@ -350,10 +350,10 @@ function AnalyticsSection() {
                             </thead>
                             <tbody>
                                 {[
-                                    { id: '#8842', name: 'Jane Doe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=32&h=32', total: '₱583.20', status: 'In-progress', statusClass: 'statusInProgress' },
-                                    { id: '#8841', name: 'Michael Smith', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=32&h=32', total: '₱463.10', status: 'Pending', statusClass: 'statusPending' },
-                                    { id: '#8840', name: 'Amy Lee', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=32&h=32', total: '₱259.00', status: 'Delivered', statusClass: 'statusDelivered' },
-                                    { id: '#8839', name: 'Robert Brown', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=32&h=32', total: '₱195.50', status: 'Delivered', statusClass: 'statusDelivered' }
+                                    { id: '#8842', name: 'Jane Doe', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=32&h=32', total: '$583.20', status: 'In-progress', statusClass: 'statusInProgress' },
+                                    { id: '#8841', name: 'Michael Smith', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=32&h=32', total: '$463.10', status: 'Pending', statusClass: 'statusPending' },
+                                    { id: '#8840', name: 'Amy Lee', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=32&h=32', total: '$259.00', status: 'Delivered', statusClass: 'statusDelivered' },
+                                    { id: '#8839', name: 'Robert Brown', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=32&h=32', total: '$195.50', status: 'Delivered', statusClass: 'statusDelivered' }
                                 ].map(order => (
                                     <tr key={order.id}>
                                         <td className={styles.highValueId}>{order.id}</td>

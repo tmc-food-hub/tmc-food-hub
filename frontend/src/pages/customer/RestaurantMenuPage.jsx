@@ -342,7 +342,7 @@ function RestaurantMenuPage() {
                                             </div>
                                             <p className={styles.cardDesc}>{similar.cuisine.split(', ').join(' • ')}</p>
                                             <div className={styles.cardMeta}>
-                                                <span className={styles.metaText} style={{ fontWeight: '700' }}>₱85</span>
+                                                <span className={styles.metaText} style={{ fontWeight: '700' }}>$5.00</span>
                                                 <span className={styles.metaDot} style={{ color: '#ccc', margin: '0 4px' }}>•</span>
                                                 <Clock size={12} className={styles.metaIcon} style={{ marginRight: '4px' }} />
                                                 <span className={styles.metaText} style={{ fontWeight: '500' }}>{similar.deliveryTime}</span>

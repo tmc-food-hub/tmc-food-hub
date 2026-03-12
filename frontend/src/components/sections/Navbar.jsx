@@ -322,7 +322,7 @@ function Navbar() {
                                 <h6 className="mb-0 text-truncate" style={{ fontSize: '0.9rem', color: isDarkMode ? '#F9FAFB' : '#111827', fontWeight: 600 }}>{item.title}</h6>
                                 <div className="d-flex justify-content-between align-items-center mt-1">
                                   <span style={{ fontSize: '0.85rem', color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>Qty: {item.quantity}</span>
-                                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#991B1B' }}>₱{Number(item.price * item.quantity).toFixed(2)}</span>
+                                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#991B1B' }}>${Number(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                               </div>
                             </li>
@@ -334,7 +334,7 @@ function Navbar() {
                       <div className="p-3" style={{ backgroundColor: isDarkMode ? '#111827' : '#f9fafb' }}>
                         <div className="d-flex justify-content-between mb-3">
                           <span style={{ fontWeight: 600, color: isDarkMode ? '#D1D5DB' : '#4B5563' }}>Subtotal:</span>
-                          <span style={{ fontWeight: 'bold', color: isDarkMode ? '#F9FAFB' : '#111827', fontSize: '1.1rem' }}>₱{Number(cartSubtotal).toFixed(2)}</span>
+                          <span style={{ fontWeight: 'bold', color: isDarkMode ? '#F9FAFB' : '#111827', fontSize: '1.1rem' }}>${Number(cartSubtotal).toFixed(2)}</span>
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn w-50" onClick={() => navigate('/cart')} style={{ backgroundColor: 'transparent', border: `1px solid ${isDarkMode ? '#4B5563' : '#D1D5DB'}`, color: isDarkMode ? '#F9FAFB' : '#111827', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>View Cart</button>

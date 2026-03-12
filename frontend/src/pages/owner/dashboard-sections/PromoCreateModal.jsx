@@ -26,7 +26,7 @@ function PromoCreateModal({ onClose, onSave }) {
                                 <label className={styles.formLabel}>Promotion Type</label>
                                 <select className={styles.formSelect}>
                                     <option>Percentage Off (%)</option>
-                                    <option>Fixed Amount (₱)</option>
+                                    <option>Fixed Amount ($)</option>
                                     <option>Buy 1 Get 1 (BOGO)</option>
                                     <option>Free Delivery</option>
                                 </select>
@@ -41,14 +41,14 @@ function PromoCreateModal({ onClose, onSave }) {
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>Discount Value</label>
                                 <div className={styles.inputWithPrefix}>
-                                    <span className={styles.inputPrefix}>₱</span>
+                                    <span className={styles.inputPrefix}>$</span>
                                     <input type="number" className={styles.formInput} placeholder="0.00" />
                                 </div>
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>Minimum Order Value</label>
                                 <div className={styles.inputWithPrefix}>
-                                    <span className={styles.inputPrefix}>₱</span>
+                                    <span className={styles.inputPrefix}>$</span>
                                     <input type="number" className={styles.formInput} placeholder="250.00" />
                                 </div>
                             </div>

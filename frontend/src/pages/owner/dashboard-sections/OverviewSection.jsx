@@ -7,13 +7,13 @@ export default function OverviewSection({ store, orders }) {
     const [hoveredBar, setHoveredBar] = useState(null);
 
     const salesBarData = [
-        { day: 'Mon', revenue: '₱3,000', orders: 24, current: 20, trend: '+5%' },
-        { day: 'Tue', revenue: '₱9,750', orders: 68, current: 65, trend: '+18%' },
-        { day: 'Wed', revenue: '₱5,250', orders: 42, current: 35, trend: '+8%' },
-        { day: 'Thu', revenue: '₱8,250', orders: 58, current: 55, trend: '+12%' },
-        { day: 'Fri', revenue: '₱6,000', orders: 48, current: 40, trend: '+9%' },
-        { day: 'Sat', revenue: '₱11,250', orders: 86, current: 75, trend: '+22%' },
-        { day: 'Sun', revenue: '₱13,500', orders: 102, current: 90, trend: '+28%' },
+        { day: 'Mon', revenue: '$3,000', orders: 24, current: 20, trend: '+5%' },
+        { day: 'Tue', revenue: '$9,750', orders: 68, current: 65, trend: '+18%' },
+        { day: 'Wed', revenue: '$5,250', orders: 42, current: 35, trend: '+8%' },
+        { day: 'Thu', revenue: '$8,250', orders: 58, current: 55, trend: '+12%' },
+        { day: 'Fri', revenue: '$6,000', orders: 48, current: 40, trend: '+9%' },
+        { day: 'Sat', revenue: '$11,250', orders: 86, current: 75, trend: '+22%' },
+        { day: 'Sun', revenue: '$13,500', orders: 102, current: 90, trend: '+28%' },
     ];
 
     // Example metrics mapping to the design shown

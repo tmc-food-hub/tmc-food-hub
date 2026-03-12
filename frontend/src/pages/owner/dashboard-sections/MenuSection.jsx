@@ -217,7 +217,7 @@ export default function MenuSection({ store, onUpdate }) {
                                 <div className={styles.menuFormRow2}>
                                     <div className={styles.menuFormGroup}>
                                         <label className={styles.menuFormLabel}>Price</label>
-                                        <input required type="number" step="0.01" min="0" className={styles.menuFormInput} placeholder="₱ 0.00" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+                                        <input required type="number" step="0.01" min="0" className={styles.menuFormInput} placeholder="$ 0.00" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
                                     </div>
                                     <div className={styles.menuFormGroup}>
                                         <label className={styles.menuFormLabel}>Estimated Prep Time (mins)</label>

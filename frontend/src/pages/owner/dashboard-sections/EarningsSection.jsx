@@ -7,20 +7,20 @@ function EarningsSection({ onViewPayoutDetails }) {
     const [hoveredBar, setHoveredBar] = useState(null);
 
     const revenueBarData = [
-        { day: '', current: 15, date: 'Feb 13, 2026', revenue: '₱2,250', orders: 12, trend: '+5%' },
-        { day: 'Feb 15', current: 22, date: 'Feb 15, 2026', revenue: '₱3,300', orders: 18, trend: '+8%' },
-        { day: '', current: 10, date: 'Feb 16, 2026', revenue: '₱1,500', orders: 8, trend: '-3%' },
-        { day: '', current: 35, date: 'Feb 17, 2026', revenue: '₱5,250', orders: 26, trend: '+15%' },
-        { day: 'Feb 20', current: 25, date: 'Feb 20, 2026', revenue: '₱3,750', orders: 20, trend: '+4%' },
-        { day: '', current: 48, date: 'Feb 21, 2026', revenue: '₱7,200', orders: 35, trend: '+18%' },
-        { day: '', current: 40, date: 'Feb 22, 2026', revenue: '₱6,000', orders: 30, trend: '+10%' },
-        { day: '', current: 55, date: 'Feb 23, 2026', revenue: '₱8,250', orders: 38, trend: '+14%' },
-        { day: 'Feb 25', current: 75, date: 'Feb 25, 2026', revenue: '₱8,450', orders: 42, trend: '+12%' },
-        { day: '', current: 60, date: 'Feb 27, 2026', revenue: '₱9,000', orders: 40, trend: '+9%' },
-        { day: '', current: 70, date: 'Mar 1, 2026', revenue: '₱10,500', orders: 45, trend: '+20%' },
-        { day: 'Mar 5', current: 55, date: 'Mar 5, 2026', revenue: '₱8,250', orders: 36, trend: '+6%' },
-        { day: '', current: 80, date: 'Mar 7, 2026', revenue: '₱12,000', orders: 52, trend: '+22%' },
-        { day: '', current: 48, date: 'Mar 8, 2026', revenue: '₱7,200', orders: 34, trend: '+7%' }
+        { day: '', current: 15, date: 'Feb 13, 2026', revenue: '$2,250', orders: 12, trend: '+5%' },
+        { day: 'Feb 15', current: 22, date: 'Feb 15, 2026', revenue: '$3,300', orders: 18, trend: '+8%' },
+        { day: '', current: 10, date: 'Feb 16, 2026', revenue: '$1,500', orders: 8, trend: '-3%' },
+        { day: '', current: 35, date: 'Feb 17, 2026', revenue: '$5,250', orders: 26, trend: '+15%' },
+        { day: 'Feb 20', current: 25, date: 'Feb 20, 2026', revenue: '$3,750', orders: 20, trend: '+4%' },
+        { day: '', current: 48, date: 'Feb 21, 2026', revenue: '$7,200', orders: 35, trend: '+18%' },
+        { day: '', current: 40, date: 'Feb 22, 2026', revenue: '$6,000', orders: 30, trend: '+10%' },
+        { day: '', current: 55, date: 'Feb 23, 2026', revenue: '$8,250', orders: 38, trend: '+14%' },
+        { day: 'Feb 25', current: 75, date: 'Feb 25, 2026', revenue: '$8,450', orders: 42, trend: '+12%' },
+        { day: '', current: 60, date: 'Feb 27, 2026', revenue: '$9,000', orders: 40, trend: '+9%' },
+        { day: '', current: 70, date: 'Mar 1, 2026', revenue: '$10,500', orders: 45, trend: '+20%' },
+        { day: 'Mar 5', current: 55, date: 'Mar 5, 2026', revenue: '$8,250', orders: 36, trend: '+6%' },
+        { day: '', current: 80, date: 'Mar 7, 2026', revenue: '$12,000', orders: 52, trend: '+22%' },
+        { day: '', current: 48, date: 'Mar 8, 2026', revenue: '$7,200', orders: 34, trend: '+7%' }
     ];
 
     const renderTrend = (value, trendStr) => {
@@ -77,7 +77,7 @@ function EarningsSection({ onViewPayoutDetails }) {
                     </div>
                     <div className={styles.earningMetricContent}>
                         <div className={styles.earningMetricLabel}>Available Balance</div>
-                        <div className={styles.earningMetricValue}>₱12,450.00</div>
+                        <div className={styles.earningMetricValue}>$12,450.00</div>
                         {renderTrend(2.4, '+2.4%')}
                     </div>
                 </div>
@@ -89,7 +89,7 @@ function EarningsSection({ onViewPayoutDetails }) {
                     </div>
                     <div className={styles.earningMetricContent}>
                         <div className={styles.earningMetricLabel}>Pending Balance</div>
-                        <div className={styles.earningMetricValue}>₱4,120.00</div>
+                        <div className={styles.earningMetricValue}>$4,120.00</div>
                         {renderTrend(1.2, '+1.2%')}
                     </div>
                 </div>
@@ -101,7 +101,7 @@ function EarningsSection({ onViewPayoutDetails }) {
                     </div>
                     <div className={styles.earningMetricContent}>
                         <div className={styles.earningMetricLabel}>Total Earnings</div>
-                        <div className={styles.earningMetricValue}>₱156,780.00</div>
+                        <div className={styles.earningMetricValue}>$156,780.00</div>
                         <div className={styles.earningTrendSubtext}>
                             <span className={styles.earningTrendPos}>↗ +12.5%</span>
                             <span className={styles.earningTrendLabel}>vs previous period</span>
@@ -114,19 +114,19 @@ function EarningsSection({ onViewPayoutDetails }) {
             <div className={styles.revenueBreakdownGrid}>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricLabel}>Total Food Sales</div>
-                    <div className={styles.metricBigValue}>₱184,200.00</div>
+                    <div className={styles.metricBigValue}>$184,200.00</div>
                 </div>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricLabel}>Platform Fees</div>
-                    <div className={styles.metricBigValue} style={{ color: '#DC2626' }}>-₱27,630.00</div>
+                    <div className={styles.metricBigValue} style={{ color: '#DC2626' }}>-$27,630.00</div>
                 </div>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricLabel}>Taxes</div>
-                    <div className={styles.metricBigValue} style={{ color: '#DC2626' }}>-₱9,210.00</div>
+                    <div className={styles.metricBigValue} style={{ color: '#DC2626' }}>-$9,210.00</div>
                 </div>
                 <div className={styles.analyticsMetricCard}>
                     <div className={styles.metricLabel}>Net Revenue</div>
-                    <div className={styles.metricBigValue}>₱147,360.00</div>
+                    <div className={styles.metricBigValue}>$147,360.00</div>
                 </div>
             </div>
 
@@ -146,9 +146,9 @@ function EarningsSection({ onViewPayoutDetails }) {
                     <div className={styles.barChartContainer} style={{ marginTop: '1.5rem', height: '220px' }}>
                         {/* Y-Axis Labels */}
                         <div className={styles.yAxisLabels}>
-                            <span>₱15k</span>
-                            <span>₱10k</span>
-                            <span>₱5k</span>
+                            <span>$15k</span>
+                            <span>$10k</span>
+                            <span>$5k</span>
                             <span>0</span>
                         </div>
 
@@ -224,9 +224,9 @@ function EarningsSection({ onViewPayoutDetails }) {
 
                     <div className={styles.topSellingList}>
                         {[
-                            { id: 1, name: 'Double Cheese Burger', image: '/assets/images/service/burger.webp', revenue: '₱42,500', max: 50000, current: 42500 },
-                            { id: 2, name: 'Grilled Steak', image: '/assets/images/service/steak.webp', revenue: '₱31,200', max: 50000, current: 31200 },
-                            { id: 3, name: 'Black Iced Coffee', image: '/assets/images/service/juice.webp', revenue: '₱28,900', max: 50000, current: 28900 }
+                            { id: 1, name: 'Double Cheese Burger', image: '/assets/images/service/burger.webp', revenue: '$42,500', max: 50000, current: 42500 },
+                            { id: 2, name: 'Grilled Steak', image: '/assets/images/service/steak.webp', revenue: '$31,200', max: 50000, current: 31200 },
+                            { id: 3, name: 'Black Iced Coffee', image: '/assets/images/service/juice.webp', revenue: '$28,900', max: 50000, current: 28900 }
                         ].map(item => (
                             <div key={item.id} className={styles.topSellingItem}>
                                 <img src={item.image} alt={item.name} className={styles.topSellingImg} />
@@ -268,8 +268,8 @@ function EarningsSection({ onViewPayoutDetails }) {
                         </thead>
                         <tbody>
                             {[
-                                { id: 'PAY-2026-9842', range: 'Feb 8 - Feb 28', date: 'Feb 28, 2026', amount: '₱32,450.00', status: 'Completed', statusClass: 'statusDelivered' },
-                                { id: 'PAY-2026-9104', range: 'Jan 4 - Feb 7', date: 'Feb 7, 2026', amount: '₱28,910.00', status: 'Completed', statusClass: 'statusDelivered' }
+                                { id: 'PAY-2026-9842', range: 'Feb 8 - Feb 28', date: 'Feb 28, 2026', amount: '$32,450.00', status: 'Completed', statusClass: 'statusDelivered' },
+                                { id: 'PAY-2026-9104', range: 'Jan 4 - Feb 7', date: 'Feb 7, 2026', amount: '$28,910.00', status: 'Completed', statusClass: 'statusDelivered' }
                             ].map(payout => (
                                 <tr
                                     key={payout.id}

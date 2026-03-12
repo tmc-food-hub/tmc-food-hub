@@ -18,18 +18,18 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
 
     // Mock History
     const payoutHistory = [
-        { id: 'PAY-2026-9842', date: 'Mar 9, 2026', amount: '₱32,450.00', method: 'Bank Transfer', status: 'Completed', numTx: 43 },
-        { id: 'PAY-2026-9104', date: 'Mar 2, 2026', amount: '₱28,910.00', method: 'Bank Transfer', status: 'Completed', numTx: 38 },
-        { id: 'PAY-2026-8891', date: 'Feb 23, 2026', amount: '₱30,120.00', method: 'Bank Transfer', status: 'Completed', numTx: 41 },
+        { id: 'PAY-2026-9842', date: 'Mar 9, 2026', amount: '$32,450.00', method: 'Bank Transfer', status: 'Completed', numTx: 43 },
+        { id: 'PAY-2026-9104', date: 'Mar 2, 2026', amount: '$28,910.00', method: 'Bank Transfer', status: 'Completed', numTx: 38 },
+        { id: 'PAY-2026-8891', date: 'Feb 23, 2026', amount: '$30,120.00', method: 'Bank Transfer', status: 'Completed', numTx: 41 },
     ];
 
     const generateMockTransactions = () => {
         return [
-            { id: '#ORD-29938', total: '₱450.00', comm: '-₱67.50', net: '₱382.50' },
-            { id: '#ORD-29937', total: '₱1,200.00', comm: '-₱180.00', net: '₱1,020.00' },
-            { id: '#ORD-29936', total: '₱890.00', comm: '-₱133.50', net: '₱756.50' },
-            { id: '#ORD-29935', total: '₱350.00', comm: '-₱52.50', net: '₱297.50' },
-            { id: '#ORD-29934', total: '₱2,100.00', comm: '-₱315.00', net: '₱1,785.00' },
+            { id: '#ORD-29938', total: '$450.00', comm: '-$67.50', net: '$382.50' },
+            { id: '#ORD-29937', total: '$1,200.00', comm: '-$180.00', net: '$1,020.00' },
+            { id: '#ORD-29936', total: '$890.00', comm: '-$133.50', net: '$756.50' },
+            { id: '#ORD-29935', total: '$350.00', comm: '-$52.50', net: '$297.50' },
+            { id: '#ORD-29934', total: '$2,100.00', comm: '-$315.00', net: '$1,785.00' },
         ];
     };
 
@@ -84,16 +84,16 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
                         <div className={styles.detailMetricCard}>
                             <div className={styles.detailMetricLabel}>Total Orders</div>
                             <div className={styles.detailMetricValue}>{viewData.numTx}</div>
-                            <div className={styles.detailMetricSub}>Gross Revenue: ₱14,294.50</div>
+                            <div className={styles.detailMetricSub}>Gross Revenue: $14,294.50</div>
                         </div>
                         <div className={styles.detailMetricCard}>
                             <div className={styles.detailMetricLabel}>Total Commission</div>
-                            <div className={styles.detailMetricValue} style={{ color: '#DC2626' }}>-₱1,864.50</div>
+                            <div className={styles.detailMetricValue} style={{ color: '#DC2626' }}>-$1,864.50</div>
                             <div className={styles.detailMetricSub}>Calculated at 15% fixed rate</div>
                         </div>
                         <div className={styles.detailMetricCard}>
                             <div className={styles.detailMetricLabel}>Final Net Transfer</div>
-                            <div className={styles.detailMetricValue}>₱12,430.00</div>
+                            <div className={styles.detailMetricValue}>$12,430.00</div>
                             <div className={styles.detailMetricSub}>Ready for disbursement</div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
                                 <h3 className={styles.summaryTitle}>Payout Summary</h3>
                                 <div className={styles.summaryTotalBox}>
                                     <div className={styles.summaryTotalLabel}>Total Net Amount</div>
-                                    <div className={styles.summaryTotalValue}>₱12,430.00</div>
+                                    <div className={styles.summaryTotalValue}>$12,430.00</div>
                                 </div>
 
                                 <div className={styles.summaryRow}>
@@ -231,17 +231,17 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
                 <div className={styles.metricsGrid}>
                     <div className={styles.metricCard}>
                         <div className={styles.metricLabel}>Available Balance</div>
-                        <div className={styles.metricValue}>₱15,240.00</div>
+                        <div className={styles.metricValue}>$15,240.00</div>
                         <div className={styles.metricSubtext} style={{ color: '#059669', fontWeight: 600 }}>+12% from last week</div>
                     </div>
                     <div className={styles.metricCard}>
                         <div className={styles.metricLabel}>Pending Balance</div>
-                        <div className={styles.metricValue}>₱152.40</div>
+                        <div className={styles.metricValue}>$152.40</div>
                         <div className={styles.metricSubtext}>Estimated arrival in 2-3 days</div>
                     </div>
                     <div className={styles.metricCard}>
                         <div className={styles.metricLabel}>Total Paid Out</div>
-                        <div className={styles.metricValue}>₱124,500.00</div>
+                        <div className={styles.metricValue}>$124,500.00</div>
                         <div className={styles.metricSubtext}>Since Sept 2025</div>
                     </div>
                     <div className={styles.metricCard}>
@@ -261,7 +261,7 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
                             </div>
                         </div>
                         <div className={styles.nextPayoutValue}>
-                            ₱12,430.00 <span className={styles.estimatedTag}>Estimated</span>
+                            $12,430.00 <span className={styles.estimatedTag}>Estimated</span>
                         </div>
                         <div>
                             <div className={styles.progressLabelRow}>
@@ -274,26 +274,25 @@ function PayoutSection({ initialViewData, clearInitViewData }) {
                             <div className={styles.progressSubtext}>43 Transactions included in this cycle</div>
                         </div>
                     </div>
-
                     <div className={styles.nextPayoutRight}>
                         <div className={styles.breakdownRow}>
                             <span>Gross Sales</span>
-                            <span>₱15,537.50</span>
+                            <span>$15,537.50</span>
                         </div>
                         <div className={`${styles.breakdownRow} ${styles.breakdownRowRed}`}>
                             <span>Commission (20%)</span>
-                            <span>-₱3,107.50</span>
+                            <span>-$3,107.50</span>
                         </div>
                         <div className={styles.breakdownTotal}>
                             <span>Net Earnings</span>
-                            <span>₱12,430.00</span>
+                            <span>$12,430.00</span>
                         </div>
                         <button
                             className={styles.btnViewDetails}
                             onClick={() => handleViewDetails({
                                 id: 'EST-12430',
                                 date: 'Mar 13, 2026',
-                                amount: '₱12,430.00',
+                                amount: '$12,430.00',
                                 method: 'Bank Transfer',
                                 status: 'Pending',
                                 numTx: 43

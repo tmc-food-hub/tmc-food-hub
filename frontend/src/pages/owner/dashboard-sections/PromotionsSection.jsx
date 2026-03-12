@@ -17,9 +17,9 @@ const MOCK_PROMOTIONS = [
     {
         id: 2,
         name: 'Weekend Feast',
-        appliesTo: 'Fixed ₱50 Off',
-        type: 'Fixed Amount (₱)',
-        value: 'Fixed ₱50 Off',
+        appliesTo: 'Fixed $5 Off',
+        type: 'Fixed Amount ($)',
+        value: 'Fixed $5 Off',
         validDates: 'Mar 9 - Mar 13, 2026',
         status: 'Active'
     },
@@ -35,7 +35,7 @@ const MOCK_PROMOTIONS = [
     {
         id: 4,
         name: 'Free Delivery Monday',
-        appliesTo: 'Orders > ₱300',
+        appliesTo: 'Orders > $30.00',
         type: 'Free Delivery',
         value: 'Free Delivery',
         validDates: 'Feb 23, 2026',
@@ -110,7 +110,7 @@ function PromotionsSection() {
                 </div>
                 <div className={styles.metricCard}>
                     <div className={styles.metricLabel}>Promo-Assisted Sales</div>
-                    <div className={styles.metricValue}>₱124,500</div>
+                    <div className={styles.metricValue}>$124,500</div>
                     <div className={styles.metricSubtext}>Current active campaigns</div>
                 </div>
                 <div className={styles.metricCard}>

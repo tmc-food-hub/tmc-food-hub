@@ -212,7 +212,7 @@ function MenuPage() {
                                                 </div>
                                                 <p className={styles.cardDesc}>{store.cuisine.split(', ').join(' • ')}</p>
                                                 <div className={styles.cardMeta}>
-                                                    <span className={styles.metaText} style={{ fontWeight: '700' }}>₱85</span>
+                                                    <span className={styles.metaText} style={{ fontWeight: '700' }}>$5.00</span>
                                                     <span className={styles.metaDot}>•</span>
                                                     <Clock size={12} className={styles.metaIcon} />
                                                     <span className={styles.metaText}>{store.deliveryTime}</span>
