@@ -12,7 +12,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Order::with('items')->orderBy('created_at', 'desc');
+        $query = Order::with(['items', 'customer'])->orderBy('created_at', 'desc');
 
         if ($user->role === 'customer') {
             $query->where('customer_id', $user->id);
@@ -72,5 +72,23 @@ class OrderController extends Controller
 
         Log::info('Order placed successfully', ['order_id' => $order->id]);
         return response()->json($order->load('items'), 201);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+        ]);
+
+        $order = Order::findOrFail($id);
+        
+        // Ensure the store can only update its own orders
+        if ($request->user()->role === 'partner' && $order->store_name !== $request->user()->restaurant_name) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $order->update(['status' => $validated['status']]);
+
+        return response()->json($order);
     }
 }

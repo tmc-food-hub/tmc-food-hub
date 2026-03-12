@@ -38,16 +38,31 @@ export function OrderProvider({ children }) {
                     };
                 });
 
+                const getOrderPrefix = (name) => {
+                    if (!name) return 'OD';
+                    const initials = name.split(' ')
+                        .map(word => word[0])
+                        .join('')
+                        .toUpperCase();
+                    return initials.length === 1 ? (name.substring(0, 2).toUpperCase()) : initials;
+                };
+
+                const orderNumber = `${getOrderPrefix(o.store_name)}-${String(o.id).padStart(5, '0')}`;
+
                 return {
                     id: o.id,
+                    orderNumber: orderNumber, // New formatted ID
                     restaurant: o.store_name,
-                    customer: `Customer ${o.customer_id}`,
-                    address: o.delivery_address,
-                    deliveryAddress: o.delivery_address, // Dual mapping for compatibility
+                    customer: o.customer ? `${o.customer.first_name} ${o.customer.last_name}` : `Customer ${o.customer_id}`,
+                    customerName: o.customer ? `${o.customer.first_name} ${o.customer.last_name}` : `Customer ${o.customer_id}`,
+                    customerPhone: o.customer?.phone || o.contact_number || 'N/A',
+                    customerAddress: o.customer?.address || o.delivery_address || 'N/A',
+                    address: o.delivery_address, // Keep original for reference
+                    deliveryAddress: o.delivery_address, // Keep original for reference
                     items: o.items.map(i => ({ 
                         id: i.id,
                         name: i.item_name, 
-                        quantity: i.quantity,
+                        quantity: i.quantity, 
                         qty: i.quantity, // Alias for compatibility
                         image: i.image, 
                         price: parseFloat(i.price), 
@@ -60,9 +75,9 @@ export function OrderProvider({ children }) {
                     status: o.status,
                     placedAt: o.created_at, // ISO string for MyOrdersPage
                     time: createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    note: o.special_instructions,
+                    note: o.special_instructions || o.customer?.delivery_instructions || '',
                     paymentMethod: o.payment_method,
-                    contactNumber: o.contact_number,
+                    contactNumber: o.contact_number || (o.customer ? o.customer.phone : 'N/A'),
                     timeline: timeline
                 };
             });
@@ -89,6 +104,16 @@ export function OrderProvider({ children }) {
         }
     }, [fetchOrders]);
 
+    const updateStatus = useCallback(async (id, status) => {
+        try {
+            await axios.put(`/orders/${id}/status`, { status });
+            await fetchOrders();
+        } catch (error) {
+            console.error('Failed to update status', error);
+            throw error;
+        }
+    }, [fetchOrders]);
+
     const cancelOrder = useCallback((id) => {
         // Future enhancement: Call an API endpoint to cancel the order
         // display({ type: 'CANCEL_ORDER', payload: id });
@@ -99,8 +124,8 @@ export function OrderProvider({ children }) {
     const cancelledOrders = useMemo(() => orders.filter(o => o.status === 'Cancelled'), [orders]);
 
     const value = useMemo(() => ({
-        orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, loading, fetchOrders
-    }), [orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, loading, fetchOrders]);
+        orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, updateStatus, loading, fetchOrders
+    }), [orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, updateStatus, loading, fetchOrders]);
 
     return (
         <OrderContext.Provider value={value}>

@@ -40,7 +40,7 @@ function OrderCard({ order, navigate }) {
         <div className={styles.orderCard}>
             <div className={styles.orderCardTop}>
                 <div className={styles.orderIdRow}>
-                    <span className={styles.orderId}>{order.id}</span>
+                    <span className={styles.orderId}>{order.orderNumber}</span>
                     <span className={styles.orderDate}>{dateStr} at {timeStr}</span>
                 </div>
                 <span className={styles.statusPill} style={{ background: meta.bg, color: meta.color }}>

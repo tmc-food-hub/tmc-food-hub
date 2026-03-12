@@ -21,6 +21,7 @@ function CheckoutPage() {
     const navigate = useNavigate();
 
     const [contactNumber, setContactNumber] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
     const [deliveryType, setDeliveryType] = useState('asap');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('gcash');
@@ -34,10 +35,18 @@ function CheckoutPage() {
         if (cartItems.length === 0 && !showSuccessModal) {
             navigate('/cart');
         }
-        if (!loading && !isAuthenticated) {
-            navigate('/login', { state: { from: '/checkout' } });
+        if (!loading) {
+            if (!isAuthenticated) {
+                navigate('/login', { state: { from: '/checkout' } });
+            } else if (user) {
+                setContactNumber(user.phone || '');
+                setDeliveryAddress(user.address || '');
+                if (user.delivery_instructions) {
+                    setSpecialInstructions(user.delivery_instructions);
+                }
+            }
         }
-    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal]);
+    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user]);
 
     const deliveryFee = 3.00;
     const discount = 5.00;
@@ -65,7 +74,7 @@ function CheckoutPage() {
                 discount,
                 total: totalAmount,
                 paymentMethod,
-                deliveryAddress: '123 Quezon Avenue, Unit 4B, Brgy. South Triangle, Quezon City, Metro Manila',
+                deliveryAddress,
                 contactNumber,
                 specialInstructions,
             });
@@ -118,10 +127,9 @@ function CheckoutPage() {
                                                 <MapPin size={20} />
                                             </div>
                                             <div>
-                                                <div className={styles.addressLabel}>Home Address</div>
+                                                <div className={styles.addressLabel}>Delivery Address</div>
                                                 <div className={styles.addressText}>
-                                                    123 Quezon Avenue, Unit 4B, Brgy. South Triangle,
-                                                    Quezon City, Metro Manila
+                                                    {deliveryAddress || 'No address set. Please update your profile.'}
                                                 </div>
                                             </div>
                                         </div>

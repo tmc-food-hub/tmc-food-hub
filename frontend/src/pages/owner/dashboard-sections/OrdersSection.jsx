@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Layers, X, AlertCircle, Check } from 'lucide-react';
-import { STATUS_ORDER } from './shared';
+import { STATUS_ORDER, statusMeta } from './shared';
 import { useOrders } from '../../../context/OrderContext';
 import styles from '../OwnerDashboard.module.css';
 
 export default function OrdersSection({ store }) {
-    const { orders: allOrders, loading, fetchOrders } = useOrders();
+    const { orders: allOrders, loading, fetchOrders, updateStatus } = useOrders();
     const [orders, setOrders] = useState([]);
     
     useEffect(() => {
@@ -19,9 +19,10 @@ export default function OrdersSection({ store }) {
 
     const STATUS_TABS = [
         { key: 'All', label: 'All' },
-        { key: 'Pending', label: 'New' },
-        { key: 'Preparing', label: 'Preparing' },
-        { key: 'Delivering', label: 'Ready' },
+        { key: 'Order Placed', label: 'New' },
+        { key: 'Order Confirmed', label: 'Confirmed' },
+        { key: 'Being Prepared', label: 'Preparing' },
+        { key: 'Picked Up', label: 'Ready' },
         { key: 'Delivered', label: 'Complete' }
     ];
 
@@ -49,7 +50,7 @@ export default function OrdersSection({ store }) {
                             className={`${styles.orderTabBtn} ${filt === tab.key ? styles.orderTabActive : ''}`}
                             onClick={() => setFilt(tab.key)}
                         >
-                            {tab.label} {tab.key === 'Pending' && counts['Pending'] > 0 && <span className={styles.tabBadge}>{counts['Pending']}</span>}
+                            {tab.label} {tab.key === 'Order Placed' && counts['Order Placed'] > 0 && <span className={styles.tabBadge}>{counts['Order Placed']}</span>}
                         </button>
                     ))}
                 </div>
@@ -80,29 +81,40 @@ export default function OrdersSection({ store }) {
                         </thead>
                         <tbody>
                             {displayed.map(o => {
-                                // Map old status to new simplified ones for the pill display only
-                                let displayStatus = 'New';
-                                let statusPillClass = styles.pillNew;
-                                let actionBtn = <button className={styles.btnActionAccept}>Accept</button>;
-
-                                if (o.status === 'Preparing') {
-                                    displayStatus = 'Preparing';
-                                    statusPillClass = styles.pillPreparing;
-                                    actionBtn = <button className={styles.btnActionReady}>Ready</button>;
-                                }
-                                if (o.status === 'Delivering' || o.status === 'Delivered') {
-                                    displayStatus = 'Ready'; // Simplify for this view
-                                    statusPillClass = styles.pillReady;
-                                    actionBtn = <button className={styles.btnActionHandover}>Handover</button>;
-                                }
+                                const meta = statusMeta(o.status);
+                                const actionBtn = meta.next ? (
+                                    <button 
+                                        className={styles.btnActionAccept}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateStatus(o.id, meta.next);
+                                        }}
+                                    >
+                                        {meta.nextLabel}
+                                    </button>
+                                ) : null;
 
                                 return (
                                     <tr key={o.id} className={styles.ordersTableRow} onClick={() => setSelectedOrder(o)} style={{ cursor: 'pointer' }}>
-                                        <td className={styles.orderIdCell}>{o.id}</td>
+                                        <td className={styles.orderIdCell}>{o.orderNumber}</td>
                                         <td>
                                             <div className={styles.customerCell}>
                                                 <img src={`https://i.pravatar.cc/100?u=${o.id}`} alt="Customer" className={styles.customerAvatar} />
                                                 <span className={styles.customerName}>{o.customer}</span>
+                                                {o.note && (
+                                                    <div style={{ 
+                                                        fontSize: '0.7rem', 
+                                                        color: '#B91C1C', 
+                                                        marginTop: '2px', 
+                                                        fontStyle: 'italic',
+                                                        maxWidth: '200px',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                    }} title={o.note}>
+                                                        Note: {o.note}
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                         <td className={styles.multiLineItemsCell}>
@@ -148,7 +160,7 @@ export default function OrdersSection({ store }) {
                         <div className={styles.panelHeader}>
                             <div>
                                 <h2 className={styles.panelTitle}>Order Details</h2>
-                                <p className={styles.panelSubtitle}>{selectedOrder.id}</p>
+                                <p className={styles.panelSubtitle}>{selectedOrder.orderNumber}</p>
                             </div>
                             <button className={styles.closePanelBtn} onClick={() => setSelectedOrder(null)}>
                                 <X size={20} />
@@ -182,8 +194,15 @@ export default function OrdersSection({ store }) {
                                 <div className={styles.customerInfoBlock}>
                                     <img src={`https://i.pravatar.cc/100?u=${selectedOrder.id}`} alt="Customer" className={styles.customerAvatarLarge} />
                                     <div>
-                                        <div className={styles.customerNameLarge}>{selectedOrder.customer}</div>
-                                        <div className={styles.customerPhone}>+1 (555) 000-1234</div>
+                                        <div className={styles.customerNameLarge}>{selectedOrder.customerName}</div>
+                                        <div className={styles.customerPhone}>{selectedOrder.customerPhone}</div>
+                                        <div className={styles.customerAddress} style={{fontSize: '0.85rem', color: '#6B7280', marginTop: '4px'}}>{selectedOrder.customerAddress}</div>
+                                        {selectedOrder.note && (
+                                            <div style={{ marginTop: '0.75rem', padding: '0.75rem', backgroundColor: '#FEF2F2', borderLeft: '3px solid #B91C1C', borderRadius: '4px' }}>
+                                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#B91C1C', textTransform: 'uppercase', marginBottom: '2px' }}>Special Instructions</div>
+                                                <div style={{ fontSize: '0.85rem', color: '#B91C1C', fontStyle: 'italic' }}>"{selectedOrder.note}"</div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -213,15 +232,6 @@ export default function OrdersSection({ store }) {
                                 </div>
                             </div>
 
-                            {/* Special Instructions */}
-                            {selectedOrder.note && (
-                                <div className={styles.panelSection}>
-                                    <h4 className={styles.sectionHeading}>Special Instructions</h4>
-                                    <div className={styles.instructionsBlock}>
-                                        "{selectedOrder.note}"
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Price Breakdown */}
                             <div className={styles.panelBreakdown}>
@@ -247,7 +257,17 @@ export default function OrdersSection({ store }) {
                         {/* Footer Actions */}
                         <div className={styles.panelFooter}>
                             <button className={styles.btnPrint}>Print</button>
-                            <button className={styles.btnAcceptOrder}>Accept Order</button>
+                            {statusMeta(selectedOrder.status).next && (
+                                <button 
+                                    className={styles.btnAcceptOrder}
+                                    onClick={() => {
+                                        updateStatus(selectedOrder.id, statusMeta(selectedOrder.status).next);
+                                        setSelectedOrder(null);
+                                    }}
+                                >
+                                    {statusMeta(selectedOrder.status).nextLabel}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </>

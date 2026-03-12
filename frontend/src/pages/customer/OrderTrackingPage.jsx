@@ -167,6 +167,7 @@ function OrderTrackingPage() {
     // Build display data merging context order with mock map coords
     const order = contextOrder ? {
         id: contextOrder.id,
+        orderNumber: contextOrder.orderNumber,
         estimatedArrival: contextOrder.estimatedArrival || 8,
         restaurant: {
             name: contextOrder.restaurant,
@@ -271,7 +272,7 @@ function OrderTrackingPage() {
                                                 Arriving in {order.estimatedArrival} mins
                                             </span>
                                             <span className={styles.arrivalSub}>
-                                                Order #{order.id} • On the way
+                                                Order #{order.orderNumber || order.id} • On the way
                                             </span>
                                         </div>
                                     </div>
