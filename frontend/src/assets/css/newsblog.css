@@ -126,9 +126,9 @@
 }
 
 .filter-btn.active {
-  background-color: #8B1F1C !important;
-  color: #ffffff !important;
-  border-color: #8B1F1C !important;
+  background-color: var(--bs-primary) !important;
+  color: var(--bs-white) !important;
+  border-color: var(--bs-primary) !important;
 }
 
 /* --- BLOG CARD --- */
@@ -212,14 +212,14 @@
 
 /* --- BUTTONS --- */
 .btn-teal {
-  background-color: #8B1F1C;
+  background-color: var(--bs-primary);
   color: white;
   border-radius: 8px;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .btn-teal:hover {
-  background-color: #6B1614;
+  background-color: var(--bs-primary-hover);
   color: white;
   transform: translateY(-3px);
 }
@@ -245,14 +245,14 @@
 }
 
 .pagination-btn.active {
-  background-color: #8B1F1C !important;
-  color: #ffffff !important;
-  border-color: #8B1F1C !important;
+  background-color: var(--bs-primary) !important;
+  color: var(--bs-white) !important;
+  border-color: var(--bs-primary) !important;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  border-color: #D94C38;
-  color: #D94C38;
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
 }
 
 .pagination-btn:disabled {
@@ -263,7 +263,7 @@
 .pagination-btn i {
   font-size: 1.2rem;
   line-height: 1;
-  color: #D94C38;
+  color: var(--bs-primary);
 }
 
 [data-bs-theme=dark] .pagination-btn {

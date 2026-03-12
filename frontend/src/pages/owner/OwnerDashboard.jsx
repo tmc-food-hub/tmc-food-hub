@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, Clock, Settings, LogOut,
     Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Save, X, Check,
@@ -91,7 +91,7 @@ function OwnerDashboard() {
         );
     }
 
-    if (!currentOwner) { navigate('/owner-login'); return null; }
+    if (!currentOwner) { return <Navigate to="/owner-login" replace />; }
     if (!ownerStore) return <p>Store not found.</p>;
 
     const mockOrders = buildOrders(ownerStore);

@@ -1,6 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, CreditCard, Banknote } from 'lucide-react';
+import { MapPin, CreditCard, Banknote, CalendarDays, Clock } from 'lucide-react';
 import gcashLogo from '../../assets/imgs/gcash-logo.png';
 import mayaLogo from '../../assets/imgs/maya-logo.jpg';
 import { CartContext } from '../../components/ui/CartContext';
@@ -25,6 +25,8 @@ function CheckoutPage() {
     const [deliveryType, setDeliveryType] = useState('asap');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('gcash');
+    const [scheduledDate, setScheduledDate] = useState('');
+    const [scheduledTime, setScheduledTime] = useState('');
 
     const [error, setError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -52,10 +54,29 @@ function CheckoutPage() {
     const discount = 5.00;
     const totalAmount = cartSubtotal + deliveryFee - discount;
 
+    // Compute min/max dates for the schedule picker (today to +7 days)
+    const { minDate, maxDate } = useMemo(() => {
+        const today = new Date();
+        const max = new Date();
+        max.setDate(today.getDate() + 7);
+        const fmt = d => d.toISOString().split('T')[0];
+        return { minDate: fmt(today), maxDate: fmt(max) };
+    }, []);
+
     const handlePlaceOrder = async () => {
         if (!contactNumber.trim()) {
             setError('Contact number is required.');
             return;
+        }
+        if (deliveryType === 'scheduled') {
+            if (!scheduledDate) {
+                setError('Please select a delivery date.');
+                return;
+            }
+            if (!scheduledTime) {
+                setError('Please select a delivery time.');
+                return;
+            }
         }
 
         try {
@@ -77,6 +98,11 @@ function CheckoutPage() {
                 deliveryAddress,
                 contactNumber,
                 specialInstructions,
+                deliveryType,
+                ...(deliveryType === 'scheduled' && {
+                    scheduledDate,
+                    scheduledTime,
+                }),
             });
 
             setPlacedOrderId(order.id);
@@ -157,7 +183,12 @@ function CheckoutPage() {
                                             <div className={styles.deliveryToggle}>
                                                 <button
                                                     className={`${styles.toggleBtn} ${deliveryType === 'asap' ? styles.toggleActive : ''}`}
-                                                    onClick={() => setDeliveryType('asap')}
+                                                    onClick={() => {
+                                                        setDeliveryType('asap');
+                                                        setScheduledDate('');
+                                                        setScheduledTime('');
+                                                        if (error) setError('');
+                                                    }}
                                                 >
                                                     ASAP Delivery
                                                 </button>
@@ -169,6 +200,49 @@ function CheckoutPage() {
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Scheduled Delivery Date & Time */}
+                                    <div className={`${styles.scheduleSection} ${deliveryType === 'scheduled' ? styles.scheduleSectionOpen : ''}`}>
+                                        <div className={styles.formRow}>
+                                            <div className={styles.formGroup}>
+                                                <label className={styles.formLabel}>
+                                                    <CalendarDays size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />
+                                                    Delivery Date <span style={{ color: '#DC2626' }}>*</span>
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    className={`${styles.formInput} ${error && !scheduledDate && deliveryType === 'scheduled' ? styles.inputError : ''}`}
+                                                    value={scheduledDate}
+                                                    min={minDate}
+                                                    max={maxDate}
+                                                    onChange={(e) => {
+                                                        setScheduledDate(e.target.value);
+                                                        if (error) setError('');
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <label className={styles.formLabel}>
+                                                    <Clock size={14} style={{ marginRight: 6, verticalAlign: 'text-bottom' }} />
+                                                    Delivery Time <span style={{ color: '#DC2626' }}>*</span>
+                                                </label>
+                                                <input
+                                                    type="time"
+                                                    className={`${styles.formInput} ${error && !scheduledTime && deliveryType === 'scheduled' ? styles.inputError : ''}`}
+                                                    value={scheduledTime}
+                                                    min="08:00"
+                                                    max="22:00"
+                                                    onChange={(e) => {
+                                                        setScheduledTime(e.target.value);
+                                                        if (error) setError('');
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className={styles.scheduleNote}>
+                                            You can schedule up to 7 days ahead. Delivery hours: 8:00 AM – 10:00 PM.
+                                        </p>
                                     </div>
 
                                     {/* Special Instructions */}

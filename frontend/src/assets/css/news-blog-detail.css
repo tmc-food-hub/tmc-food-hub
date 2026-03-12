@@ -1000,12 +1000,24 @@
 /* ---------- LOADING STATE ---------- */
 .loading-state {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 400px;
+  gap: 12px;
   font-size: 1.125rem;
   color: var(--text-secondary);
   font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+.detail-empty-state {
+  min-height: calc(100vh - 340px);
+}
+
+.detail-empty-state h1,
+.detail-empty-state p {
+  margin: 0;
 }
 
 /* ---------- PRINT STYLES ---------- */

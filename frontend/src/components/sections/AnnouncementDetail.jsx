@@ -157,9 +157,16 @@ const AnnouncementDetail = () => {
     return (
       <div className="site-wrap">
         <Navbar />
-        <div className="container py-5 mt-5 text-center">
-          <h1>Content Not Found</h1>
-        </div>
+        <main className="cea-detail-page">
+          <div className="cea-container-narrow">
+            <section className="cea-empty-state text-center">
+              <h1 className="cea-h1-title">Content Not Found</h1>
+              <p className="cea-subtitle mb-0">
+                The announcement or event you requested is unavailable.
+              </p>
+            </section>
+          </div>
+        </main>
         <Footer />
       </div>
     );

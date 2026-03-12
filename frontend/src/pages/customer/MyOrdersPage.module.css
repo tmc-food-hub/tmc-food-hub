@@ -207,6 +207,20 @@
     margin-bottom: .75rem;
 }
 
+.scheduledBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #7C3AED;
+    background: #EDE9FE;
+    border: 1px solid #DDD6FE;
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin-bottom: .75rem;
+}
+
 /* Items row */
 .orderItemsRow {
     display: flex;

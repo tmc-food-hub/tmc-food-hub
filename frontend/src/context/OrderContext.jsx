@@ -112,6 +112,9 @@ export function OrderProvider({ children }) {
                     note: o.special_instructions || o.customer?.delivery_instructions || '',
                     paymentMethod: o.payment_method,
                     contactNumber: o.contact_number || (o.customer ? o.customer.phone : 'N/A'),
+                    deliveryType: o.delivery_type || 'asap',
+                    scheduledDate: o.scheduled_date || null,
+                    scheduledTime: o.scheduled_time || null,
                     timeline: timeline
                 };
             });

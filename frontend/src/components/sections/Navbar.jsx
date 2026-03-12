@@ -164,10 +164,10 @@ function Navbar() {
           }
           .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link:hover,
           .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link.active {
-            color: #B91C1C !important;
+            color: var(--bs-primary) !important;
           }
           .fbs__net-navbar .navbar-nav > li > .nav-link.custom-nav-link::before {
-            background-color: #B91C1C !important;
+            background-color: var(--bs-primary) !important;
             height: 2px !important;
           }
           .custom-login-btn {
@@ -218,8 +218,8 @@ function Navbar() {
             color: ${isDarkMode ? '#ffffff' : '#000000'} !important;
           }
           .user-dropdown-item.text-danger:hover {
-            background-color: #FEE2E2 !important;
-            color: #DC2626 !important;
+            background-color: var(--bs-secondary) !important;
+            color: var(--bs-primary) !important;
           }
         `}
       </style>
@@ -284,7 +284,7 @@ function Navbar() {
                 <Link to="/login" className="btn custom-nav-btn custom-login-btn d-flex align-items-center justify-content-center" style={{ border: '1px solid #D1D5DB', padding: '0 1.25rem', height: '42px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }}>
                   Login
                 </Link>
-                <Link to="/signup" className="btn custom-nav-btn d-flex align-items-center justify-content-center" style={{ backgroundColor: '#991B1B', color: 'white', padding: '0 1.25rem', height: '42px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }}>
+                <Link to="/signup" className="btn custom-nav-btn d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bs-primary)', color: 'white', padding: '0 1.25rem', height: '42px', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }}>
                   Sign up
                 </Link>
                 <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={toggleTheme} style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
@@ -296,7 +296,7 @@ function Navbar() {
               <>
                 <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={() => navigate('/my-orders')} style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', position: 'relative', border: '1px solid #D1D5DB', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
                   <ClipboardList size={20} />
-                  {activeOrders.length > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: '#991B1B', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{activeOrders.length}</span>}
+                  {activeOrders.length > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: 'var(--bs-primary)', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{activeOrders.length}</span>}
                 </button>
                 <div className="nav-item dropdown" style={{ position: 'relative' }}>
                   <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={() => navigate('/cart')} style={{ backgroundColor: '#F59E0B', color: 'white', position: 'relative', border: '1px solid transparent', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
@@ -322,7 +322,7 @@ function Navbar() {
                                 <h6 className="mb-0 text-truncate" style={{ fontSize: '0.9rem', color: isDarkMode ? '#F9FAFB' : '#111827', fontWeight: 600 }}>{item.title}</h6>
                                 <div className="d-flex justify-content-between align-items-center mt-1">
                                   <span style={{ fontSize: '0.85rem', color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>Qty: {item.quantity}</span>
-                                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#991B1B' }}>${Number(item.price * item.quantity).toFixed(2)}</span>
+                                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--bs-primary)' }}>${Number(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                               </div>
                             </li>
@@ -338,7 +338,7 @@ function Navbar() {
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn w-50" onClick={() => navigate('/cart')} style={{ backgroundColor: 'transparent', border: `1px solid ${isDarkMode ? '#4B5563' : '#D1D5DB'}`, color: isDarkMode ? '#F9FAFB' : '#111827', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>View Cart</button>
-                          <button className="btn w-50" onClick={() => navigate('/checkout')} style={{ backgroundColor: '#991B1B', color: 'white', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Checkout</button>
+                          <button className="btn w-50" onClick={() => navigate('/checkout')} style={{ backgroundColor: 'var(--bs-primary)', color: 'white', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>Checkout</button>
                         </div>
                       </div>
                     )}
@@ -392,7 +392,7 @@ function Navbar() {
                     <Link to="/login" className="btn custom-nav-btn custom-login-btn w-100 d-flex align-items-center justify-content-center" style={{ border: '1px solid #D1D5DB', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={closeMobileMenu}>
                       Login
                     </Link>
-                    <Link to="/signup" className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: '#991B1B', color: 'white', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }} onClick={closeMobileMenu}>
+                    <Link to="/signup" className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bs-primary)', color: 'white', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, border: '1px solid transparent', boxSizing: 'border-box' }} onClick={closeMobileMenu}>
                       Sign up
                     </Link>
                     <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
@@ -432,7 +432,7 @@ function Navbar() {
                 <X size={20} />
               </button>
 
-              <div style={{ width: '64px', height: '64px', backgroundColor: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#DC2626' }}>
+              <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--bs-secondary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: 'var(--bs-primary)' }}>
                 <LogOut size={32} />
               </div>
 
@@ -445,7 +445,7 @@ function Navbar() {
                 <button
                   className="btn w-100 fw-bold d-flex align-items-center justify-content-center border-0"
                   onClick={() => { setShowLogoutModal(false); logout(); navigate('/'); }}
-                  style={{ backgroundColor: '#991B1B', color: 'white', padding: '0.8rem', borderRadius: '12px', fontSize: '1rem', transition: 'transform 0.1s' }}
+                  style={{ backgroundColor: 'var(--bs-primary)', color: 'white', padding: '0.8rem', borderRadius: '12px', fontSize: '1rem', transition: 'transform 0.1s' }}
                   onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                   onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >

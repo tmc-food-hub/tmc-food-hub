@@ -8,8 +8,6 @@ function SupportSection() {
     formData,
     errors,
     topics,
-    topicsLoading,
-    topicsError,
     handleChange,
     handleFileChange,
     handleFileClick,
@@ -20,9 +18,9 @@ function SupportSection() {
   } = useSupportPageLogic();
 
   const quickLinks = [
-    { label: 'How to place an order', icon: 'bi-bag', to: '/faq#One' },
-    { label: 'Track my delivery', icon: 'bi-geo-alt', to: '/faq#Two' },
-    { label: 'Cancel or modify an order', icon: 'bi-x-circle', to: '/faq#Three' },
+    { label: 'How to place an order', icon: 'bi-bag', to: '/faq#place-order' },
+    { label: 'Track my delivery', icon: 'bi-geo-alt', to: '/faq#track-delivery' },
+    { label: 'Cancel or modify an order', icon: 'bi-x-circle', to: '/faq#cancel-modify-order' },
     { label: 'General FAQ', icon: 'bi-question-circle', to: '/faq' },
   ];
 
@@ -80,22 +78,20 @@ function SupportSection() {
                 </div>
 
                 <div className="mt-3">
-                  <label className="form-label">Subject</label>
+                  <label className="form-label">Topic</label>
                   <select
                     name="topic_id"
                     value={formData.topic_id}
                     onChange={handleChange}
                     className="form-select shadow-none"
-                    disabled={topicsLoading}
                   >
-                    <option value="">{topicsLoading ? 'Loading topics...' : 'Select a topic'}</option>
+                    <option value="">Select a topic</option>
                     {topics.map((topic) => (
                       <option key={topic.id} value={topic.id}>
                         {topic.label}
                       </option>
                     ))}
                   </select>
-                  {topicsError && <small className="text-danger d-block mt-1">{topicsError}</small>}
                   {errors.topic_id && <small className="text-danger">{errors.topic_id}</small>}
                 </div>
 

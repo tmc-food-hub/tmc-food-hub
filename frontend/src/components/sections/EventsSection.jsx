@@ -35,7 +35,7 @@ function EventsSection() {
         <div className="text-center mb-5">
           <span
             className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-            style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
           >
             UPDATES & NOTICES
           </span>
@@ -52,7 +52,7 @@ function EventsSection() {
                 description={
                   <div className="event-content">
                     <div className="d-flex flex-column mb-3">
-                      <span className="fw-bold small" style={{ color: '#D94C38' }}>
+                      <span className="fw-bold small" style={{ color: 'var(--bs-primary)' }}>
                         <i className="bi bi-calendar3 me-2"></i>{item.date}
                       </span>
                       <span className="text-muted small">
@@ -75,7 +75,7 @@ function EventsSection() {
             className="btn px-5 py-2 fw-bold shadow-sm"
             onClick={() => window.scrollTo(0, 0)}
             style={{
-              backgroundColor: '#8B1F1C',
+              backgroundColor: 'var(--bs-primary)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',

@@ -625,8 +625,28 @@ const NewsBlogDetailSection = () => {
     }
   };
 
-  if (loading) return <div className="loading-state">Loading article...</div>;
-  if (!post) return <div className="loading-state">Post not found.</div>;
+  if (loading) {
+    return (
+      <div className={`news-blog-detail ${isDarkMode ? 'dark-mode' : ''}`}>
+        <div className="content-container">
+          <div className="loading-state">Loading article...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className={`news-blog-detail ${isDarkMode ? 'dark-mode' : ''}`}>
+        <div className="content-container">
+          <section className="loading-state detail-empty-state">
+            <h1>Post not found.</h1>
+            <p>The article you requested is unavailable.</p>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`news-blog-detail ${isDarkMode ? 'dark-mode' : ''}`}>

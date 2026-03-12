@@ -7,6 +7,14 @@ function HeroSection() {
   return (
     <>
       <style>{`
+        .hero-cta-btn {
+          width: 170px;
+          height: 48px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
         @media (max-width: 991px) {
           .hero__v6 { 
             padding-top: 100px !important; 
@@ -51,12 +59,12 @@ function HeroSection() {
                     data-aos="fade-up"
                     data-aos-delay="300"
                   >
-                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3" style={{ backgroundColor: '#8B1F1C', borderColor: '#8B1F1C' }} href="#">
+                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3 hero-cta-btn" style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }} href="#">
                       Order Now
                     </a>
 
-                    <a className="btn btn-white-outline d-flex align-items-center fw-semibold border-0" href="#">
-                      <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: '#8B1F1C' }}></i>
+                    <a className="btn btn-white-outline d-flex align-items-center fw-semibold px-4 py-2 rounded-3 hero-cta-btn" href="#">
+                      <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: 'var(--bs-primary)' }}></i>
                       Explore
                     </a>
                   </div>

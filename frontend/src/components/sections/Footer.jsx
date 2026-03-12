@@ -20,18 +20,18 @@ const quickLinks = [
 ];
 
 const restaurantLinks = [
-  { label: 'Partner With Us', href: '#' },
-  { label: 'Restaurant Dashboard', href: '#' },
-  { label: 'Merchant Support', href: '#' },
-  { label: 'Success Stories', href: '#' },
+  { label: 'Partner With Us', type: 'route', to: '/owner-login' },
+  { label: 'Restaurant Dashboard', type: 'route', to: '/owner-dashboard' },
+  { label: 'Merchant Support', type: 'route', to: '/support' },
+  { label: 'Success Stories', type: 'route', to: '/#testimonials' },
 ];
 
 const serviceLinks = [
-  { label: 'Food Delivery', href: '#' },
-  { label: 'Scheduled Orders', href: '#' },
-  { label: 'Deals & Promotions', href: '#' },
-  { label: 'Loyalty Rewards', href: '#' },
-  { label: 'Catering Orders', href: '#' },
+  { label: 'Food Delivery', type: 'route', to: '/services' },
+  { label: 'Scheduled Orders', type: 'route', to: '/services' },
+  { label: 'Deals & Promotions', type: 'route', to: '/services' },
+  { label: 'Loyalty Rewards', type: 'route', to: '/services' },
+  { label: 'Catering Orders', type: 'route', to: '/services' },
 ];
 
 function Footer() {
@@ -79,9 +79,15 @@ function Footer() {
             <ul className={styles.linkList}>
               {restaurantLinks.map((item) => (
                 <li key={item.label}>
-                  <a href={item.href} className={styles.link}>
-                    {item.label}
-                  </a>
+                  {item.type === 'route' ? (
+                    <Link to={item.to} className={styles.link}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a href={item.href} className={styles.link}>
+                      {item.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -92,9 +98,9 @@ function Footer() {
             <ul className={styles.linkList}>
               {serviceLinks.map((item) => (
                 <li key={item.label}>
-                  <a href={item.href} className={styles.link}>
+                  <Link to={item.to} className={styles.link}>
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -117,7 +123,7 @@ function Footer() {
               </p>
               <p>
                 <span>Website</span>
-                <a href="https://tmcfoodhub.com">https://tmcfoodhub.com</a>
+                <a href="https://foodhub.tmc-innovations.com/">https://foodhub.tmc-innovations.com/</a>
               </p>
             </address>
           </div>

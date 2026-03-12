@@ -2,6 +2,7 @@ export const navigationItems = [
   { id: 'home', label: 'Home' },
   { id: 'about', label: 'About Us' },
   { id: 'how-it-works', label: 'How It Works' },
+  { id: 'testimonials', label: 'Testimonials' },
   {
     id: 'services-dropdown',
     label: 'Services',
@@ -10,7 +11,6 @@ export const navigationItems = [
       { id: 'menu', label: 'Menu' },
     ],
   },
-  { id: 'testimonials', label: 'Testimonials' },
   {
     id: 'news-blogs-dropdown',
     label: 'News & Blogs',

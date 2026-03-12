@@ -49,11 +49,11 @@ const NewsBlogSection = ({ isPreview = false }) => {
           <div className="text-center mb-5">
             <span
               className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-              style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+              style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
             >
               BLOGS
             </span>
-            <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+            <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: 'var(--bs-text-color)' }}>
               Ideas, Insights & Food Trends
             </h2>
             <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
@@ -64,11 +64,11 @@ const NewsBlogSection = ({ isPreview = false }) => {
           <div className="text-center mb-5">
             <span
               className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-              style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+              style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
             >
               NEWS & BLOGS
             </span>
-            <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+            <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: 'var(--bs-text-color)' }}>
               TMC Foodhub News & Blogs
             </h2>
             <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>

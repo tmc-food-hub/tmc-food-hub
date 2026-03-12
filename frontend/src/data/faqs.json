@@ -1,42 +1,48 @@
 [
   {
-    "id": "One",
-    "question": "What areas does TMC Foodhub deliver to?",
-    "answer": "We currently serve select cities and municipalities in the Philippines. Enter your delivery address on the homepage to see available restaurants in your area.",
+    "id": "place-order",
+    "question": "How do I place an order?",
+    "answer": "Browse restaurants available in your area, add your items to the cart, review your order, choose your payment method, and complete checkout. Once confirmed, you can track the order status from preparation to delivery.",
     "isOpen": true
   },
   {
-    "id": "Two",
+    "id": "track-delivery",
     "question": "How do I track my order?",
     "answer": "Once your order is confirmed, you can track its status in real time from the Orders page. You'll see updates from preparation to pickup to delivery, including your rider's live location on the map.",
     "isOpen": false
   },
   {
-    "id": "Three",
-    "question": "What payment methods are accepted?",
-    "answer": "TMC Foodhub accepts Cash on Delivery (COD), GCash, Maya, and Credit/Debit Card payments. You can select your preferred payment method during checkout.",
-    "isOpen": false
-  },
-  {
-    "id": "Four",
-    "question": "How do I become a restaurant partner?",
-    "answer": "If you're a restaurant or food vendor interested in partnering with TMC Foodhub, visit our Partner page or contact us at partners@tmcfoodhub.com. We'll walk you through the onboarding process, menu setup, and dashboard access.",
-    "isOpen": false
-  },
-  {
-    "id": "Five",
+    "id": "cancel-modify-order",
     "question": "Can I cancel or modify my order after placing it?",
     "answer": "You can cancel or modify your order within a few minutes of placing it, before the restaurant starts preparing it. After preparation begins, cancellation may not be possible. Check your order status page for available options.",
     "isOpen": false
   },
   {
-    "id": "Six",
+    "id": "delivery-areas",
+    "question": "What areas does TMC Foodhub deliver to?",
+    "answer": "We currently serve select cities and municipalities in the Philippines. Enter your delivery address on the homepage to see available restaurants in your area.",
+    "isOpen": false
+  },
+  {
+    "id": "payment-methods",
+    "question": "What payment methods are accepted?",
+    "answer": "TMC Foodhub accepts Cash on Delivery (COD), GCash, Maya, and Credit/Debit Card payments. You can select your preferred payment method during checkout.",
+    "isOpen": false
+  },
+  {
+    "id": "restaurant-partner",
+    "question": "How do I become a restaurant partner?",
+    "answer": "If you're a restaurant or food vendor interested in partnering with TMC Foodhub, visit our Partner page or contact us at partners@tmcfoodhub.com. We'll walk you through the onboarding process, menu setup, and dashboard access.",
+    "isOpen": false
+  },
+  {
+    "id": "minimum-order",
     "question": "Is there a minimum order amount?",
     "answer": "Minimum order amounts may vary by restaurant. Each restaurant's menu page will display the minimum order requirement, if any, before you proceed to checkout.",
     "isOpen": false
   },
   {
-    "id": "Seven",
+    "id": "delivery-fees",
     "question": "How are delivery fees calculated?",
     "answer": "Delivery fees are calculated based on the distance between the restaurant and your delivery address. Some restaurants may offer free delivery for orders above a certain amount. Promo codes and vouchers can also reduce or waive delivery fees.",
     "isOpen": false

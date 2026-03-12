@@ -18,11 +18,11 @@ function HowItWorksSection() {
         <div className="text-center mb-5">
           <span
             className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-            style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
           >
             HOW IT WORKS
           </span>
-          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.5rem', color: '#1B1B1B' }}>
+          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.5rem', color: 'var(--bs-text-color)' }}>
             Four Simple Steps to Your Next Great Meal
           </h2>
           <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6' }}>
@@ -50,7 +50,7 @@ function HowItWorksSection() {
               <path
                 className="flowing-dots"
                 d="M 0 20 Q 50 -10 100 20 Q 150 50 200 20 Q 250 -10 300 20"
-                stroke="#991B1B"
+                stroke="var(--bs-primary)"
                 strokeWidth="2.5"
                 strokeDasharray="12 12"
               />
@@ -67,13 +67,13 @@ function HowItWorksSection() {
               <div className="position-relative w-100 mb-4 d-flex justify-content-center">
                 <span
                   className="step-number position-relative rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: '#581C0C', zIndex: 2 }}
+                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: 'var(--bs-primary)', zIndex: 2 }}
                 >
                   1
                 </span>
               </div>
               <div className="px-2">
-                <h3 className="fs-6 fw-bold mb-3" style={{ color: '#1B1B1B' }}>Browse & Discover</h3>
+                <h3 className="fs-6 fw-bold mb-3" style={{ color: 'var(--bs-text-color)' }}>Browse & Discover</h3>
                 <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
                   Explore a wide selection of restaurants, cuisines, and dishes near you. Use filters by cuisine type, price range, dietary preference, or delivery time to find exactly what you're craving.
                 </p>
@@ -87,13 +87,13 @@ function HowItWorksSection() {
               <div className="position-relative w-100 mb-4 d-flex justify-content-center">
                 <span
                   className="step-number position-relative rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: '#991B1B', zIndex: 2 }}
+                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: 'var(--bs-primary)', zIndex: 2 }}
                 >
                   2
                 </span>
               </div>
               <div className="px-2">
-                <h3 className="fs-6 fw-bold mb-3" style={{ color: '#1B1B1B' }}>Customize & Add to Cart</h3>
+                <h3 className="fs-6 fw-bold mb-3" style={{ color: 'var(--bs-text-color)' }}>Customize & Add to Cart</h3>
                 <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
                   Select your items, customize your order (e.g., spice level, add-ons, special instructions), and add everything to your cart. Easily review your order before checkout.
                 </p>
@@ -107,13 +107,13 @@ function HowItWorksSection() {
               <div className="position-relative w-100 mb-4 d-flex justify-content-center">
                 <span
                   className="step-number position-relative rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: '#C2410C', zIndex: 2 }}
+                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: 'var(--bs-primary)', zIndex: 2 }}
                 >
                   3
                 </span>
               </div>
               <div className="px-2">
-                <h3 className="fs-6 fw-bold mb-3" style={{ color: '#1B1B1B' }}>Checkout & Pay</h3>
+                <h3 className="fs-6 fw-bold mb-3" style={{ color: 'var(--bs-text-color)' }}>Checkout & Pay</h3>
                 <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
                   Choose your delivery address, select a payment method (Cash on Delivery, GCash, Credit/Debit Card, or Maya), and apply any promo codes or vouchers. Confirm your order with a single tap.
                 </p>
@@ -127,13 +127,13 @@ function HowItWorksSection() {
               <div className="position-relative w-100 mb-4 d-flex justify-content-center">
                 <span
                   className="step-number position-relative rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: '#F59E0B', zIndex: 2 }}
+                  style={{ width: '60px', height: '60px', fontSize: '1.5rem', backgroundColor: 'var(--bs-primary)', zIndex: 2 }}
                 >
                   4
                 </span>
               </div>
               <div className="px-2">
-                <h3 className="fs-6 fw-bold mb-3" style={{ color: '#1B1B1B' }}>Track & Receive</h3>
+                <h3 className="fs-6 fw-bold mb-3" style={{ color: 'var(--bs-text-color)' }}>Track & Receive</h3>
                 <p className="text-muted small mb-0" style={{ lineHeight: '1.6' }}>
                   Get real-time updates on your order status &mdash; from preparation to pickup to delivery. Track your rider on a live map and receive your meal fresh, hot, and on time.
                 </p>

@@ -12,6 +12,15 @@
     padding: 0 20px;
 }
 
+.cea-empty-state {
+    min-height: calc(100vh - 320px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
 /* Breadcrumbs */
 .cea-breadcrumbs {
     font-size: 13px;
