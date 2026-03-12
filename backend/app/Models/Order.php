@@ -17,6 +17,9 @@ class Order extends Model
         'delivery_address',
         'contact_number',
         'special_instructions',
+        'delivery_type',
+        'scheduled_date',
+        'scheduled_time',
         'status'
     ];
 

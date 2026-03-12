@@ -219,6 +219,28 @@
     border-color: #1a1a1a;
 }
 
+/* Scheduled Delivery Section */
+.scheduleSection {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.3s ease, margin 0.3s ease;
+    margin-top: 0;
+}
+
+.scheduleSectionOpen {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 1.25rem;
+}
+
+.scheduleNote {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
 /* ---------- Payment Method ---------- */
 .paymentGrid {
     display: grid;

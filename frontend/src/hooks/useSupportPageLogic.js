@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 export function getApiUrl() {
   if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL)
@@ -14,10 +14,16 @@ export const useSupportPageLogic = () => {
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Topics from backend (for Subject dropdown)
-  const [topics, setTopics] = useState([]);
-  const [topicsLoading, setTopicsLoading] = useState(true);
-  const [topicsError, setTopicsError] = useState(null);
+  const topics = [
+    { id: 'order-issue', label: 'Order Issue' },
+    { id: 'payment', label: 'Payment & Billing' },
+    { id: 'delivery', label: 'Delivery Problem' },
+    { id: 'account', label: 'Account & Login' },
+    { id: 'refund', label: 'Refund Request' },
+    { id: 'feedback', label: 'Feedback & Suggestions' },
+    { id: 'product', label: 'Product Inquiry' },
+    { id: 'other', label: 'Other' },
+  ];
 
   // Form state
   const [formData, setFormData] = useState({
@@ -29,32 +35,6 @@ export const useSupportPageLogic = () => {
 
   // Error state
   const [errors, setErrors] = useState({});
-
-  // Fetch topics on mount
-  useEffect(() => {
-    let cancelled = false;
-    const fetchTopics = async () => {
-      try {
-        setTopicsLoading(true);
-        setTopicsError(null);
-        const response = await fetch(`${getApiUrl()}/api/support/topics`);
-        if (!response.ok) throw new Error("Failed to load topics");
-        const data = await response.json();
-        // Support both { data: [...] } and raw array
-        const list = Array.isArray(data) ? data : data?.data ?? [];
-        if (!cancelled) setTopics(list);
-      } catch (err) {
-        if (!cancelled) {
-          setTopicsError(err.message || "Could not load topics");
-          setTopics([]);
-        }
-      } finally {
-        if (!cancelled) setTopicsLoading(false);
-      }
-    };
-    fetchTopics();
-    return () => { cancelled = true; };
-  }, []);
 
   // File handlers
   const handleFileChange = (e) => {
@@ -167,8 +147,6 @@ export const useSupportPageLogic = () => {
     formData,
     errors,
     topics,
-    topicsLoading,
-    topicsError,
     handleChange,
     handleFileChange,
     handleFileClick,

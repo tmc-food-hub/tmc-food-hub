@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Package, Clock, CheckCircle2, XCircle, MapPin,
-    ShoppingBag, ChevronRight, Truck, Star
+    ShoppingBag, ChevronRight, Truck, Star, CalendarDays
 } from 'lucide-react';
 import { useOrders } from '../../context/OrderContext';
 import Navbar from '../../components/sections/Navbar';
@@ -52,6 +52,19 @@ function OrderCard({ order, navigate }) {
             <div className={styles.orderRestaurant}>
                 <ShoppingBag size={14} /> {order.restaurant}
             </div>
+
+            {order.deliveryType === 'scheduled' && order.scheduledDate && (
+                <div className={styles.scheduledBadge}>
+                    <CalendarDays size={13} />
+                    <span>
+                        Scheduled for{' '}
+                        {new Date(order.scheduledDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {order.scheduledTime && (
+                            <> at {new Date('1970-01-01T' + order.scheduledTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>
+                        )}
+                    </span>
+                </div>
+            )}
 
             <div className={styles.orderItemsRow}>
                 {order.items.slice(0, 4).map((item, idx) => (
