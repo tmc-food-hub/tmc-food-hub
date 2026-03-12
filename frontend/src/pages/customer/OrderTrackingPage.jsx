@@ -4,9 +4,11 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import L from 'leaflet';
 import {
     Check, Clock, Circle, Phone, PhoneOff,
-    Star, X, MessageCircle, ChevronRight
+    Star, X, MessageCircle, ChevronRight, Package
 } from 'lucide-react';
 import { useOrders } from '../../context/OrderContext';
+import { CartContext } from '../../components/ui/CartContext';
+import { useContext } from 'react';
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
@@ -154,6 +156,7 @@ function OrderTrackingPage() {
     const navigate = useNavigate();
     const orderId = searchParams.get('id');
     const { orders, cancelOrder, loading } = useOrders();
+    const { reorder } = useContext(CartContext);
 
     // Find order from context
     const contextOrder = orders.find(o =>
@@ -210,7 +213,6 @@ function OrderTrackingPage() {
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    const mapCenter = order.rider.coords;
 
     const renderStatusIcon = (state) => {
         if (state === 'completed') {
@@ -274,6 +276,8 @@ function OrderTrackingPage() {
             </div>
         );
     }
+
+    const mapCenter = order.rider.coords;
 
     return (
         <>
@@ -483,44 +487,74 @@ function OrderTrackingPage() {
                                         </div>
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className={styles.riderActions}>
-                                        <button className={styles.callBtn}>
-                                            <Phone size={16} />
-                                            Call Rider
-                                        </button>
-                                        <button className={styles.callBtnOutline}>
-                                            <MessageCircle size={16} />
-                                            Message
-                                        </button>
-                                    </div>
+                                    {/* Action Buttons - Hide if delivered */}
+                                    {order.status !== 'Delivered' && (
+                                        <div className={styles.riderActions}>
+                                            <button className={styles.callBtn}>
+                                                <Phone size={16} />
+                                                Call Rider
+                                            </button>
+                                            <button className={styles.callBtnOutline}>
+                                                <MessageCircle size={16} />
+                                                Message
+                                            </button>
+                                        </div>
+                                    )}
 
                                     <div className={styles.riderDivider}></div>
 
-                                    {/* Cancel Order */}
-                                    <button
-                                        className={styles.cancelBtn}
-                                        disabled={cancelTimer === 0 || order.status === 'Cancelled'}
-                                        onClick={() => {
-                                            if (contextOrder && cancelTimer > 0) {
-                                                cancelOrder(contextOrder.id);
-                                                navigate('/my-orders');
-                                            }
-                                        }}
-                                    >
-                                        <X size={16} />
-                                        Cancel Order
-                                        {cancelTimer > 0 && (
-                                            <span className={styles.cancelTimer}>
-                                                {formatTimer(cancelTimer)}
-                                            </span>
-                                        )}
-                                    </button>
+                                    {/* Footer Actions */}
+                                    {order.status === 'Delivered' ? (
+                                        <button 
+                                            className={styles.reorderBtn}
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                backgroundColor: '#B91C1C',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                marginBottom: '1rem'
+                                            }}
+                                            onClick={() => {
+                                                reorder(order.items, order.restaurant.name);
+                                                navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant.name)}`);
+                                            }}
+                                        >
+                                            <Package size={16} />
+                                            Order Again
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className={styles.cancelBtn}
+                                            disabled={cancelTimer === 0 || order.status === 'Cancelled' || order.status === 'Out for Delivery'}
+                                            onClick={() => {
+                                                if (contextOrder && cancelTimer > 0) {
+                                                    cancelOrder(contextOrder.id);
+                                                    navigate('/my-orders');
+                                                }
+                                            }}
+                                        >
+                                            <X size={16} />
+                                            Cancel Order
+                                            {cancelTimer > 0 && order.status === 'Order Placed' && (
+                                                <span className={styles.cancelTimer}>
+                                                    {formatTimer(cancelTimer)}
+                                                </span>
+                                            )}
+                                        </button>
+                                    )}
 
                                     <p className={styles.supportText}>
-                                        Need help with your order?{' '}
+                                        {order.status === 'Delivered' ? 'How was your meal?' : 'Need help with your order?'}
+                                        {' '}
                                         <Link to="/support" className={styles.supportLink}>
-                                            Contact Support
+                                            {order.status === 'Delivered' ? 'Leave Feedback' : 'Contact Support'}
                                         </Link>
                                     </p>
                                 </div>

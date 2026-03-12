@@ -9,6 +9,8 @@ import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import { useAuth } from '../../context/AuthContext';
+import { CartContext } from '../../components/ui/CartContext';
+import { useContext } from 'react';
 import styles from './MyOrdersPage.module.css';
 
 const TABS = [
@@ -21,8 +23,7 @@ function statusMeta(s) {
     const map = {
         'Order Placed': { color: '#D97706', bg: '#FEF3C7', icon: <Clock size={12} /> },
         'Order Confirmed': { color: '#2563EB', bg: '#DBEAFE', icon: <Package size={12} /> },
-        'Being Prepared': { color: '#7C3AED', bg: '#EDE9FE', icon: <Package size={12} /> },
-        'Picked Up': { color: '#0891B2', bg: '#CFFAFE', icon: <Truck size={12} /> },
+        'Out for Delivery': { color: '#0891B2', bg: '#CFFAFE', icon: <Truck size={12} /> },
         'Delivered': { color: '#059669', bg: '#D1FAE5', icon: <CheckCircle2 size={12} /> },
         'Cancelled': { color: '#DC2626', bg: '#FEE2E2', icon: <XCircle size={12} /> },
     };
@@ -72,19 +73,29 @@ function OrderCard({ order, navigate }) {
                     <span className={styles.orderTotal}>${order.total.toFixed(2)}</span>
                     <span className={styles.orderPayment}>{order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Card'}</span>
                 </div>
-                {isActive ? (
-                    <button className={styles.trackBtn} onClick={() => navigate(`/order-tracking?id=${order.id}`)}>
-                        <MapPin size={14} /> Track Order <ChevronRight size={14} />
-                    </button>
-                ) : order.status === 'Delivered' ? (
-                    <div className={styles.deliveredBadge}>
-                        <CheckCircle2 size={14} /> Delivered
-                    </div>
-                ) : (
-                    <div className={styles.cancelledBadge}>
-                        <XCircle size={14} /> Cancelled
-                    </div>
-                )}
+                <div className={styles.orderActions}>
+                    {isActive || order.status === 'Delivered' ? (
+                        <button className={styles.trackBtn} onClick={() => navigate(`/order-tracking?id=${order.id}`)}>
+                            <MapPin size={14} /> {order.status === 'Delivered' ? 'View Details' : 'Track Order'} <ChevronRight size={14} />
+                        </button>
+                    ) : (
+                        <div className={styles.cancelledBadge}>
+                            <XCircle size={14} /> Cancelled
+                        </div>
+                    )}
+                    
+                    {order.status === 'Delivered' && (
+                        <button 
+                            className={styles.reorderBtn}
+                            onClick={() => {
+                                // Handled in MyOrdersPage to access CartContext
+                                order.handleReorder(order);
+                            }}
+                        >
+                            <ShoppingBag size={14} /> Reorder
+                        </button>
+                    )}
+                </div>
             </div>
 
             {isActive && order.estimatedArrival && (
@@ -99,8 +110,14 @@ function OrderCard({ order, navigate }) {
 function MyOrdersPage() {
     const { user, isAuthenticated, loading } = useAuth();
     const { activeOrders, completedOrders, cancelledOrders } = useOrders();
+    const { reorder } = useContext(CartContext);
     const [tab, setTab] = useState('active');
     const navigate = useNavigate();
+
+    const handleReorder = (order) => {
+        reorder(order.items, order.restaurant);
+        navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant)}`);
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -158,7 +175,7 @@ function MyOrdersPage() {
                                 </div>
                             ) : (
                                 displayed.map(order => (
-                                    <OrderCard key={order.id} order={order} navigate={navigate} />
+                                    <OrderCard key={order.id} order={{...order, handleReorder}} navigate={navigate} />
                                 ))
                             )}
                         </div>

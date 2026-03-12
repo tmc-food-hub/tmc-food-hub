@@ -116,6 +116,27 @@ export function CartProvider({ children }) {
     dispatch({ type: 'CLEAR_CART' });
   }, []);
 
+  const reorder = useCallback((items, restaurantName) => {
+    clearCart();
+    items.forEach(item => {
+      dispatch({
+        type: 'ADD_ITEM',
+        payload: {
+          id: item.id || item.productId,
+          title: item.name || item.title,
+          image: item.image,
+          price: item.price,
+          originalPrice: item.originalPrice || item.price,
+          storeName: restaurantName,
+          variation: item.variation || null,
+          addOns: item.addOns || [],
+          quantity: item.quantity || 1
+        }
+      });
+    });
+    showNotification(`Added ${items.length} items from previous order to cart!`, 'success');
+  }, [clearCart, showNotification]);
+
   const cartCount = useMemo(() => cartItems.reduce((sum, item) => sum + item.quantity, 0), [cartItems]);
   const cartSubtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
 
@@ -127,8 +148,9 @@ export function CartProvider({ children }) {
     removeFromCart,
     increment,
     decrement,
-    clearCart
-  }), [cartItems, cartCount, cartSubtotal, addToCart, removeFromCart, increment, decrement, clearCart]);
+    clearCart,
+    reorder
+  }), [cartItems, cartCount, cartSubtotal, addToCart, removeFromCart, increment, decrement, clearCart, reorder]);
 
   return (
     <CartContext.Provider value={value}>

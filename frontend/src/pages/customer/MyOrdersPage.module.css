@@ -307,6 +307,34 @@
     background: #7F1D1D;
 }
 
+.orderActions {
+    display: flex;
+    gap: .75rem;
+    align-items: center;
+}
+
+.reorderBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .5rem 1rem;
+    background: #fff;
+    color: #111827;
+    border: 1px solid #D1D5DB;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.reorderBtn:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+}
+
 .deliveredBadge {
     display: inline-flex;
     align-items: center;

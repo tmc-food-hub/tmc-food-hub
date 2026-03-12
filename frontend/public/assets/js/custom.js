@@ -421,7 +421,9 @@ const addHoverEvents = (dropdown) => {
   };
 
   // Disable the click event for toggling the dropdown
-  dropdownToggle.addEventListener('click', preventClick);
+  if (dropdownToggle) {
+    dropdownToggle.addEventListener('click', preventClick);
+  }
 
   // Open dropdown on hover
   dropdown.addEventListener('mouseover', showDropdown);
@@ -439,7 +441,9 @@ const removeHoverEvents = (dropdown) => {
 
   if (preventClick) {
     // Remove the event listeners
-    dropdownToggle.removeEventListener('click', preventClick);
+    if (dropdownToggle) {
+      dropdownToggle.removeEventListener('click', preventClick);
+    }
     dropdown.removeEventListener('mouseover', showDropdown);
     dropdown.removeEventListener('mouseleave', hideDropdown);
 

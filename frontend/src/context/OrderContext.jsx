@@ -32,28 +32,37 @@ export function OrderProvider({ children }) {
                 const currentStatusIndex = statusList.indexOf(currentStatus);
                 const timeline = statusList.map((label, index) => {
                     let state = 'pending';
-                    if (index < currentStatusIndex) state = 'completed';
-                    else if (index === currentStatusIndex) state = 'active';
+                    if (currentStatusIndex === 0) {
+                        if (index === 0) state = 'active';
+                    } else if (currentStatusIndex < 3) {
+                        if (index <= currentStatusIndex) state = 'completed';
+                        else if (index === currentStatusIndex + 1) state = 'active';
+                    } else {
+                        // All steps completed when Delivered
+                        state = 'completed';
+                    }
                     
                     const getStatusDesc = (label, state) => {
                         if (state === 'pending') return 'Pending';
-                        if (state === 'completed') return 'Done';
-                        // Active state descriptions
-                        const descs = {
-                            'Order Placed': 'Waiting for restaurant confirmation',
-                            'Order Confirmed': 'Kitchen is preparing your food',
-                            'Out for Delivery': 'Your rider is on the way',
-                            'Delivered': 'Enjoy your meal!'
+                        if (state === 'completed') {
+                            if (label === 'Delivered') return 'Enjoy your meal!';
+                            return 'Done';
+                        }
+                        // Active state descriptions (This is the NEXT step)
+                        const activeDescs = {
+                            'Order Confirmed': 'Waiting for restaurant confirmation',
+                            'Out for Delivery': 'Kitchen is preparing your food',
+                            'Delivered': 'Your rider is on the way'
                         };
-                        return descs[label] || 'Current step';
+                        return activeDescs[label] || 'In progress';
                     };
 
                     // Use updated_at for active/last step to show real-time progress
-                    const stepTime = (index === currentStatusIndex) ? updatedAt : createdAt;
+                    const stepTime = (state === 'active' || (state === 'completed' && index === currentStatusIndex)) ? updatedAt : createdAt;
 
                     return {
                         label,
-                        time: index <= currentStatusIndex ? stepTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
+                        time: (state === 'completed' || state === 'active') ? stepTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
                         description: getStatusDesc(label, state),
                         state
                     };
