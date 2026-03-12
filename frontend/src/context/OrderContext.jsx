@@ -10,6 +10,12 @@ export function OrderProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = useCallback(async (isInitial = false) => {
+        const token = localStorage.getItem('auth_token');
+        if (!token || token === 'undefined' || token === 'null') {
+            setLoading(false);
+            return;
+        }
+
         try {
             if (isInitial) setLoading(true);
             const response = await axios.get('/orders');

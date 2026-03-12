@@ -102,6 +102,8 @@ jobs:
             CACHE_DRIVER=file
             SESSION_DRIVER=file
             QUEUE_DRIVER=sync
+
+            SANCTUM_STATEFUL_DOMAINS=""
             ENVEOF
 
             # Generate app key if not set
