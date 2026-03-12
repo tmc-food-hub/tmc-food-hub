@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Layers, X, AlertCircle, Check } from 'lucide-react';
-import { buildOrders, STATUS_ORDER } from './shared';
+import { STATUS_ORDER } from './shared';
+import { useOrders } from '../../../context/OrderContext';
 import styles from '../OwnerDashboard.module.css';
 
 export default function OrdersSection({ store }) {
-    const [orders] = useState(() => buildOrders(store));
+    const { orders: allOrders, loading, fetchOrders } = useOrders();
+    const [orders, setOrders] = useState([]);
+    
+    useEffect(() => {
+        // In a real app, this would filter by store ID.
+        // For now, we take all orders since we're mocking multiple stores in one dashboard context.
+        setOrders(allOrders || []);
+    }, [allOrders]);
+
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -98,7 +107,15 @@ export default function OrdersSection({ store }) {
                                         </td>
                                         <td className={styles.multiLineItemsCell}>
                                             {o.items.map((it, idx) => (
-                                                <div key={idx} className={styles.itemLine}>{it.qty}x {it.name}</div>
+                                                <div key={idx} className={styles.itemLine}>
+                                                    {it.qty}x {it.name}
+                                                    {it.variations && (
+                                                        <div style={{ fontSize: '0.75rem', color: '#6B7280', paddingLeft: '1rem' }}>
+                                                            {it.variations.name && <span>{it.variations.name}</span>}
+                                                            {it.variations.addOns && it.variations.addOns.length > 0 && <span> • +{it.variations.addOns.length}</span>}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ))}
                                         </td>
                                         <td className={styles.totalCell}>${o.total.toFixed(2)}</td>
@@ -171,9 +188,17 @@ export default function OrdersSection({ store }) {
                                 <div className={styles.panelItemsList}>
                                     {selectedOrder.items.map((it, idx) => (
                                         <div key={idx} className={styles.panelItemRow}>
-                                            <img src={it.image} alt={it.name} className={styles.panelItemImg} />
+                                            <img src={it.image || 'https://via.placeholder.com/60'} alt={it.name} className={styles.panelItemImg} />
                                             <div className={styles.panelItemDetails}>
                                                 <div className={styles.panelItemName}>{it.name}</div>
+                                                {it.variations && (
+                                                    <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '2px' }}>
+                                                        {it.variations.name && <div>Variant: {it.variations.name}</div>}
+                                                        {it.variations.addOns && it.variations.addOns.length > 0 && (
+                                                            <div>Add-ons: {it.variations.addOns.map(a => a.name).join(', ')}</div>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <div className={styles.panelItemQty}>Qty: x{it.qty}</div>
                                             </div>
                                             <div className={styles.panelItemPrice}>${(it.qty * it.price).toFixed(2)}</div>
