@@ -14,7 +14,7 @@ const CompanyEventsAndAnnouncementsSection = () => {
         <div className="text-center mb-5">
           <span
             className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-            style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
           >
             UPDATES & NOTICES
           </span>
@@ -46,11 +46,11 @@ const CompanyEventsAndAnnouncementsSection = () => {
 
               <div className="mt-3">
                 <p className="cea-date-info mb-1">
-                  <i className="bi bi-calendar3 me-2" style={{ color: '#D94C38' }}></i>
+                  <i className="bi bi-calendar3 me-2" style={{ color: 'var(--bs-primary)' }}></i>
                   <strong>February 15, 2026</strong>
                 </p>
                 <p className="cea-date-info mb-0">
-                  <i className="bi bi-clock me-2" style={{ color: '#D94C38' }}></i>
+                  <i className="bi bi-clock me-2" style={{ color: 'var(--bs-primary)' }}></i>
                   3:00 PM – 4:00 PM (PHT)
                 </p>
               </div>
@@ -94,11 +94,11 @@ const CompanyEventsAndAnnouncementsSection = () => {
                   <div className="cea-card-footer-long">
                     <div>
                       <p className="cea-date mb-1">
-                        <i className="bi bi-calendar3 me-2" style={{ color: '#D94C38' }}></i>
+                        <i className="bi bi-calendar3 me-2" style={{ color: 'var(--bs-primary)' }}></i>
                         March 5, 2026
                       </p>
                       <p className="cea-date mb-0">
-                        <i className="bi bi-clock me-2" style={{ color: '#D94C38' }}></i>
+                        <i className="bi bi-clock me-2" style={{ color: 'var(--bs-primary)' }}></i>
                         11:00 PM – 2:00 AM
                       </p>
                     </div>
@@ -134,11 +134,11 @@ const CompanyEventsAndAnnouncementsSection = () => {
                   <div className="cea-card-footer-long">
                     <div>
                       <p className="cea-date mb-1">
-                        <i className="bi bi-calendar3 me-2" style={{ color: '#D94C38' }}></i>
+                        <i className="bi bi-calendar3 me-2" style={{ color: 'var(--bs-primary)' }}></i>
                         February 10, 2026
                       </p>
                       <p className="cea-date mb-0">
-                        <i className="bi bi-clock me-2" style={{ color: '#D94C38' }}></i>
+                        <i className="bi bi-clock me-2" style={{ color: 'var(--bs-primary)' }}></i>
                         Effective Immediately
                       </p>
                     </div>
@@ -176,11 +176,11 @@ const CompanyEventsAndAnnouncementsSection = () => {
               <h4 className="cea-card-title mt-2">TMC Foodhub Platform Demo & Walkthrough</h4>
               <div className="cea-event-info-list mt-3">
                 <p>
-                  <i className="bi bi-calendar3 me-2" style={{ color: '#D94C38' }}></i>
+                  <i className="bi bi-calendar3 me-2" style={{ color: 'var(--bs-primary)' }}></i>
                   <strong>Date:</strong> February 15, 2026
                 </p>
                 <p>
-                  <i className="bi bi-clock me-2" style={{ color: '#D94C38' }}></i>
+                  <i className="bi bi-clock me-2" style={{ color: 'var(--bs-primary)' }}></i>
                   <strong>Time:</strong> 3:00 PM – 4:00 PM (PHT)
                 </p>
               </div>

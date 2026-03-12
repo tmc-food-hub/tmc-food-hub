@@ -42,11 +42,11 @@ function ServicesSection() {
         <div className="text-center mb-5">
           <span
             className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-            style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+            style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
           >
             OUR SERVICES
           </span>
-          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: '#1B1B1B' }}>
+          <h2 className="mb-3 fw-bold" style={{ fontSize: '2.2rem', color: 'var(--bs-text-color)' }}>
             Innovative Tech Solutions to Drive<br />Your Digital Transformation
           </h2>
         </div>
@@ -85,7 +85,7 @@ function ServicesSection() {
             className="btn px-5 py-2 fw-bold shadow-sm"
             onClick={() => window.scrollTo(0, 0)}
             style={{
-              backgroundColor: '#8B1F1C',
+              backgroundColor: 'var(--bs-primary)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',

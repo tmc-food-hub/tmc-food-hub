@@ -36,7 +36,7 @@ function AboutSection() {
           <div className="col-md-6 ps-md-5" data-aos="fade-left">
             <span
               className="subtitle text-uppercase mb-3 d-inline-block px-3 py-1 rounded-2 fw-bold"
-              style={{ backgroundColor: '#FDECE9', color: '#D94C38', fontSize: '0.8rem' }}
+              style={{ backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)', fontSize: '0.8rem' }}
             >
               ABOUT US
             </span>
@@ -64,7 +64,7 @@ function AboutSection() {
               <div className="d-flex align-items-center gap-3 mb-4">
                 <div
                   className="icon rounded-circle d-flex align-items-center justify-content-center"
-                  style={{ width: '45px', height: '45px', backgroundColor: '#FDECE9', color: '#D94C38' }}
+                  style={{ width: '45px', height: '45px', backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)' }}
                 >
                   <i className="bi bi-lightbulb fs-5"></i>
                 </div>
@@ -82,7 +82,7 @@ function AboutSection() {
               <div className="d-flex align-items-center gap-3 mb-4">
                 <div
                   className="icon rounded-circle d-flex align-items-center justify-content-center"
-                  style={{ width: '45px', height: '45px', backgroundColor: '#FDECE9', color: '#D94C38' }}
+                  style={{ width: '45px', height: '45px', backgroundColor: 'var(--bs-secondary)', color: 'var(--bs-primary)' }}
                 >
                   <i className="bi bi-eye fs-5"></i>
                 </div>

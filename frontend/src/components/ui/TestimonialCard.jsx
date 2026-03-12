@@ -32,7 +32,7 @@ function TestimonialCard({ quote, authorName, authorJobTitle, authorAvatar }) {
                 transform: 'translateZ(0)' // Fixes flickering/blurring
               }}
               onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=8B1F1C&color=fff`;
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=951A0C&color=fff`;
               }}
             />
           </div>

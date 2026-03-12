@@ -51,12 +51,12 @@ function HeroSection() {
                     data-aos="fade-up"
                     data-aos-delay="300"
                   >
-                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3" style={{ backgroundColor: '#8B1F1C', borderColor: '#8B1F1C' }} href="#">
+                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3" style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }} href="#">
                       Order Now
                     </a>
 
                     <a className="btn btn-white-outline d-flex align-items-center fw-semibold border-0" href="#">
-                      <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: '#8B1F1C' }}></i>
+                      <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: 'var(--bs-primary)' }}></i>
                       Explore
                     </a>
                   </div>

@@ -10,7 +10,7 @@ function FeaturesSection() {
               className="display-5 fw-bold text-uppercase mb-0"
               style={{ letterSpacing: '-1px', color: '#1B1B1B' }}
             >
-              Why Choose <span style={{ color: '#8B1F1C' }}>TMC</span>
+              Why Choose <span style={{ color: 'var(--bs-primary)' }}>TMC</span>
             </h2>
           </div>
         </div>
@@ -41,7 +41,7 @@ function FeaturesSection() {
                         <div className="align-self-start mx-auto mx-lg-0">
                           <a
                             className="btn d-inline-flex align-items-center gap-2 px-4 py-2 text-white text-decoration-none rounded-3 fw-semibold"
-                            style={{ backgroundColor: '#8B1F1C', borderColor: '#8B1F1C' }}
+                            style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }}
                             href="#"
                           >
                             <i className="bi bi-play-circle-fill"></i>
