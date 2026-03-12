@@ -108,7 +108,7 @@ export default function OrdersSection({ store }) {
                                         <td className={styles.multiLineItemsCell}>
                                             {o.items.map((it, idx) => (
                                                 <div key={idx} className={styles.itemLine}>
-                                                    {it.qty}x {it.name}
+                                                    {it.quantity}x {it.name}
                                                     {it.variations && (
                                                         <div style={{ fontSize: '0.75rem', color: '#6B7280', paddingLeft: '1rem' }}>
                                                             {it.variations.name && <span>{it.variations.name}</span>}
@@ -120,7 +120,13 @@ export default function OrdersSection({ store }) {
                                         </td>
                                         <td className={styles.totalCell}>${o.total.toFixed(2)}</td>
                                         <td>
-                                            <span className={`${styles.statusPillSmall} ${statusPillClass}`}>{displayStatus}</span>
+                                            <span className={`${styles.statusPillSmall} ${
+                                                o.status === 'Order Placed' ? styles.pillNew :
+                                                o.status === 'Being Prepared' ? styles.pillPreparing :
+                                                o.status === 'Picked Up' ? styles.pillReady :
+                                                o.status === 'Delivered' ? styles.pillReady :
+                                                styles.pillNew
+                                            }`}>{o.status}</span>
                                         </td>
                                         <td className={styles.timeCell}>{o.time}</td>
                                         <td className={styles.textRight}>
@@ -184,7 +190,7 @@ export default function OrdersSection({ store }) {
 
                             {/* Items List */}
                             <div className={styles.panelSection}>
-                                <h4 className={styles.sectionHeading}>Items ({selectedOrder.items.reduce((s, it) => s + it.qty, 0)})</h4>
+                                <h4 className={styles.sectionHeading}>Items ({selectedOrder.items.reduce((s, it) => s + it.quantity, 0)})</h4>
                                 <div className={styles.panelItemsList}>
                                     {selectedOrder.items.map((it, idx) => (
                                         <div key={idx} className={styles.panelItemRow}>
@@ -199,9 +205,9 @@ export default function OrdersSection({ store }) {
                                                         )}
                                                     </div>
                                                 )}
-                                                <div className={styles.panelItemQty}>Qty: x{it.qty}</div>
+                                                <div className={styles.panelItemQty}>Qty: x{it.quantity}</div>
                                             </div>
-                                            <div className={styles.panelItemPrice}>${(it.qty * it.price).toFixed(2)}</div>
+                                            <div className={styles.panelItemPrice}>${(it.quantity * it.price).toFixed(2)}</div>
                                         </div>
                                     ))}
                                 </div>

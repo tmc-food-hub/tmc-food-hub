@@ -4,12 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Order;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = \App\Models\Order::with('items')->orderBy('created_at', 'desc')->get();
+        $user = $request->user();
+        $query = Order::with('items')->orderBy('created_at', 'desc');
+
+        if ($user->role === 'customer') {
+            $query->where('customer_id', $user->id);
+        } elseif ($user->role === 'partner') {
+            $query->where('store_name', $user->restaurant_name);
+        }
+
+        $orders = $query->get();
         return response()->json($orders);
     }
 
@@ -33,10 +44,9 @@ class OrderController extends Controller
             'items.*.variations' => 'nullable|array',
         ]);
 
-        // Assuming authenticated user places the order. For now, we will create a dummy user id if not logged in.
-        $userId = $request->user() ? $request->user()->id : 1;
+        $userId = $request->user()->id;
 
-        $order = \App\Models\Order::create([
+        $order = Order::create([
             'customer_id' => $userId,
             'store_name' => $validated['restaurant'],
             'subtotal' => $validated['subtotal'],
@@ -47,7 +57,7 @@ class OrderController extends Controller
             'delivery_address' => $validated['deliveryAddress'],
             'contact_number' => $validated['contactNumber'],
             'special_instructions' => $validated['specialInstructions'] ?? null,
-            'status' => 'Pending',
+            'status' => 'Order Placed',
         ]);
 
         foreach ($validated['items'] as $item) {
@@ -60,6 +70,7 @@ class OrderController extends Controller
             ]);
         }
 
+        Log::info('Order placed successfully', ['order_id' => $order->id]);
         return response()->json($order->load('items'), 201);
     }
 }

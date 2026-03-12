@@ -26,7 +26,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -69,7 +69,7 @@ class AuthController extends Controller
         RateLimiter::hit($rateLimitKey, 3600);
 
         // Generate 6-digit OTP
-        $otp = (string) random_int(100000, 999999);
+        $otp = (string)random_int(100000, 999999);
 
         // Delete any existing OTP for this email and create a new one
         EmailVerification::where('email', $email)->delete();
@@ -101,7 +101,7 @@ class AuthController extends Controller
 
         $record = EmailVerification::where('email', $request->email)->first();
 
-        if (! $record) {
+        if (!$record) {
             throw ValidationException::withMessages([
                 'otp' => ['No verification code found. Please request a new one.'],
             ]);
@@ -124,7 +124,7 @@ class AuthController extends Controller
         }
 
         // Verify OTP
-        if (! Hash::check($request->otp, $record->otp)) {
+        if (!Hash::check($request->otp, $record->otp)) {
             $record->increment('attempts');
             $remaining = 5 - $record->attempts;
             throw ValidationException::withMessages([
@@ -159,7 +159,8 @@ class AuthController extends Controller
 
         try {
             $tokenData = json_decode(Crypt::decryptString($request->email_verification_token), true);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             throw ValidationException::withMessages([
                 'email' => ['Email verification is invalid. Please verify your email again.'],
             ]);
@@ -246,8 +247,8 @@ class AuthController extends Controller
 
         $rules = [
             'first_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
-            'last_name'  => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
-            'phone'      => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
+            'last_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
+            'phone' => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
         ];
 
         if ($user->role === 'customer') {
@@ -264,14 +265,14 @@ class AuthController extends Controller
 
         $validated = $request->validate($rules, [
             'first_name.regex' => 'First name must only contain letters, spaces, hyphens, or apostrophes.',
-            'last_name.regex'  => 'Last name must only contain letters, spaces, hyphens, or apostrophes.',
-            'first_name.min'   => 'First name must be at least 2 characters.',
-            'last_name.min'    => 'Last name must be at least 2 characters.',
-            'phone.regex'      => 'Phone number must contain only digits, spaces, dashes, or parentheses.',
-            'phone.min'        => 'Phone number must be at least 7 characters.',
+            'last_name.regex' => 'Last name must only contain letters, spaces, hyphens, or apostrophes.',
+            'first_name.min' => 'First name must be at least 2 characters.',
+            'last_name.min' => 'Last name must be at least 2 characters.',
+            'phone.regex' => 'Phone number must contain only digits, spaces, dashes, or parentheses.',
+            'phone.min' => 'Phone number must be at least 7 characters.',
             'restaurant_name.regex' => 'Restaurant name contains invalid characters.',
             'business_contact_number.regex' => 'Business contact must contain only digits, spaces, dashes, or parentheses.',
-            'address.min'      => 'Address must be at least 5 characters.',
+            'address.min' => 'Address must be at least 5 characters.',
             'business_address.min' => 'Business address must be at least 5 characters.',
         ]);
 
