@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OtpVerificationMail;
+use App\Mail\PasswordResetOtpMail;
 use App\Models\EmailVerification;
+use App\Models\PasswordResetVerification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -281,6 +283,150 @@ class AuthController extends Controller
         $user->update($validated);
 
         return response()->json($user->fresh());
+    }
+
+    /**
+     * Send a password reset OTP to the provided email.
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = $request->email;
+
+        // Rate limit: 5 reset OTP sends per email per hour
+        $rateLimitKey = 'forgot-password:' . $email;
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            return response()->json([
+                'message' => "Too many attempts. Please try again in {$seconds} seconds.",
+            ], 429);
+        }
+        RateLimiter::hit($rateLimitKey, 3600);
+
+        // Anti-enumeration: always return success regardless of whether email exists
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            $otp = (string) random_int(100000, 999999);
+
+            PasswordResetVerification::where('email', $email)->delete();
+            PasswordResetVerification::create([
+                'email' => $email,
+                'otp' => Hash::make($otp),
+                'attempts' => 0,
+                'expires_at' => now()->addMinutes(10),
+                'created_at' => now(),
+            ]);
+
+            Mail::to($email)->send(new PasswordResetOtpMail($otp));
+        }
+
+        return response()->json([
+            'message' => 'If an account with that email exists, a reset code has been sent.',
+        ]);
+    }
+
+    /**
+     * Verify the password reset OTP and return an encrypted reset token.
+     */
+    public function verifyResetOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $record = PasswordResetVerification::where('email', $request->email)->first();
+
+        // Generic error message for all failure cases to prevent email enumeration
+        $genericError = 'Invalid or expired reset code. Please try again or request a new code.';
+
+        if (!$record) {
+            throw ValidationException::withMessages([
+                'otp' => [$genericError],
+            ]);
+        }
+
+        if ($record->expires_at->isPast()) {
+            $record->delete();
+            throw ValidationException::withMessages([
+                'otp' => [$genericError],
+            ]);
+        }
+
+        if ($record->attempts >= 5) {
+            $record->delete();
+            throw ValidationException::withMessages([
+                'otp' => [$genericError],
+            ]);
+        }
+
+        if (!Hash::check($request->otp, $record->otp)) {
+            $record->increment('attempts');
+            throw ValidationException::withMessages([
+                'otp' => [$genericError],
+            ]);
+        }
+
+        $record->delete();
+
+        $resetToken = Crypt::encryptString(json_encode([
+            'email' => $request->email,
+            'verified_at' => now()->toIso8601String(),
+            'expires_at' => now()->addMinutes(15)->toIso8601String(),
+        ]));
+
+        return response()->json([
+            'message' => 'Reset code verified successfully.',
+            'reset_token' => $resetToken,
+        ]);
+    }
+
+    /**
+     * Reset the user's password using an encrypted reset token.
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'reset_token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        try {
+            $tokenData = json_decode(Crypt::decryptString($request->reset_token), true);
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages([
+                'reset_token' => ['Invalid reset token. Please start the process again.'],
+            ]);
+        }
+
+        if (now()->greaterThan($tokenData['expires_at'])) {
+            throw ValidationException::withMessages([
+                'reset_token' => ['Reset token has expired. Please start the process again.'],
+            ]);
+        }
+
+        $user = User::where('email', $tokenData['email'])->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'reset_token' => ['Unable to reset password. Please try again.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Revoke all existing tokens to force re-login
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Password reset successfully. Please log in with your new password.',
+        ]);
     }
 
     /**
