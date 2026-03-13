@@ -16,6 +16,7 @@ function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const signupSuccess = location.state?.signupSuccess;
+    const passwordReset = location.state?.passwordReset;
 
     const togglePassword = () => setShowPassword(!showPassword);
 
@@ -59,6 +60,12 @@ function LoginPage() {
                 {signupSuccess && (
                     <div className="alert alert-success py-2 mb-3" style={{ fontSize: '0.9rem', borderRadius: '8px' }}>
                         <strong>Account created successfully!</strong> Please log in with your credentials.
+                    </div>
+                )}
+
+                {passwordReset && (
+                    <div className="alert alert-success py-2 mb-3" style={{ fontSize: '0.9rem', borderRadius: '8px' }}>
+                        <strong>Password reset successfully!</strong> Please log in with your new password.
                     </div>
                 )}
 
