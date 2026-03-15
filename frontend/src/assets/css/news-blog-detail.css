@@ -138,6 +138,11 @@
   overflow: hidden;
   border: 2px solid #e7e7e7; /* Changed to #E7E7E7 */
   padding: 8px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
 }
 
 .author-avatar img {
