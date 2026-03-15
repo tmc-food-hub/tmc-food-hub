@@ -39,10 +39,11 @@ function BlogCard({
     // Define which tags are News vs Blogs
     const newsTags = ["Platform Updates", "System Architecture", "Data Analytics", "Newsletter"];
     const slug = generateSlug(title);
+    const tagSlug = generateSlug(tag);
 
     // Generate the correct URL based on tag
     if (newsTags.includes(tag)) {
-      navigate(`/news/${slug}`, {
+      navigate(`/news/${tagSlug}?article=${slug}`, {
         state: {
           id: id,
           tag: tag,
@@ -61,7 +62,7 @@ function BlogCard({
         }
       });
     } else {
-      navigate(`/blogs/${slug}`, {
+      navigate(`/blogs/${tagSlug}?article=${slug}`, {
         state: {
           id: id,
           tag: tag,

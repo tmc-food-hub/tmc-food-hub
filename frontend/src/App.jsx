@@ -43,8 +43,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/news-and-blogs" element={<NewsBlogPage />} />
-        <Route path="/news/:slug" element={<NewsBlogDetailPage />} />
-        <Route path="/blogs/:slug" element={<NewsBlogDetailPage />} />
+        <Route path="/news/:category" element={<NewsBlogDetailPage />} />
+        <Route path="/blogs/:category" element={<NewsBlogDetailPage />} />
         <Route path="/news-blog-detail" element={<NewsBlogDetailPage />} />
         <Route path="/company-events-announcements" element={<CompanyEventsAndAnnouncements />} />
         <Route path="/support" element={<SupportPage />} />
