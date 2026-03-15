@@ -58,7 +58,12 @@ function MenuPage() {
 
         let matchCuisine = true;
         if (activeCuisines.length > 0) {
-            matchCuisine = activeCuisines.some(c => s.cuisine.toLowerCase().includes(c.toLowerCase()));
+            matchCuisine = activeCuisines.some(c => {
+                if (c === 'Asian') {
+                    return /asian|japanese|chinese|filipino|korean|thai|vietnamese|indian/i.test(s.cuisine);
+                }
+                return s.cuisine.toLowerCase().includes(c.toLowerCase());
+            });
         }
 
         let matchDiet = true;
