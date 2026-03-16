@@ -91,6 +91,13 @@ class OrderController extends Controller
             ]);
 
             foreach ($validated['items'] as $item) {
+                // Update Stock and Validate Ownership
+                $menuItem = MenuItem::find($item['id']);
+                
+                if (!$menuItem || $menuItem->restaurant_owner_id != $validated['restaurantId']) {
+                    throw new \Exception("Item '{$item['name']}' does not belong to the selected restaurant.");
+                }
+
                 $orderItem = $order->items()->create([
                     'menu_item_id' => $item['id'],
                     'item_name'    => $item['name'],
@@ -100,15 +107,11 @@ class OrderController extends Controller
                     'variations'   => isset($item['variations']) ? json_encode($item['variations']) : null,
                 ]);
 
-                // Update Stock
-                $menuItem = MenuItem::find($item['id']);
-                if ($menuItem) {
-                    $menuItem->decrement('stock_level', $item['quantity']);
-                    
-                    // Auto-toggle availability if stock reaches 0
-                    if ($menuItem->auto_toggle && $menuItem->stock_level <= 0) {
-                        $menuItem->update(['available' => false, 'stock_level' => 0]);
-                    }
+                $menuItem->decrement('stock_level', $item['quantity']);
+                
+                // Auto-toggle availability if stock reaches 0
+                if ($menuItem->auto_toggle && $menuItem->stock_level <= 0) {
+                    $menuItem->update(['available' => false, 'stock_level' => 0]);
                 }
             }
 

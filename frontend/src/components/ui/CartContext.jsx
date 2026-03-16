@@ -76,6 +76,8 @@ export function CartProvider({ children }) {
   const { showNotification } = useNotification();
   const { isAuthenticated } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showRestaurantMismatch, setShowRestaurantMismatch] = useState(false);
+  const [pendingItem, setPendingItem] = useState(null);
   const navigate = useNavigate();
 
   const addToCart = useCallback((item) => {
@@ -83,6 +85,17 @@ export function CartProvider({ children }) {
       setShowLoginPrompt(true);
       return;
     }
+
+    // Enforce single restaurant rule
+    if (cartItems.length > 0) {
+        const currentRestId = cartItems[0].restaurantId;
+        if (Number(currentRestId) !== Number(item.restaurantId)) {
+            setPendingItem(item);
+            setShowRestaurantMismatch(true);
+            return;
+        }
+    }
+
     dispatch({
       type: 'ADD_ITEM',
       payload: {
@@ -99,7 +112,20 @@ export function CartProvider({ children }) {
       }
     });
     showNotification(`${item.title} added to cart!`, 'success');
-  }, [showNotification, isAuthenticated]);
+  }, [showNotification, isAuthenticated, cartItems]);
+
+  const handleClearAndReplace = () => {
+      clearCart();
+      if (pendingItem) {
+          dispatch({
+              type: 'ADD_ITEM',
+              payload: { ...pendingItem }
+          });
+          showNotification(`${pendingItem.title} added to cart!`, 'success');
+      }
+      setShowRestaurantMismatch(false);
+      setPendingItem(null);
+  };
 
   const removeFromCart = useCallback((id) => {
     dispatch({ type: 'REMOVE_ITEM', payload: id });
@@ -151,7 +177,9 @@ export function CartProvider({ children }) {
     increment,
     decrement,
     clearCart,
-    reorder
+    reorder,
+    setShowLoginPrompt,
+    setShowRestaurantMismatch
   }), [cartItems, cartCount, cartSubtotal, addToCart, removeFromCart, increment, decrement, clearCart, reorder]);
 
   return (
@@ -201,6 +229,39 @@ export function CartProvider({ children }) {
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   Create Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restaurant Mismatch Modal */}
+      {showRestaurantMismatch && (
+        <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1060, backdropFilter: 'blur(4px)' }} tabIndex="-1" role="dialog">
+          <div className="modal-dialog modal-dialog-centered" role="document" style={{ maxWidth: '400px' }}>
+            <div className="modal-content text-center p-4" style={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+              <div style={{ width: '64px', height: '64px', backgroundColor: '#FEF3C7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#D97706' }}>
+                <X size={32} />
+              </div>
+              <h4 className="fw-bold mb-2">Start a new cart?</h4>
+              <p style={{ color: '#6B7280', fontSize: '0.95rem', marginBottom: '1.75rem' }}>
+                Your cart contains items from another restaurant. Start a new cart with items from <strong>{pendingItem?.storeName}</strong>?
+              </p>
+              <div className="d-flex flex-column gap-2">
+                <button
+                  className="btn w-100 fw-bold"
+                  onClick={handleClearAndReplace}
+                  style={{ backgroundColor: '#991B1B', color: 'white', padding: '0.8rem', borderRadius: '12px' }}
+                >
+                  Clear Cart and Add
+                </button>
+                <button
+                  className="btn w-100 fw-bold"
+                  onClick={() => setShowRestaurantMismatch(false)}
+                  style={{ backgroundColor: 'transparent', color: '#111827', padding: '0.8rem', borderRadius: '12px', border: '1px solid #D1D5DB' }}
+                >
+                  Keep Existing Items
                 </button>
               </div>
             </div>

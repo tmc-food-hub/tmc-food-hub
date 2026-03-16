@@ -9,10 +9,14 @@ export default function OrdersSection({ store }) {
     const [orders, setOrders] = useState([]);
     
     useEffect(() => {
-        // In a real app, this would filter by store ID.
-        // For now, we take all orders since we're mocking multiple stores in one dashboard context.
-        setOrders(allOrders || []);
-    }, [allOrders]);
+        if (allOrders && store) {
+            // Filter orders to only show those belonging to this specific store
+            const storeOrders = allOrders.filter(o => Number(o.restaurantId) === Number(store.id));
+            setOrders(storeOrders);
+        } else {
+            setOrders(allOrders || []);
+        }
+    }, [allOrders, store]);
 
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
