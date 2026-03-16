@@ -223,7 +223,7 @@ function Navbar() {
           }
         `}
       </style>
-      <header className={`fbs__net-navbar navbar navbar-expand-lg fixed-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode || !isHomePage ? 'active shadow-sm' : ''}`} style={{ padding: '0.75rem 0', backgroundColor: isDarkMode ? '#111827' : '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
+      <header className={`fbs__net-navbar navbar navbar-expand-lg sticky-top ${isDarkMode ? 'dark' : 'light'} ${isScrolled || isDarkMode || !isHomePage ? 'active shadow-sm' : ''}`} style={{ padding: '0.75rem 0', backgroundColor: isDarkMode ? '#111827' : '#FFFFFF', borderBottom: '1px solid #E5E7EB', top: 0, zIndex: 1050 }}>
         <div className="container-fluid px-4 px-xl-5 d-flex align-items-center justify-content-between" style={{ maxWidth: '1600px' }}>
           <Link className="navbar-brand" to="/" onClick={() => window.scrollTo(0, 0)}>
             <img src={tmcLogo} alt="TMC Food Hub banner" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
