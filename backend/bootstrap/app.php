@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(HandleCors::class);
         
         $middleware->validateCsrfTokens(except: [
-            'adminer',
+            'adminer*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,13 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminerController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/adminer', function () {
-    ob_start();
-    include __DIR__ . '/../public/adminer-wrapper.php';
-    return ob_get_clean();
-});
+Route::match(['get', 'post'], '/adminer', [AdminerController::class, 'index']);
