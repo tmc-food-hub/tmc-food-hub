@@ -15,6 +15,89 @@ use Illuminate\Validation\ValidationException;
 class OwnerAuthController extends Controller
 {
     /**
+     * Send a 6-digit OTP to the provided email for owner registration.
+     */
+    public function sendOtp(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+        $email = $request->email;
+
+        if (RestaurantOwner::where('email', $email)->exists()) {
+            throw ValidationException::withMessages([
+                'email' => ['This email is already registered as a restaurant owner.'],
+            ]);
+        }
+
+        $rateLimitKey = 'owner-send-otp:' . $email;
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            return response()->json(['message' => "Too many attempts. Try again in {$seconds} seconds."], 429);
+        }
+        RateLimiter::hit($rateLimitKey, 3600);
+
+        $otp = (string)random_int(100000, 999999);
+
+        EmailVerification::where('email', $email)->delete();
+        EmailVerification::create([
+            'email'      => $email,
+            'otp'        => Hash::make($otp),
+            'attempts'   => 0,
+            'expires_at' => now()->addMinutes(10),
+            'created_at' => now(),
+        ]);
+
+        Mail::to($email)->send(new OtpVerificationMail($otp));
+
+        return response()->json(['message' => 'Verification code sent to your email.']);
+    }
+
+    /**
+     * Verify the owner OTP and return an encrypted verification token.
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string|size:6',
+        ]);
+
+        $record = EmailVerification::where('email', $request->email)->first();
+
+        if (!$record) {
+            throw ValidationException::withMessages(['otp' => ['No verification code found. Please request a new one.']]);
+        }
+
+        if ($record->expires_at->isPast()) {
+            $record->delete();
+            throw ValidationException::withMessages(['otp' => ['Verification code has expired. Please request a new one.']]);
+        }
+
+        if ($record->attempts >= 5) {
+            $record->delete();
+            throw ValidationException::withMessages(['otp' => ['Too many failed attempts. Please request a new code.']]);
+        }
+
+        if (!Hash::check($request->otp, $record->otp)) {
+            $record->increment('attempts');
+            $remaining = 5 - $record->attempts;
+            throw ValidationException::withMessages(['otp' => ["Invalid verification code. {$remaining} attempt(s) remaining."]]);
+        }
+
+        $record->delete();
+
+        $verificationToken = Crypt::encryptString(json_encode([
+            'email'       => $request->email,
+            'verified_at' => now()->toIso8601String(),
+            'expires_at'  => now()->addMinutes(30)->toIso8601String(),
+        ]));
+
+        return response()->json([
+            'message'                  => 'Email verified successfully.',
+            'email_verification_token' => $verificationToken,
+        ]);
+    }
+
+    /**
      * Handle login and return a Sanctum token for owners.
      */
     public function login(Request $request)

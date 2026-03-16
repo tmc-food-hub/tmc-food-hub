@@ -16,6 +16,8 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('th
 // ── Owner Auth Routes ─────────────────────────────────────────────────────
 Route::post('/owner/login', [OwnerAuthController::class, 'login']);
 Route::post('/owner/register', [OwnerAuthController::class, 'register']);
+Route::post('/owner/send-otp', [OwnerAuthController::class, 'sendOtp'])->middleware('throttle:5,1');
+Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
 
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────
 Route::get('/restaurants', [MenuController::class, 'index']);
@@ -41,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
     Route::get('/user', [OwnerAuthController::class, 'user']);
     Route::put('/user', [OwnerAuthController::class, 'updateProfile']);
+    Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
     Route::post('/logout', [OwnerAuthController::class, 'logout']);
 
     // Owner also uses the shared /orders endpoint — OrderController detects RestaurantOwner model

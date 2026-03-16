@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../api/axios';
 import styles from './AuthPages.module.css';
 
 function SignupPage() {
@@ -82,7 +83,11 @@ function SignupPage() {
         setOtpSending(true);
 
         try {
-            await sendOtp(formData.email);
+            if (role === 'Partner') {
+                await api.post('/owner/send-otp', { email: formData.email });
+            } else {
+                await sendOtp(formData.email);
+            }
             setResendCooldown(60);
             setOtpValues(['', '', '', '', '', '']);
             setStep(2);
@@ -106,7 +111,11 @@ function SignupPage() {
         setOtpSending(true);
 
         try {
-            await sendOtp(formData.email);
+            if (role === 'Partner') {
+                await api.post('/owner/send-otp', { email: formData.email });
+            } else {
+                await sendOtp(formData.email);
+            }
             setResendCooldown(60);
             setOtpValues(['', '', '', '', '', '']);
             setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
@@ -169,7 +178,13 @@ function SignupPage() {
         setOtpVerifying(true);
 
         try {
-            const data = await verifyOtp(formData.email, otpCode);
+            let data;
+            if (role === 'Partner') {
+                const res = await api.post('/owner/verify-otp', { email: formData.email, otp: otpCode });
+                data = res.data;
+            } else {
+                data = await verifyOtp(formData.email, otpCode);
+            }
             setEmailVerificationToken(data.email_verification_token);
             setVerifiedEmail(formData.email);
             setStep(3);
@@ -253,7 +268,11 @@ function SignupPage() {
         try {
             const endpoint = role === 'Customer' ? '/register' : '/owner/register';
             await api.post(endpoint, payload);
-            navigate('/login', { state: { signupSuccess: true } });
+            if (role === 'Partner') {
+                navigate('/owner-login', { state: { signupSuccess: true } });
+            } else {
+                navigate('/login', { state: { signupSuccess: true } });
+            }
         } catch (err) {
             if (err.response?.data?.errors) {
                 setErrors(err.response.data.errors);
