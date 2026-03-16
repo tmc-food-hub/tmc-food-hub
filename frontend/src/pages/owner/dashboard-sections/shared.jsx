@@ -11,7 +11,8 @@ export const IMAGES = [
 ];
 
 export function buildOrders(store) {
-    const img = (name) => store.menuItems.find(i => i.title === name)?.image || IMAGES[0];
+    const menuItems = store.menuItems || [];
+    const img = (name) => menuItems.find(i => i.title === name)?.image || IMAGES[0];
     return [
         { id: 'ORD-1041', customer: 'Maria Santos', address: 'Lahug, Cebu City', items: [{ name: 'Chickenjoy 2-pc', qty: 2, image: img('Chickenjoy 2-pc') }, { name: 'Jolly Spaghetti', qty: 1, image: img('Jolly Spaghetti') }], total: 15.60, status: 'Pending', time: '2 min ago', note: '' },
         { id: 'ORD-1040', customer: 'Juan dela Cruz', address: 'Mabolo, Cebu City', items: [{ name: 'Yumburger', qty: 3, image: img('Yumburger') }, { name: 'Peach Mango Pie', qty: 2, image: img('Peach Mango Pie') }], total: 7.80, status: 'Preparing', time: '8 min ago', note: 'No onions please' },

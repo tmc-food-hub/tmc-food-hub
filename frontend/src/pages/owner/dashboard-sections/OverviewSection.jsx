@@ -136,18 +136,24 @@ export default function OverviewSection({ store, orders }) {
                         <button className={styles.btnViewAll}>View All</button>
                     </div>
                     <div className={styles.popularMenuList}>
-                        {store.menuItems.slice(0, 3).map(item => (
-                            <div key={item.id} className={styles.popularMenuItemRow}>
-                                <img src={item.image} alt={item.title} className={styles.popularMenuImg} />
-                                <div className={styles.popularMenuInfo}>
-                                    <div className={styles.popularMenuTitle}>{item.title}</div>
-                                    <div className={styles.popularMenuOrders}>
-                                        {Math.floor(Math.random() * 300) + 50} orders this week
-                                    </div>
-                                </div>
-                                <div className={styles.popularMenuPrice}>${Number(item.price).toFixed(2)}</div>
+                        {(store.menuItems || []).slice(0, 3).length === 0 ? (
+                            <div style={{ color: '#9CA3AF', fontSize: '0.85rem', textAlign: 'center', padding: '1.5rem 0' }}>
+                                No menu items yet. Add items from the <strong>Menu</strong> section.
                             </div>
-                        ))}
+                        ) : (
+                            (store.menuItems || []).slice(0, 3).map(item => (
+                                <div key={item.id} className={styles.popularMenuItemRow}>
+                                    <img src={item.image} alt={item.title} className={styles.popularMenuImg} />
+                                    <div className={styles.popularMenuInfo}>
+                                        <div className={styles.popularMenuTitle}>{item.title}</div>
+                                        <div className={styles.popularMenuOrders}>
+                                            {Math.floor(Math.random() * 300) + 50} orders this week
+                                        </div>
+                                    </div>
+                                    <div className={styles.popularMenuPrice}>${Number(item.price).toFixed(2)}</div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
