@@ -20,7 +20,12 @@ class AdminerLoginPasswordLess extends Adminer\Plugin {
 	}
 
 	function credentials() {
-		return array(Adminer\SERVER, $_GET["username"] ?? "root", "");
+		// Pull database credentials from Laravel config
+		$_ENV['DB_HOST'] = $_ENV['DB_HOST'] ?? '127.0.0.1';
+		$_ENV['DB_USERNAME'] = $_ENV['DB_USERNAME'] ?? 'root';
+		$_ENV['DB_PASSWORD'] = $_ENV['DB_PASSWORD'] ?? '';
+		
+		return array($_ENV['DB_HOST'], $_ENV['DB_USERNAME'], $_ENV['DB_PASSWORD']);
 	}
 
 	function login($login, $password) {
