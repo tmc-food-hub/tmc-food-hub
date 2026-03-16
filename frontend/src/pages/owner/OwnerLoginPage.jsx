@@ -103,6 +103,12 @@ function OwnerLoginPage() {
                     <button type="submit" className={styles.submitBtn} disabled={isLoading}>
                         {isLoading ? 'Signing in...' : 'Sign In to Dashboard'}
                     </button>
+
+                    <div className="text-center" style={{ marginTop: '-0.75rem', marginBottom: '1rem' }}>
+                        <Link to="/forgot-password" className={styles.forgotLink}>
+                            Forgot Password?
+                        </Link>
+                    </div>
                 </form>
 
                 <div className={styles.divider}>
