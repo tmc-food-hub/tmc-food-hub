@@ -206,7 +206,7 @@ function Navbar() {
             width: 100% !important;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
             background: transparent !important;
             border: none;
             text-align: left;
@@ -262,18 +262,20 @@ function Navbar() {
                 <ul className={`dropdown-menu dropdown-menu-end shadow-sm user-dropdown-menu`} aria-labelledby="userDropdown">
                   <li>
                     <Link className="dropdown-item user-dropdown-item" to="/profile">
+                      <User size={16} />
                       Profile
                     </Link>
                   </li>
                   <li>
-                    <button className="dropdown-item user-dropdown-item" onClick={toggleTheme}>
-                      {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-                      {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                    </button>
+                  <button className="dropdown-item user-dropdown-item" onClick={toggleTheme}>
+                    {isDarkMode ? <Sun size={16} className="me-1" /> : <Moon size={16} className="me-1" />}
+                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                  </button>
                   </li>
                   <li><hr className="dropdown-divider" style={{ margin: '0.25rem 0', borderColor: isDarkMode ? '#374151' : '#e5e7eb' }} /></li>
                   <li>
                     <button className="dropdown-item user-dropdown-item text-danger" onClick={() => setShowLogoutModal(true)}>
+                      <LogOut size={16} />
                       Logout
                     </button>
                   </li>
@@ -373,11 +375,11 @@ function Navbar() {
                       </h2>
                       <div id="collapseUser" className="accordion-collapse collapse" data-bs-parent="#mobileUserAccordion">
                         <div className="accordion-body d-flex flex-column gap-2 p-2">
-                          <Link to="/profile" className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-start gap-2" style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem 1rem', border: 'none', textAlign: 'left' }} onClick={closeMobileMenu}>
+                          <Link to="/profile" className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-start gap-2 mb-2" style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem 1rem', border: 'none', textAlign: 'left' }} onClick={closeMobileMenu}>
                             Profile
                           </Link>
-                          <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-start gap-2" style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem 1rem', border: 'none', textAlign: 'left' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
-                            {isDarkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
+                          <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-start gap-1 mb-2" style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem 1rem', border: 'none', textAlign: 'left' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
+                            {isDarkMode ? <><Sun size={18} className="me-1" /> Light Mode</> : <><Moon size={18} className="me-1" /> Dark Mode</>}
                           </button>
                           <hr className="my-1" />
                           <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-start gap-2 text-danger" style={{ backgroundColor: 'transparent', padding: '0.6rem 1rem', border: 'none', textAlign: 'left' }} onClick={() => { setShowLogoutModal(true); closeMobileMenu(); }}>
@@ -396,7 +398,7 @@ function Navbar() {
                       Sign up
                     </Link>
                     <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box' }} onClick={() => { toggleTheme(); closeMobileMenu(); }}>
-                      {isDarkMode ? <><Sun size={18} /> Light Mode</> : <><Moon size={18} /> Dark Mode</>}
+                      {isDarkMode ? <><Sun size={18} className="me-1" /> Light Mode</> : <><Moon size={18} className="me-1" /> Dark Mode</>}
                     </button>
                   </>
                 )}

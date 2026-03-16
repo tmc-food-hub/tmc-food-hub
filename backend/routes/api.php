@@ -22,6 +22,10 @@ Route::get('/restaurants', [MenuController::class, 'index']);
 Route::get('/restaurants/{id}/menu', [MenuController::class, 'show']);
 
 // ── Customer Authenticated Routes ─────────────────────────────────────────
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp'])->middleware('throttle:10,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);

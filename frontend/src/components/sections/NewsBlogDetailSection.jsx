@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useContext, useRef } from 'react';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Download,
   Bookmark,
@@ -244,15 +244,22 @@ const generateArticleSlug = (title, tag) => {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
 
+  const tagSlug = tag
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
   const newsTags = ["Platform Updates", "System Architecture", "Data Analytics", "Newsletter"];
   const blogTags = ["IT Workforce Strategy", "Research", "Case Studies"];
 
   if (newsTags.includes(tag)) {
-    return `/news/${slug}`;
+    return `/news/${tagSlug}?article=${slug}`;
   } else if (blogTags.includes(tag)) {
-    return `/blogs/${slug}`;
+    return `/blogs/${tagSlug}?article=${slug}`;
   } else {
-    return `/blogs/${slug}`;
+    return `/blogs/${tagSlug}?article=${slug}`;
   }
 };
 
@@ -288,7 +295,9 @@ const NewsBlogDetailSection = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
-  const { slug } = params;
+  const { category: urlCategory } = params;
+  const [searchParams] = useSearchParams();
+  const articleSlug = searchParams.get('article');
   const [post, setPost] = useState(null);
   const { isDarkMode } = useContext(ThemeContext) || { isDarkMode: false };
   const [loading, setLoading] = useState(true);
@@ -387,25 +396,48 @@ const NewsBlogDetailSection = () => {
       setRelatedBlogs(related);
       setLoading(false);
 
-    } else if (slug) {
-      // No state but slug exists - direct URL access or page refresh
-      const findBlogBySlug = () => {
-        for (const blog of allBlogs) {
-          const blogSlug = blog.title
-            .toLowerCase()
-            .replace(/[^\w\s]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
+    } else if (articleSlug || urlCategory) {
+      // Find blog by article slug or category
+      const findBlog = () => {
+        // First try to find by specific article slug
+        if (articleSlug) {
+          for (const blog of allBlogs) {
+            const blogSlug = blog.title
+              .toLowerCase()
+              .replace(/[^\w\s]/g, '')
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '');
 
-          if (blogSlug === slug) {
-            return blog;
+            if (blogSlug === articleSlug) {
+              return blog;
+            }
           }
         }
+
+        // If no article slug or not found, try to find the latest blog for the category
+        if (urlCategory) {
+          // Sort blogs by date descending to get the latest one
+          const sortedBlogs = [...allBlogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          for (const blog of sortedBlogs) {
+            const tagSlug = blog.tag
+              .toLowerCase()
+              .replace(/[^\w\s]/g, '')
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '');
+
+            if (tagSlug === urlCategory) {
+              return blog;
+            }
+          }
+        }
+        
         return null;
       };
 
-      const foundBlog = findBlogBySlug();
+      const foundBlog = findBlog();
 
       if (foundBlog) {
         // Set the post directly without navigation to avoid loops
@@ -467,7 +499,7 @@ const NewsBlogDetailSection = () => {
     }
 
     setLoading(false);
-  }, [location.state, navigate, slug, location.pathname]);
+  }, [location.state, navigate, urlCategory, articleSlug, location.pathname]);
 
   const handleShareClick = () => {
     const shareUrl = post?.fullUrl || window.location.href;
