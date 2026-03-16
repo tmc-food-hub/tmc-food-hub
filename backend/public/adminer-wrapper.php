@@ -1,5 +1,17 @@
 <?php
 
+// Test endpoint for curl
+if (isset($_GET['test'])) {
+	header('Content-Type: application/json');
+	echo json_encode([
+		'status' => 'success',
+		'message' => 'adminer-wrapper.php is accessible',
+		'timestamp' => date('Y-m-d H:i:s'),
+		'server' => $_SERVER['HTTP_HOST'] ?? 'unknown',
+	]);
+	exit;
+}
+
 // Load Adminer first
 require_once __DIR__ . '/adminer.php';
 
