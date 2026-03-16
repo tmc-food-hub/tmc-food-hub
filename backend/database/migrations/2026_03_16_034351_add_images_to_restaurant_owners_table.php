@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('restaurant_owners', function (Blueprint $table) {
-        //
+            $table->string('logo')->nullable()->after('business_permit');
+            $table->string('cover_image')->nullable()->after('logo');
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('restaurant_owners', function (Blueprint $table) {
-        //
+            $table->dropColumn(['logo', 'cover_image']);
         });
     }
 };

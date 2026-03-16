@@ -21,11 +21,31 @@ export function OwnerAuthProvider({ children }) {
             api.get('/owner/user')
                 .then(res => {
                     const user = res.data;
-                    // Match user.restaurant_name to local stores data for compatibility
-                    const matchedStore = stores.find(s => s.name === user.restaurant_name);
+                    let matchedStore = stores.find(s => s.name === user.restaurant_name);
+                    
+                    if (!matchedStore) {
+                         matchedStore = {
+                            id: user.id + 1000, // Dynamic ID
+                            name: user.restaurant_name,
+                            branchName: user.restaurant_name,
+                            location: user.business_address,
+                            phone: user.business_contact_number,
+                            logo: user.logo,
+                            cover: user.cover_image,
+                            status: 'Operational',
+                            rating: 5.0,
+                            deliveryTime: '30-45 min',
+                            minOrder: '$5.00'
+                        };
+                        setStores(prev => {
+                            if (prev.find(s => s.name === user.restaurant_name)) return prev;
+                            return [...prev, matchedStore];
+                        });
+                    }
+
                     setCurrentOwner({
                         ...user,
-                        storeId: matchedStore?.id || 1, // Fallback if not found
+                        storeId: matchedStore.id,
                         storeName: user.restaurant_name
                     });
                 })
@@ -48,10 +68,27 @@ export function OwnerAuthProvider({ children }) {
             localStorage.setItem('auth_user', JSON.stringify(user));
             localStorage.setItem('user_type', 'owner');
 
-            const matchedStore = stores.find(s => s.name === user.restaurant_name);
+            let matchedStore = stores.find(s => s.name === user.restaurant_name);
+            if (!matchedStore) {
+                matchedStore = {
+                    id: user.id + 1000,
+                    name: user.restaurant_name,
+                    branchName: user.restaurant_name,
+                    location: user.business_address,
+                    phone: user.business_contact_number,
+                    logo: user.logo,
+                    cover: user.cover_image,
+                    status: 'Operational',
+                    rating: 5.0,
+                    deliveryTime: '30-45 min',
+                    minOrder: '$5.00'
+                };
+                setStores(prev => [...prev, matchedStore]);
+            }
+
             const ownerData = {
                 ...user,
-                storeId: matchedStore?.id || 1,
+                storeId: matchedStore.id,
                 storeName: user.restaurant_name
             };
 

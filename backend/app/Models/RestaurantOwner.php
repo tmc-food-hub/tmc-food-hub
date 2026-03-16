@@ -29,6 +29,8 @@ class RestaurantOwner extends Authenticatable
         'business_address',
         'business_contact_number',
         'business_permit',
+        'logo',
+        'cover_image',
     ];
 
     /**

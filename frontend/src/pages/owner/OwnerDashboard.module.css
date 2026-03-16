@@ -6214,3 +6214,205 @@
     background: #7F1D1D;
     transform: translateY(-2px);
 }
+
+/* ─── Settings Section Enhancements ─── */
+.settingsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.settingsGrid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .settingsGrid {
+        grid-template-columns: 1fr;
+    }
+    .previewSidebar {
+        display: none;
+    }
+}
+
+.imageSettingsRow {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px dashed #E5E7EB;
+}
+
+.imageUploadBox {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.imageLabel {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.imageHint {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    margin: 0;
+}
+
+.logoUploadCircle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px dashed #D1D5DB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    background: #F9FAFB;
+    transition: all 0.2s;
+}
+
+.logoUploadCircle:hover {
+    border-color: #991B1B;
+    background: #FEF2F2;
+}
+
+.logoUploadCircle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #fff;
+}
+
+.coverUploadRect {
+    height: 100px;
+    border-radius: 12px;
+    border: 2px dashed #D1D5DB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    background: #F9FAFB;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.coverUploadRect:hover {
+    border-color: #991B1B;
+    background: #FEF2F2;
+}
+
+.coverUploadRect img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.emptyCover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6B7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.previewSidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+.previewBadge {
+    background: #F3F4F6;
+    color: #6B7280;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.previewHeader {
+    height: 140px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    background-color: #F3F4F6;
+}
+
+.previewLogoBox {
+    position: absolute;
+    bottom: -25px;
+    left: 20px;
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    background: #fff;
+    padding: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.previewLogoBox img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.previewContent {
+    padding: 40px 20px 20px;
+}
+
+.previewContent h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.previewMeta {
+    font-size: 0.85rem;
+    color: #6B7280;
+    margin: 4px 0 12px;
+}
+
+.statusTextActive {
+    color: #059669;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.statusTextActive::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #10B981;
+    border-radius: 50%;
+}
+
+.statusTextClosed {
+    color: #DC2626;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.fieldFull {
+    grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+    .fieldFull {
+        grid-column: span 1;
+    }
+}

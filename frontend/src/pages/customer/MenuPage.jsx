@@ -43,13 +43,14 @@ function MenuPage() {
                 status: s.status || 'Operational',
                 rating: s.rating || 4.5,
                 dietary: s.dietary || 'All',
-                cover: s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                cover: s.cover_image || s.logo || 
+                    (s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
                     s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
                     s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
                     s.name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
                     s.name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
                     s.name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                    '/assets/images/service/placeholder.svg'
+                    '/assets/images/service/placeholder.svg')
             }));
             setStores(mapped);
         } catch (error) {

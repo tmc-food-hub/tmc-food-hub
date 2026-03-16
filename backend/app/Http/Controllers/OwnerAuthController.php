@@ -126,18 +126,31 @@ class OwnerAuthController extends Controller
         $owner = $request->user();
 
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
-            'last_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\s\-\']+$/u'],
-            'phone' => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
-            'restaurant_name' => ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\d\s\-\'\&\.]+$/u'],
+            'first_name' => ['required', 'string', 'min:2', 'max:255'],
+            'last_name' => ['required', 'string', 'min:2', 'max:255'],
+            'phone' => ['nullable', 'string', 'min:7', 'max:20'],
+            'restaurant_name' => ['required', 'string', 'min:2', 'max:255'],
             'business_address' => 'required|string|min:5|max:500',
-            'business_contact_number' => ['required', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
+            'business_contact_number' => ['required', 'string', 'min:7', 'max:20'],
             'business_permit' => 'nullable|string|max:255',
+            'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cover_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $validated['name'] = $validated['first_name'] . ' ' . $validated['last_name'];
+        $data = $request->except(['logo_file', 'cover_file']);
+        $data['name'] = $validated['first_name'] . ' ' . $validated['last_name'];
 
-        $owner->update($validated);
+        if ($request->hasFile('logo_file')) {
+            $path = $request->file('logo_file')->store('restaurants/logos', 'public');
+            $data['logo'] = asset('storage/' . $path);
+        }
+
+        if ($request->hasFile('cover_file')) {
+            $path = $request->file('cover_file')->store('restaurants/covers', 'public');
+            $data['cover_image'] = asset('storage/' . $path);
+        }
+
+        $owner->update($data);
 
         return response()->json($owner->fresh());
     }

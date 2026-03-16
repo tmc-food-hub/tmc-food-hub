@@ -61,28 +61,33 @@ export default function MenuSection({ store, onUpdate }) {
         }
 
         try {
-            // Find or create category first? Actually seeder already did it. 
-            // For now, let's assume category exists or handle it simply.
             let cat = categories.find(c => c.name === form.category_name);
             if (!cat) {
-                 const newCatRes = await api.post('/owner/inventory/categories', { name: form.category_name });
-                 cat = newCatRes.data;
-                 setCategories(prev => [...prev, cat]);
+                const newCatRes = await api.post('/owner/inventory/categories', { name: form.category_name });
+                cat = newCatRes.data;
+                setCategories(prev => [...prev, cat]);
             }
 
-            const payload = {
-                title: form.title,
-                description: form.description,
-                price: parseFloat(form.price),
-                category_id: cat.id,
-                image: form.image,
-                stock_level: 50, // Default
-                min_threshold: 10,
-                unit: 'units',
-                auto_toggle: true
-            };
+            const formData = new FormData();
+            formData.append('title', form.title);
+            formData.append('description', form.description || '');
+            formData.append('price', parseFloat(form.price));
+            formData.append('category_id', cat.id);
+            formData.append('stock_level', 50);
+            formData.append('min_threshold', 10);
+            formData.append('unit', 'units');
+            formData.append('auto_toggle', 1);
+            formData.append('available', form.available ? 1 : 0);
+            
+            if (form.image_file) {
+                formData.append('image_file', form.image_file);
+            } else if (form.image) {
+                formData.append('image', form.image);
+            }
 
-            const res = await api.post('/owner/inventory/items', payload);
+            const res = await api.post('/owner/inventory/items', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setItems(prev => [...prev, res.data]);
             setForm(BLANK);
             setAddOpen(false);
@@ -135,16 +140,23 @@ export default function MenuSection({ store, onUpdate }) {
                 setCategories(prev => [...prev, cat]);
             }
 
-            const payload = {
-                title: editForm.title,
-                description: editForm.description,
-                price: parseFloat(editForm.price),
-                category_id: cat.id,
-                image: editForm.image,
-                available: editForm.available
-            };
+            const formData = new FormData();
+            formData.append('_method', 'PUT'); // For Laravel multipart PUT
+            formData.append('title', editForm.title);
+            formData.append('description', editForm.description || '');
+            formData.append('price', parseFloat(editForm.price));
+            formData.append('category_id', cat.id);
+            formData.append('available', editForm.available ? 1 : 0);
+            
+            if (editForm.image_file) {
+                formData.append('image_file', editForm.image_file);
+            } else if (editForm.image) {
+                formData.append('image', editForm.image);
+            }
 
-            const res = await api.put(`/owner/inventory/items/${editId}`, payload);
+            const res = await api.post(`/owner/inventory/items/${editId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setItems(prev => prev.map(i => i.id === editId ? res.data : i));
             setEditId(null);
             setDialog({ type: 'success', title: 'Item Updated Successfully', desc: `${editForm.title} has been updated.` });
@@ -271,12 +283,20 @@ export default function MenuSection({ store, onUpdate }) {
                             <div className={styles.menuModalBody}>
                                 {error && <div className={styles.formError} style={{ marginBottom: 15 }}><AlertCircle size={13} /> {error}</div>}
                                 <div className={styles.menuFormTop}>
-                                    <div className={styles.menuPhotoUpload}>
-                                        {form.image ? <img src={form.image} alt="Upload" /> : <><Package size={24} /><div className={styles.menuPhotoText}>Add Photo</div></>}
-                                        <div style={{ position: 'absolute', inset: 0 }} onClick={() => {
-                                            const nextIdx = (IMAGES.indexOf(form.image) + 1) % IMAGES.length;
-                                            setForm({ ...form, image: IMAGES[nextIdx] });
-                                        }}></div>
+                                    <div className={styles.menuPhotoUpload} onClick={() => document.getElementById('itemPhotoAdd').click()}>
+                                        {form.preview ? <img src={form.preview} alt="Upload" /> : form.image ? <img src={form.image} alt="Default" /> : <><Package size={24} /><div className={styles.menuPhotoText}>Add Photo</div></>}
+                                        <input 
+                                            id="itemPhotoAdd" 
+                                            type="file" 
+                                            hidden 
+                                            accept="image/*" 
+                                            onChange={e => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setForm({ ...form, image_file: file, preview: URL.createObjectURL(file) });
+                                                }
+                                            }}
+                                        />
                                     </div>
                                     <div className={styles.menuFormFieldsRight}>
                                         <div className={styles.menuFormGroup}>
@@ -335,12 +355,20 @@ export default function MenuSection({ store, onUpdate }) {
                         <form onSubmit={saveEdit}>
                             <div className={styles.menuModalBody}>
                                 <div className={styles.menuFormTop}>
-                                    <div className={styles.menuPhotoUpload}>
-                                        <img src={editForm.image} alt="Upload" />
-                                        <div style={{ position: 'absolute', inset: 0 }} onClick={() => {
-                                            const nextIdx = (IMAGES.indexOf(editForm.image) + 1) % IMAGES.length;
-                                            setEditForm({ ...editForm, image: IMAGES[nextIdx] });
-                                        }}></div>
+                                    <div className={styles.menuPhotoUpload} onClick={() => document.getElementById('itemPhotoEdit').click()}>
+                                        {editForm.preview ? <img src={editForm.preview} alt="Upload" /> : <img src={editForm.image} alt="Default" />}
+                                        <input 
+                                            id="itemPhotoEdit" 
+                                            type="file" 
+                                            hidden 
+                                            accept="image/*" 
+                                            onChange={e => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setEditForm({ ...editForm, image_file: file, preview: URL.createObjectURL(file) });
+                                                }
+                                            }}
+                                        />
                                     </div>
                                     <div className={styles.menuFormFieldsRight}>
                                         <div className={styles.menuFormGroup}>
