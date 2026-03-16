@@ -185,6 +185,7 @@ function OrderTrackingPage() {
         statuses: contextOrder.timeline || ORDER_DATA.statuses,
         status: contextOrder.status,
         deliveryAddress: contextOrder.deliveryAddress,
+        restaurantId: contextOrder.restaurantId,
     } : null;
 
     const [cancelTimer, setCancelTimer] = useState(120);
@@ -378,7 +379,7 @@ function OrderTrackingPage() {
                                                 <div>
                                                     <div className={styles.summaryItemName}>{item.name}</div>
                                                     <div className={styles.summaryItemMeta}>
-                                                        x{item.quantity} • ${item.price.toFixed(2)}
+                                                        x{item.quantity} • ${Number(item.price).toFixed(2)}
                                                     </div>
                                                 </div>
                                             </div>
@@ -399,17 +400,17 @@ function OrderTrackingPage() {
                                     <div className={styles.summaryBreakdown}>
                                         <div className={styles.summaryRow}>
                                             <span>Subtotal</span>
-                                            <span>${order.subtotal.toFixed(2)}</span>
+                                            <span>${Number(order.subtotal).toFixed(2)}</span>
                                         </div>
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
-                                            <span>${order.deliveryFee.toFixed(2)}</span>
+                                            <span>${Number(order.deliveryFee).toFixed(2)}</span>
                                         </div>
                                         {order.discount > 0 && (
                                             <div className={styles.summaryRow}>
                                                 <span>Discount ({order.promoCode})</span>
                                                 <span className={styles.discountValue}>
-                                                    -${order.discount.toFixed(2)}
+                                                    -${Number(order.discount).toFixed(2)}
                                                 </span>
                                             </div>
                                         )}
@@ -419,7 +420,7 @@ function OrderTrackingPage() {
                                     <div className={styles.totalRow}>
                                         <span className={styles.totalLabel}>Total Amount</span>
                                         <span className={styles.totalValue}>
-                                            ${order.totalAmount.toFixed(2)}
+                                            ${Number(order.totalAmount).toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
@@ -522,8 +523,8 @@ function OrderTrackingPage() {
                                                 marginBottom: '1rem'
                                             }}
                                             onClick={() => {
-                                                reorder(order.items, order.restaurant.name);
-                                                navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant.name)}`);
+                                                reorder(order.items, order.restaurant.name, order.restaurantId);
+                                                navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant.name)}&restaurantId=${order.restaurantId}`);
                                             }}
                                         >
                                             <Package size={16} />
@@ -533,16 +534,16 @@ function OrderTrackingPage() {
                                         <button
                                             className={styles.cancelBtn}
                                             disabled={cancelTimer === 0 || order.status === 'Cancelled' || order.status === 'Out for Delivery'}
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 if (contextOrder && cancelTimer > 0) {
-                                                    cancelOrder(contextOrder.id);
+                                                    await cancelOrder(contextOrder.id);
                                                     navigate('/my-orders');
                                                 }
                                             }}
                                         >
                                             <X size={16} />
                                             Cancel Order
-                                            {cancelTimer > 0 && order.status === 'Order Placed' && (
+                                            {cancelTimer > 0 && order.status === 'Pending' && (
                                                 <span className={styles.cancelTimer}>
                                                     {formatTimer(cancelTimer)}
                                                 </span>

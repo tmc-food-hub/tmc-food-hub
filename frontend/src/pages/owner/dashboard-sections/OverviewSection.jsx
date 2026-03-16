@@ -145,7 +145,7 @@ export default function OverviewSection({ store, orders }) {
                                         {Math.floor(Math.random() * 300) + 50} orders this week
                                     </div>
                                 </div>
-                                <div className={styles.popularMenuPrice}>${item.price.toFixed(2)}</div>
+                                <div className={styles.popularMenuPrice}>${Number(item.price).toFixed(2)}</div>
                             </div>
                         ))}
                     </div>

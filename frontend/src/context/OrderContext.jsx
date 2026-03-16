@@ -116,6 +116,7 @@ export function OrderProvider({ children }) {
                     deliveryType: o.delivery_type || 'asap',
                     scheduledDate: o.scheduled_date || null,
                     scheduledTime: o.scheduled_time || null,
+                    restaurantId: o.restaurant_owner_id,
                     timeline: timeline
                 };
             });
@@ -176,10 +177,9 @@ export function OrderProvider({ children }) {
         }
     }, [fetchOrders]);
 
-    const cancelOrder = useCallback((id) => {
-        // Future enhancement: Call an API endpoint to cancel the order
-        // display({ type: 'CANCEL_ORDER', payload: id });
-    }, []);
+    const cancelOrder = useCallback(async (id) => {
+        return await updateStatus(id, 'Cancelled');
+    }, [updateStatus]);
 
     const activeOrders = useMemo(() => orders.filter(o => !['Delivered', 'Cancelled'].includes(o.status)), [orders]);
     const completedOrders = useMemo(() => orders.filter(o => o.status === 'Delivered'), [orders]);

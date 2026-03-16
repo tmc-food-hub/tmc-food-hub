@@ -84,7 +84,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
     }, [item]);
 
     // Calculate total price
-    const basePrice = item.price;
+    const basePrice = Number(item.price) || 0;
     const activeVar = options.variations.find(v => v.id === selectedVarId);
     const varPrice = activeVar ? activeVar.priceOpt : 0;
 
@@ -128,7 +128,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
                     <div className={styles.headerInfo}>
                         <h2 className={styles.itemTitle}>{item.title}</h2>
                         <div className={styles.itemDesc}>{item.description}</div>
-                        <div className={styles.basePrice}>Starting at ${item.price.toFixed(2)}</div>
+                        <div className={styles.basePrice}>Starting at ${Number(item.price).toFixed(2)}</div>
                     </div>
 
                     {/* Variations */}
@@ -151,7 +151,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
                                             />
                                             <span>{v.name}</span>
                                         </div>
-                                        {v.priceOpt > 0 && <span className={styles.extraPrice}>+${v.priceOpt.toFixed(2)}</span>}
+                                        {v.priceOpt > 0 && <span className={styles.extraPrice}>+${Number(v.priceOpt).toFixed(2)}</span>}
                                     </label>
                                 ))}
                             </div>
@@ -177,7 +177,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
                                             />
                                             <span>{a.name}</span>
                                         </div>
-                                        {a.priceOpt > 0 && <span className={styles.extraPrice}>+${a.priceOpt.toFixed(2)}</span>}
+                                        {a.priceOpt > 0 && <span className={styles.extraPrice}>+${Number(a.priceOpt).toFixed(2)}</span>}
                                     </label>
                                 ))}
                             </div>
@@ -207,7 +207,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
 
                     <button className={styles.addToCartBtn} onClick={handleAddClick}>
                         <span className={styles.btnText}>Add to Cart</span>
-                        <span className={styles.btnTotal}>${totalItemPrice.toFixed(2)}</span>
+                        <span className={styles.btnTotal}>${Number(totalItemPrice).toFixed(2)}</span>
                     </button>
                 </div>
 

@@ -53,7 +53,7 @@ function ItemDetail({ item, onBack, onAddToCart }) {
                     </div>
 
                     <div className={styles.itemDetailFooter}>
-                        <span className={styles.itemDetailPrice}>${item.price.toFixed(2)}</span>
+                        <span className={styles.itemDetailPrice}>${Number(item.price).toFixed(2)}</span>
                         <button className={styles.itemAddBtn} onClick={() => onAddToCart(item)}>
                             <ShoppingCart size={15} /> Add to Cart
                         </button>
@@ -391,7 +391,7 @@ function MenuCard({ item, onSelect, onAdd, styles }) {
                 <h4 className={styles.menuCardTitle}>{item.title}</h4>
                 <p className={styles.menuCardDesc}>{item.description}</p>
                 <div className={styles.menuCardFooter}>
-                    <span className={styles.menuCardPrice}>${item.price.toFixed(2)}</span>
+                    <span className={styles.menuCardPrice}>${Number(item.price).toFixed(2)}</span>
                     <button
                         className={styles.addBtn}
                         onClick={(e) => { e.stopPropagation(); onAdd(item); }}

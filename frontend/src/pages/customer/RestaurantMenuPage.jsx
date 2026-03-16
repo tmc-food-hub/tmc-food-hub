@@ -69,13 +69,24 @@ function RestaurantMenuPage() {
             // Map backend store data to frontend structure if needed
             const formattedStore = {
                 ...storeData,
-                cuisine: 'Fast Food', // Placeholder or add to DB
-                deliveryTime: '20-30 min',
-                logo: storeData.restaurant_name === 'Jollibee' ? '/assets/images/service/jollibee/Jollibee_Logo.svg' : '/assets/images/service/placeholder.svg',
-                status: 'Operational',
-                rating: 4.8,
-                reviews: [], // Placeholder
-                menuItems: flattened
+                restaurant_id: storeData.id,
+                name: storeData.restaurant_name || storeData.name,
+                cuisine: storeData.cuisine || 'Fast Food • Filipino • Asian',
+                deliveryTime: storeData.deliveryTime || '25-40 min',
+                status: storeData.status || 'Operational',
+                logo: storeData.restaurant_name === 'Jollibee' ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                      storeData.restaurant_name === "McDonald's" ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                      storeData.restaurant_name === 'Sushi Nori' ? '/assets/images/service/resturant_logo/sushi nori.svg' :
+                      storeData.restaurant_name === 'Mang Inasal' ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                      storeData.restaurant_name === 'KFC' ? '/assets/images/service/resturant_logo/KFC.svg' :
+                      storeData.restaurant_name === 'Chowking' ? '/assets/images/service/resturant_logo/chowking.svg' :
+                      '/assets/images/service/placeholder.svg',
+                address: storeData.business_address || storeData.address,
+                contact: storeData.business_contact_number || storeData.contact,
+                available_items_count: flattened.length,
+                menuItems: flattened,
+                reviews: storeData.reviews || [],
+                rating: storeData.rating || 4.5
             };
 
             setStore(formattedStore);
@@ -105,7 +116,11 @@ function RestaurantMenuPage() {
     });
 
     const handleAddToCartClick = (item) => {
-        setSelectedItemForModal({ ...item, storeName: store.name });
+        setSelectedItemForModal({ 
+            ...item, 
+            storeName: store.name,
+            restaurantId: store.id 
+        });
         setIsCartModalOpen(true);
     };
 
@@ -115,9 +130,9 @@ function RestaurantMenuPage() {
         setSelectedItemForModal(null);
     };
 
-    const avgRating = store.reviews.length
+    const avgRating = (store.reviews && store.reviews.length)
         ? (store.reviews.reduce((sum, r) => sum + r.rating, 0) / store.reviews.length).toFixed(1)
-        : store.rating;
+        : (store.rating || 4.5);
 
     const similarStores = allStores.filter(s => s.id !== store.id).slice(0, 4);
 
@@ -133,15 +148,15 @@ function RestaurantMenuPage() {
                         <div className={styles.breadcrumbs}>
                             <Link to="/">Home</Link> <span className="mx-2">/</span>
                             <Link to="/menu">Restaurants</Link> <span className="mx-2">/</span>
-                            <span className={styles.current}>{store.restaurant_name}</span>
+                            <span className={styles.current}>{store.name}</span>
                         </div>
 
                         {/* Restaurant Header */}
                         <div className={styles.restaurantHeader}>
-                            <img src={store.logo} alt={store.restaurant_name} className={styles.restaurantLogo} />
+                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} />
                             <div className={styles.restaurantInfo}>
                                 <div className={styles.restaurantCategory}>{store.cuisine}</div>
-                                <h1 className={styles.restaurantName}>{store.restaurant_name}</h1>
+                                <h1 className={styles.restaurantName}>{store.name}</h1>
                                 <div className={styles.restaurantMeta}>
                                     <span className={store.status === 'Operational' ? styles.statusBadgeOpen : styles.statusBadgeClosed}>
                                         ● {store.status}
@@ -247,7 +262,7 @@ function RestaurantMenuPage() {
                                                 <div className={styles.menuCardBody}>
                                                     <div className={styles.menuCardHeaderRow}>
                                                         <h3 className={styles.menuCardTitle}>{item.title}</h3>
-                                                        <span className={styles.menuCardPrice}>${parseFloat(item.price).toFixed(2)}</span>
+                                                        <span className={styles.menuCardPrice}>${Number(item.price).toFixed(2)}</span>
                                                     </div>
                                                     <p className={styles.menuCardDesc}>{item.description}</p>
                                                     <div className={styles.menuCardFooterRow}>

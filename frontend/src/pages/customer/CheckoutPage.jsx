@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MapPin, CreditCard, Banknote, CalendarDays, Clock } from 'lucide-react';
 import gcashLogo from '../../assets/imgs/gcash-logo.png';
 import mayaLogo from '../../assets/imgs/maya-logo.jpg';
@@ -19,6 +19,8 @@ function CheckoutPage() {
     const { showNotification } = useNotification();
     const { placeOrder } = useOrders();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const urlRestaurantId = searchParams.get('restaurantId');
 
     const [contactNumber, setContactNumber] = useState('');
     const [deliveryAddress, setDeliveryAddress] = useState('');
@@ -81,7 +83,7 @@ function CheckoutPage() {
 
         try {
             const storeName = cartItems[0]?.storeName || 'Restaurant';
-            const restaurantId = cartItems[0]?.restaurantId;
+            const restaurantId = cartItems[0]?.restaurantId || urlRestaurantId;
 
             if (!restaurantId) {
                 showNotification('Unable to identify the restaurant. Please clear your cart and try again.', 'error');
@@ -90,6 +92,7 @@ function CheckoutPage() {
 
             const order = await placeOrder({
                 items: cartItems.map(i => ({ 
+                    id: i.id,
                     name: i.title, 
                     quantity: i.quantity, 
                     price: i.price, 
@@ -318,7 +321,7 @@ function CheckoutPage() {
                                                             {item.addOns && item.addOns.length > 0 && <span> • {item.addOns.length} add-ons</span>}
                                                         </div>
                                                     )}
-                                                    <div className={styles.summaryItemMeta}>x{item.quantity} • ${item.price.toFixed(2)}</div>
+                                                    <div className={styles.summaryItemMeta}>x{item.quantity} • ${Number(item.price).toFixed(2)}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -327,21 +330,21 @@ function CheckoutPage() {
                                     <div className={styles.summaryBreakdown}>
                                         <div className={styles.summaryRow}>
                                             <span>Subtotal</span>
-                                            <span>${cartSubtotal.toFixed(2)}</span>
+                                            <span>${Number(cartSubtotal).toFixed(2)}</span>
                                         </div>
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
-                                            <span>${deliveryFee.toFixed(2)}</span>
+                                            <span>${Number(deliveryFee).toFixed(2)}</span>
                                         </div>
                                         <div className={styles.summaryRow}>
                                             <span>Discount (PROMO5)</span>
-                                            <span className={styles.discountValue}>-${discount.toFixed(2)}</span>
+                                            <span className={styles.discountValue}>-${Number(discount).toFixed(2)}</span>
                                         </div>
                                     </div>
 
                                     <div className={styles.totalRow}>
                                         <span className={styles.totalLabel}>Total Amount</span>
-                                        <span className={styles.totalValue}>${totalAmount.toFixed(2)}</span>
+                                        <span className={styles.totalValue}>${Number(totalAmount).toFixed(2)}</span>
                                     </div>
 
                                     <button className={styles.placeOrderBtn} onClick={handlePlaceOrder}>Place Order</button>
