@@ -5,6 +5,10 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/api(/.*)?$ [NC]
 RewriteRule ^ laravel-entry.php [L]
 
+# Route /adminer requests to the Laravel PHP entry point
+RewriteCond %{REQUEST_URI} ^/adminer(/.*)?$ [NC]
+RewriteRule ^ laravel-entry.php [L]
+
 # Serve existing static files directly
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
