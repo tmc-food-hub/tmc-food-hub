@@ -56,12 +56,11 @@ class RestaurantOwner extends Authenticatable
 
     public function menuItems()
     {
-        return $this->hasMany(MenuItem::class, 'restaurant_owner_id');
+        return $this->hasMany(MenuItem::class , 'restaurant_owner_id');
     }
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'restaurant_owner_id');
+        return $this->hasMany(Order::class , 'restaurant_owner_id');
     }
 }
-

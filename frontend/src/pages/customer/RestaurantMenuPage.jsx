@@ -57,7 +57,7 @@ function RestaurantMenuPage() {
 
             const storeData = menuRes.data.restaurant;
             const groupedMenu = menuRes.data.menu;
-            
+
             // Flatten menu items and add category field for matching
             const flattened = [];
             Object.keys(groupedMenu).forEach(catName => {
@@ -74,13 +74,20 @@ function RestaurantMenuPage() {
                 cuisine: storeData.cuisine || 'Fast Food • Filipino • Asian',
                 deliveryTime: storeData.deliveryTime || '25-40 min',
                 status: storeData.status || 'Operational',
-                logo: storeData.restaurant_name === 'Jollibee' ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                      storeData.restaurant_name === "McDonald's" ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                      storeData.restaurant_name === 'Sushi Nori' ? '/assets/images/service/resturant_logo/sushi nori.svg' :
-                      storeData.restaurant_name === 'Mang Inasal' ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                      storeData.restaurant_name === 'KFC' ? '/assets/images/service/resturant_logo/KFC.svg' :
-                      storeData.restaurant_name === 'Chowking' ? '/assets/images/service/resturant_logo/chowking.svg' :
-                      '/assets/images/service/placeholder.svg',
+                logo: storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                    storeData.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                    storeData.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
+                    storeData.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                    storeData.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
+                    storeData.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
+                    '/assets/images/service/placeholder.svg',
+                cover: storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/jollibee/2pc-Chickenjoy-Solo.svg' :
+                    storeData.restaurant_name?.includes("McDonald's") ? '/assets/images/service/mcdonald/Big-Mac.svg' :
+                    storeData.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/sushiNori/California-Roll.svg' :
+                    storeData.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/mangInasal/Chicken-Paa-Solo.svg' :
+                    storeData.restaurant_name?.includes('KFC') ? '/assets/images/service/kfc/1-PC-Fully-Loaded-Meal.svg' :
+                    storeData.restaurant_name?.includes('Chowking') ? '/assets/images/service/chowking/Chinese-Style-Fried-Chicken-Lauriat.svg' :
+                    '/assets/images/service/placeholder.svg',
                 address: storeData.business_address || storeData.address,
                 contact: storeData.business_contact_number || storeData.contact,
                 available_items_count: flattened.length,
@@ -116,10 +123,10 @@ function RestaurantMenuPage() {
     });
 
     const handleAddToCartClick = (item) => {
-        setSelectedItemForModal({ 
-            ...item, 
+        setSelectedItemForModal({
+            ...item,
             storeName: store.name,
-            restaurantId: store.id 
+            restaurantId: store.id
         });
         setIsCartModalOpen(true);
     };
@@ -244,10 +251,10 @@ function RestaurantMenuPage() {
                                 <div className={styles.menuGrid}>
                                     {filteredItems.map(item => {
                                         const isAvailable = !!item.available && (item.stock_level > 0 || !item.auto_toggle);
-                                        
+
                                         return (
-                                            <div 
-                                                className={`${styles.menuCard} ${!isAvailable ? styles.outOfStockCard : ''}`} 
+                                            <div
+                                                className={`${styles.menuCard} ${!isAvailable ? styles.outOfStockCard : ''}`}
                                                 key={item.id}
                                             >
                                                 <div className={styles.menuCardImgWrap}>
@@ -269,8 +276,8 @@ function RestaurantMenuPage() {
                                                         <div className={styles.menuCardRating}>
                                                             <Star size={14} fill="#F5A623" color="#F5A623" /> {item.rating || 4.8} <span>({item.reviews || 152})</span>
                                                         </div>
-                                                        <button 
-                                                            className={styles.addBtnIcon} 
+                                                        <button
+                                                            className={styles.addBtnIcon}
                                                             onClick={() => isAvailable && handleAddToCartClick(item)}
                                                             disabled={!isAvailable}
                                                             style={!isAvailable ? { opacity: 0.5, cursor: 'not-allowed', background: '#9ca3af' } : {}}

@@ -84,18 +84,18 @@ class OwnerSeeder extends Seeder
 
         foreach ($owners as $ownerData) {
             RestaurantOwner::updateOrCreate(
-                ['email' => $ownerData['email']],
-                [
-                    'name' => $ownerData['name'],
-                    'first_name' => $ownerData['first_name'],
-                    'last_name' => $ownerData['last_name'],
-                    'password' => $ownerData['password'],
-                    'restaurant_name' => $ownerData['restaurant_name'],
-                    'business_address' => $ownerData['business_address'],
-                    'business_contact_number' => $ownerData['business_contact_number'],
-                    'business_permit' => $ownerData['business_permit'],
-                    'email_verified_at' => now(),
-                ]
+            ['email' => $ownerData['email']],
+            [
+                'name' => $ownerData['name'],
+                'first_name' => $ownerData['first_name'],
+                'last_name' => $ownerData['last_name'],
+                'password' => $ownerData['password'],
+                'restaurant_name' => $ownerData['restaurant_name'],
+                'business_address' => $ownerData['business_address'],
+                'business_contact_number' => $ownerData['business_contact_number'],
+                'business_permit' => $ownerData['business_permit'],
+                'email_verified_at' => now(),
+            ]
             );
         }
     }

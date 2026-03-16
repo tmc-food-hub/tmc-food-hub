@@ -31,13 +31,13 @@ class MenuSeeder extends Seeder
                 ],
                 'Pasta & Rice' => [
                     ['title' => 'Jolly Spaghetti', 'description' => 'Sweet-style spaghetti with hotdog slices and cheese.', 'price' => 2.80, 'image' => '/assets/images/service/jollibee/Jolly-Spaghetti.svg', 'stock_level' => 60],
-                    ['title' => 'Garlic Rice', 'description' => 'Fragrant garlic fried rice perfect with any meal.', 'price' => 1.50, 'image' => '/assets/images/service/jollibee/Garlic Rice.svg', 'stock_level' => 150],
+                    ['title' => 'Garlic Rice', 'description' => 'Fragrant garlic fried rice perfect with any meal.', 'price' => 1.50, 'image' => '/assets/images/service/jollibee/Garlic-Rice.svg', 'stock_level' => 150],
                     ['title' => 'Jolly Hotdog', 'description' => 'Grilled hotdog in a soft bun with cheese sauce.', 'price' => 2.00, 'image' => '/assets/images/service/jollibee/Jolly-Hotdog.svg', 'stock_level' => 40],
                 ],
                 'Desserts & Drinks' => [
                     ['title' => 'Peach Mango Pie', 'description' => 'Flaky pastry filled with sweet peach and mango.', 'price' => 1.20, 'image' => '/assets/images/service/jollibee/Peach-Mango-Pie.svg', 'stock_level' => 25],
                     ['title' => 'Jolly Sundae', 'description' => 'Creamy soft-serve in chocolate or strawberry.', 'price' => 1.00, 'image' => '/assets/images/service/jollibee/Jolly-Sundae.svg', 'stock_level' => 30],
-                    ['title' => 'Coke Float', 'description' => 'Refreshing Coke with soft-serve vanilla.', 'price' => 1.50, 'image' => '/assets/images/service/jollibee/Coke Float.svg', 'stock_level' => 50],
+                    ['title' => 'Coke Float', 'description' => 'Refreshing Coke with soft-serve vanilla.', 'price' => 1.50, 'image' => '/assets/images/service/jollibee/Coke-Float.svg', 'stock_level' => 50],
                 ]
             ],
             'McDonald\'s' => [
@@ -103,6 +103,7 @@ class MenuSeeder extends Seeder
             'KFC' => [
                 'Chicken Meals' => [
                     ['title' => '1-PC Fully Loaded Meal', 'description' => '1-pc chicken, rice, mushroom soup, and drink.', 'price' => 4.00, 'image' => '/assets/images/service/kfc/1-PC-Fully-Loaded-Meal.svg', 'stock_level' => 45],
+                    ['title' => '1-pc Chicken Meal', 'description' => '1-pc original recipe chicken, rice, and gravy.', 'price' => 3.20, 'image' => '/assets/images/service/kfc/1pc-Chicken-Meal.svg', 'stock_level' => 50],
                     ['title' => '2-pc Chicken Meal', 'description' => '2-pc original recipe chicken, rice, and gravy.', 'price' => 5.50, 'image' => '/assets/images/service/kfc/2pc-Chicken-Meal.svg', 'stock_level' => 40],
                     ['title' => '8-pc Chicken Bucket', 'description' => '8 pieces of delicious fried chicken.', 'price' => 18.00, 'image' => '/assets/images/service/kfc/8pc-Chicken-Bucket.svg', 'stock_level' => 20],
                 ],
@@ -137,24 +138,25 @@ class MenuSeeder extends Seeder
 
         foreach ($allRestaurantMenus as $restName => $categories) {
             $restaurant = RestaurantOwner::where('restaurant_name', $restName)->first();
-            
-            if (!$restaurant) continue;
+
+            if (!$restaurant)
+                continue;
 
             foreach ($categories as $catName => $items) {
                 $category = Category::updateOrCreate(
-                    ['restaurant_owner_id' => $restaurant->id, 'name' => $catName]
+                ['restaurant_owner_id' => $restaurant->id, 'name' => $catName]
                 );
 
                 foreach ($items as $itemData) {
                     MenuItem::updateOrCreate(
-                        ['restaurant_owner_id' => $restaurant->id, 'title' => $itemData['title']],
+                    ['restaurant_owner_id' => $restaurant->id, 'title' => $itemData['title']],
                         array_merge($itemData, [
-                            'category_id' => $category->id,
-                            'unit' => 'units',
-                            'min_threshold' => 10,
-                            'auto_toggle' => true,
-                            'available' => $itemData['stock_level'] > 0
-                        ])
+                        'category_id' => $category->id,
+                        'unit' => 'units',
+                        'min_threshold' => 10,
+                        'auto_toggle' => true,
+                        'available' => $itemData['stock_level'] > 0
+                    ])
                     );
                 }
             }

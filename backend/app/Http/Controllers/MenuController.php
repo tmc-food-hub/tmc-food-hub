@@ -24,6 +24,7 @@ class MenuController extends Controller
             return [
                 'id'                      => $r->id,
                 'name'                    => $r->restaurant_name,
+                'restaurant_name'         => $r->restaurant_name,
                 'owner_name'              => $r->name,
                 'business_address'        => $r->business_address,
                 'business_contact_number' => $r->business_contact_number,
@@ -54,6 +55,7 @@ class MenuController extends Controller
             'restaurant' => [
                 'id'                      => $restaurant->id,
                 'name'                    => $restaurant->restaurant_name,
+                'restaurant_name'         => $restaurant->restaurant_name,
                 'owner_name'              => $restaurant->name,
                 'business_address'        => $restaurant->business_address,
                 'business_contact_number' => $restaurant->business_contact_number,
