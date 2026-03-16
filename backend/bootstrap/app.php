@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // CORS must run first (before routing), including for OPTIONS preflight requests
         $middleware->prepend(HandleCors::class);
+        
+        $middleware->validateCsrfTokens(except: [
+            'adminer',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
