@@ -8,6 +8,7 @@ class Order extends Model
 {
     protected $fillable = [
         'customer_id',
+        'restaurant_owner_id',
         'store_name',
         'subtotal',
         'delivery_fee',
@@ -32,4 +33,10 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
+
+    public function restaurantOwner()
+    {
+        return $this->belongsTo(RestaurantOwner::class, 'restaurant_owner_id');
+    }
 }
+

@@ -83,7 +83,7 @@ function OrderCard({ order, navigate }) {
 
             <div className={styles.orderCardBottom}>
                 <div className={styles.orderMeta}>
-                    <span className={styles.orderTotal}>${order.total.toFixed(2)}</span>
+                    <span className={styles.orderTotal}>${Number(order.total).toFixed(2)}</span>
                     <span className={styles.orderPayment}>{order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Card'}</span>
                 </div>
                 <div className={styles.orderActions}>
@@ -128,8 +128,8 @@ function MyOrdersPage() {
     const navigate = useNavigate();
 
     const handleReorder = (order) => {
-        reorder(order.items, order.restaurant);
-        navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant)}`);
+        reorder(order.items, order.restaurant, order.restaurantId);
+        navigate(`/checkout?restaurant=${encodeURIComponent(order.restaurant)}&restaurantId=${order.restaurantId}`);
     };
 
     useEffect(() => {

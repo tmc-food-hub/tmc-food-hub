@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import axios from '../api/axios'; // Or wherever axios is located
+import axios from 'axios';
+import api from '../api/axios';
 
 export const OrderContext = createContext();
 
@@ -18,7 +19,7 @@ export function OrderProvider({ children }) {
 
         try {
             if (isInitial) setLoading(true);
-            const response = await axios.get('/orders', { signal });
+            const response = await api.get('/orders', { signal });
             const formattedOrders = response.data.map(o => {
                 // Map legacy/old statuses to new simplified flow
                 let currentStatus = o.status;
@@ -115,13 +116,17 @@ export function OrderProvider({ children }) {
                     deliveryType: o.delivery_type || 'asap',
                     scheduledDate: o.scheduled_date || null,
                     scheduledTime: o.scheduled_time || null,
+                    restaurantId: o.restaurant_owner_id,
                     timeline: timeline
                 };
             });
             setOrders(formattedOrders);
         } catch (error) {
-            if (axios.isCancel(error)) {
-                // Silently ignore cancellations
+            if (axios.isCancel(error) || 
+                error.name === 'CanceledError' || 
+                error.name === 'AbortError' || 
+                error.code === 'ERR_CANCELED' ||
+                error.message === 'Request aborted') {
                 return;
             }
             console.error('Failed to fetch orders', error);
@@ -153,7 +158,7 @@ export function OrderProvider({ children }) {
 
     const placeOrder = useCallback(async (orderData) => {
         try {
-            const response = await axios.post('/orders', orderData);
+            const response = await api.post('/orders', orderData);
             await fetchOrders(); // Re-fetch to get the new order with ID
             return response.data;
         } catch (error) {
@@ -164,7 +169,7 @@ export function OrderProvider({ children }) {
 
     const updateStatus = useCallback(async (id, status) => {
         try {
-            await axios.put(`/orders/${id}/status`, { status });
+            await api.put(`/orders/${id}/status`, { status });
             await fetchOrders();
         } catch (error) {
             console.error('Failed to update status', error);
@@ -172,10 +177,9 @@ export function OrderProvider({ children }) {
         }
     }, [fetchOrders]);
 
-    const cancelOrder = useCallback((id) => {
-        // Future enhancement: Call an API endpoint to cancel the order
-        // display({ type: 'CANCEL_ORDER', payload: id });
-    }, []);
+    const cancelOrder = useCallback(async (id) => {
+        return await updateStatus(id, 'Cancelled');
+    }, [updateStatus]);
 
     const activeOrders = useMemo(() => orders.filter(o => !['Delivered', 'Cancelled'].includes(o.status)), [orders]);
     const completedOrders = useMemo(() => orders.filter(o => o.status === 'Delivered'), [orders]);

@@ -4,8 +4,8 @@ import { Search, MapPin, Clock, Star, ChevronLeft, ChevronRight, CheckCircle2 } 
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
-import { getStores } from '../../data/storesData';
 import styles from './MenuPage.module.css';
+import api from '../../api/axios';
 
 import { Pizza, Utensils, Coffee, Cake, IceCream, Soup, Drumstick } from 'lucide-react';
 
@@ -20,19 +20,44 @@ const CUISINE_CATEGORIES = [
 ];
 
 function MenuPage() {
-    const [stores, setStores] = useState(() => getStores());
+    const [stores, setStores] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCuisines, setActiveCuisines] = useState([]);
     const [activeDietary, setActiveDietary] = useState([]);
     const [sortBy, setSortBy] = useState('Relevance');
 
     useEffect(() => {
-        const refresh = () => setStores(getStores());
+        fetchStores();
         window.scrollTo(0, 0);
-        refresh();
-        window.addEventListener('focus', refresh);
-        return () => window.removeEventListener('focus', refresh);
     }, []);
+
+    const fetchStores = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/restaurants');
+            const mapped = res.data.map(s => ({
+                ...s,
+                cuisine: s.cuisine || 'Fast Food • Filipino • Asian',
+                deliveryTime: s.deliveryTime || '25-40 min',
+                status: s.status || 'Operational',
+                rating: s.rating || 4.5,
+                dietary: s.dietary || 'All',
+                cover: s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                    s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                    s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
+                    s.name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                    s.name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
+                    s.name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
+                    '/assets/images/service/placeholder.svg'
+            }));
+            setStores(mapped);
+        } catch (error) {
+            console.error('Failed to fetch restaurants:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const toggleCuisine = (cuisine) => {
         setActiveCuisines(prev =>

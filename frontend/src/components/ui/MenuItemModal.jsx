@@ -109,7 +109,7 @@ function MenuItemModal({ item, onClose }) {
                                 <span className={styles.ratingCount}>({reviews.length} reviews)</span>
                             </div>
                         </div>
-                        <div className={styles.priceTag}>${item.price.toFixed(2)}</div>
+                        <div className={styles.priceTag}>${Number(item.price).toFixed(2)}</div>
                     </div>
 
                     <p className={styles.description}>{item.description}</p>
@@ -153,7 +153,7 @@ function MenuItemModal({ item, onClose }) {
 
                 {/* ── Footer action bar ── */}
                 <div className={styles.footer}>
-                    <div className={styles.footerPrice}>${item.price.toFixed(2)}</div>
+                    <div className={styles.footerPrice}>${Number(item.price).toFixed(2)}</div>
                     <button className={styles.addBtn} onClick={handleAddToCart}>
                         <ShoppingCart size={16} /> Add to Cart
                     </button>

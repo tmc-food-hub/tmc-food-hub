@@ -187,23 +187,11 @@ class AuthController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:customer,partner',
             'terms_accepted' => 'accepted',
             'privacy_accepted' => 'accepted',
+            'address' => 'required|string|max:500',
+            'phone' => 'required|string|max:20',
         ];
-
-        if ($request->role === 'customer') {
-            $rules['address'] = 'required|string|max:500';
-            $rules['phone'] = 'required|string|max:20';
-        }
-
-        if ($request->role === 'partner') {
-            $rules['restaurant_name'] = 'required|string|max:255';
-            $rules['business_address'] = 'required|string|max:500';
-            $rules['business_contact_number'] = 'required|string|max:20';
-            $rules['business_permit'] = 'required|string|max:255';
-            $rules['merchant_agreement_accepted'] = 'accepted';
-        }
 
         $validated = $request->validate($rules);
 
@@ -213,14 +201,10 @@ class AuthController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'role' => $validated['role'],
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
+            'role' => 'customer',
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
             'delivery_instructions' => $request->delivery_instructions,
-            'restaurant_name' => $validated['restaurant_name'] ?? null,
-            'business_address' => $validated['business_address'] ?? null,
-            'business_contact_number' => $validated['business_contact_number'] ?? null,
-            'business_permit' => $validated['business_permit'] ?? null,
             'email_verified_at' => now(),
         ]);
 
@@ -253,17 +237,8 @@ class AuthController extends Controller
             'phone' => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'],
         ];
 
-        if ($user->role === 'customer') {
-            $rules['address'] = 'nullable|string|min:5|max:500';
-            $rules['delivery_instructions'] = 'nullable|string|max:500';
-        }
-
-        if ($user->role === 'partner') {
-            $rules['restaurant_name'] = ['required', 'string', 'min:2', 'max:255', 'regex:/^[\pL\d\s\-\'\&\.]+$/u'];
-            $rules['business_address'] = 'required|string|min:5|max:500';
-            $rules['business_contact_number'] = ['required', 'string', 'min:7', 'max:20', 'regex:/^[\+]?[\d\s\-\(\)]+$/'];
-            $rules['business_permit'] = 'nullable|string|max:255';
-        }
+        $rules['address'] = 'nullable|string|min:5|max:500';
+        $rules['delivery_instructions'] = 'nullable|string|max:500';
 
         $validated = $request->validate($rules, [
             'first_name.regex' => 'First name must only contain letters, spaces, hyphens, or apostrophes.',

@@ -340,6 +340,32 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
+.outOfStockCard {
+    opacity: 0.7;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    pointer-events: none;
+    /* Prevent adding to cart, though we also disabled the button */
+}
+
+.outOfStockCard:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.outOfStockBadge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #4B5563;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    z-index: 10;
+}
+
 .menuCardImgWrap {
     position: relative;
     width: 100%;

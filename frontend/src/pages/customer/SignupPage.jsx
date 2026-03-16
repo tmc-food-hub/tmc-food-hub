@@ -251,7 +251,8 @@ function SignupPage() {
         }
 
         try {
-            await register(payload);
+            const endpoint = role === 'Customer' ? '/register' : '/owner/register';
+            await api.post(endpoint, payload);
             navigate('/login', { state: { signupSuccess: true } });
         } catch (err) {
             if (err.response?.data?.errors) {

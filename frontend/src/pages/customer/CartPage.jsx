@@ -82,7 +82,7 @@ function CartPage() {
                                                                 {item.addOns && item.addOns.length > 0 && <span style={{ display: 'block' }}>+ {item.addOns.map(a => a.name).join(', ')}</span>}
                                                             </div>
                                                         )}
-                                                        <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
+                                                        <span className={styles.itemPrice}>${Number(item.price).toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                                 <div className={styles.itemRight}>
@@ -122,7 +122,7 @@ function CartPage() {
                                                                 {item.addOns && item.addOns.length > 0 && <span> • {item.addOns.length} add-ons</span>}
                                                             </div>
                                                         )}
-                                                        <div className={styles.summaryItemMeta}>x{item.quantity} • ${item.price.toFixed(2)}</div>
+                                                        <div className={styles.summaryItemMeta}>x{item.quantity} • ${Number(item.price).toFixed(2)}</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -132,16 +132,16 @@ function CartPage() {
                                         <div className={styles.summaryBreakdown}>
                                             <div className={styles.summaryRow}>
                                                 <span>Subtotal</span>
-                                                <span>${cartSubtotal.toFixed(2)}</span>
+                                                <span>${Number(cartSubtotal).toFixed(2)}</span>
                                             </div>
                                             <div className={styles.summaryRow}>
                                                 <span>Delivery Fee</span>
-                                                <span>${deliveryFee.toFixed(2)}</span>
+                                                <span>${Number(deliveryFee).toFixed(2)}</span>
                                             </div>
                                             {appliedPromo && (
                                                 <div className={styles.summaryRow}>
                                                     <span>Discount ({appliedPromo})</span>
-                                                    <span className={styles.discountValue}>-${discount.toFixed(2)}</span>
+                                                    <span className={styles.discountValue}>-${Number(discount).toFixed(2)}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -149,7 +149,7 @@ function CartPage() {
                                         {/* Total */}
                                         <div className={styles.totalRow}>
                                             <span className={styles.totalLabel}>Total Amount</span>
-                                            <span className={styles.totalValue}>${totalAmount.toFixed(2)}</span>
+                                            <span className={styles.totalValue}>${Number(totalAmount).toFixed(2)}</span>
                                         </div>
 
                                         {/* Checkout Button */}

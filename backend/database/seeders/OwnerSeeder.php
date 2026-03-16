@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\RestaurantOwner;
 use Illuminate\Support\Facades\Hash;
 
 class OwnerSeeder extends Seeder
@@ -20,10 +20,10 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Owner',
                 'email' => 'jollibee@tmcfoodhub.com',
                 'password' => 'jollibee123',
-                'role' => 'partner',
                 'restaurant_name' => 'Jollibee',
                 'business_address' => 'SM City, North Reclamation Area, Cebu City',
                 'business_contact_number' => '+63 32 234 5678',
+                'business_permit' => 'BP-2024-0001',
             ],
             [
                 'name' => 'McDonald\'s Owner',
@@ -31,10 +31,10 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Owner',
                 'email' => 'mcdo@tmcfoodhub.com',
                 'password' => 'mcdo123',
-                'role' => 'partner',
                 'restaurant_name' => 'McDonald\'s',
                 'business_address' => 'Ayala Center Cebu, Archbishop Reyes Ave.',
                 'business_contact_number' => '+63 32 888 1234',
+                'business_permit' => 'BP-2024-0002',
             ],
             [
                 'name' => 'Sushi Nori Owner',
@@ -42,10 +42,10 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Nori',
                 'email' => 'sushinori@tmcfoodhub.com',
                 'password' => 'sushi123',
-                'role' => 'partner',
                 'restaurant_name' => 'Sushi Nori',
                 'business_address' => 'Cebu IT Park, Lahug, Cebu City',
                 'business_contact_number' => '+63 32 411 9900',
+                'business_permit' => 'BP-2024-0003',
             ],
             [
                 'name' => 'Mang Inasal Owner',
@@ -53,10 +53,10 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Inasal',
                 'email' => 'manginasal@tmcfoodhub.com',
                 'password' => 'inasal123',
-                'role' => 'partner',
                 'restaurant_name' => 'Mang Inasal',
                 'business_address' => 'Colon Street, Downtown, Cebu City',
                 'business_contact_number' => '+63 32 256 7788',
+                'business_permit' => 'BP-2024-0004',
             ],
             [
                 'name' => 'KFC Owner',
@@ -64,10 +64,10 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Owner',
                 'email' => 'kfc@tmcfoodhub.com',
                 'password' => 'kfc123',
-                'role' => 'partner',
                 'restaurant_name' => 'KFC',
                 'business_address' => 'Cebu IT Park, Lahug, Cebu City',
                 'business_contact_number' => '+63 32 412 1234',
+                'business_permit' => 'BP-2024-0005',
             ],
             [
                 'name' => 'Chowking Owner',
@@ -75,26 +75,27 @@ class OwnerSeeder extends Seeder
                 'last_name' => 'Owner',
                 'email' => 'chowking@tmcfoodhub.com',
                 'password' => 'chowking123',
-                'role' => 'partner',
                 'restaurant_name' => 'Chowking',
                 'business_address' => 'SM City Cebu',
                 'business_contact_number' => '+63 32 234 9999',
+                'business_permit' => 'BP-2024-0006',
             ],
         ];
 
         foreach ($owners as $ownerData) {
-            User::updateOrCreate(
-                ['email' => $ownerData['email']],
-                [
-                    'name' => $ownerData['name'],
-                    'first_name' => $ownerData['first_name'],
-                    'last_name' => $ownerData['last_name'],
-                    'password' => Hash::make($ownerData['password']),
-                    'role' => $ownerData['role'],
-                    'restaurant_name' => $ownerData['restaurant_name'],
-                    'business_address' => $ownerData['business_address'],
-                    'business_contact_number' => $ownerData['business_contact_number'],
-                ]
+            RestaurantOwner::updateOrCreate(
+            ['email' => $ownerData['email']],
+            [
+                'name' => $ownerData['name'],
+                'first_name' => $ownerData['first_name'],
+                'last_name' => $ownerData['last_name'],
+                'password' => $ownerData['password'],
+                'restaurant_name' => $ownerData['restaurant_name'],
+                'business_address' => $ownerData['business_address'],
+                'business_contact_number' => $ownerData['business_contact_number'],
+                'business_permit' => $ownerData['business_permit'],
+                'email_verified_at' => now(),
+            ]
             );
         }
     }

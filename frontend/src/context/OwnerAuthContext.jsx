@@ -15,25 +15,23 @@ export function OwnerAuthProvider({ children }) {
     // Validate owner on mount or token change
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
-        if (token) {
-            api.get('/user')
+        const userType = localStorage.getItem('user_type');
+        
+        if (token && userType === 'owner') {
+            api.get('/owner/user')
                 .then(res => {
                     const user = res.data;
-                    if (user.role === 'partner') {
-                        // Match user.restaurant_name to local stores data for compatibility
-                        const matchedStore = stores.find(s => s.name === user.restaurant_name);
-                        setCurrentOwner({
-                            ...user,
-                            storeId: matchedStore?.id || 1, // Fallback if not found
-                            storeName: user.restaurant_name
-                        });
-                    } else {
-                        // If not a partner, don't auto-log in to owner portal
-                        setCurrentOwner(null);
-                    }
+                    // Match user.restaurant_name to local stores data for compatibility
+                    const matchedStore = stores.find(s => s.name === user.restaurant_name);
+                    setCurrentOwner({
+                        ...user,
+                        storeId: matchedStore?.id || 1, // Fallback if not found
+                        storeName: user.restaurant_name
+                    });
                 })
                 .catch(() => {
                     setCurrentOwner(null);
+                    localStorage.removeItem('user_type');
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -43,15 +41,12 @@ export function OwnerAuthProvider({ children }) {
 
     async function login(email, password) {
         try {
-            const res = await api.post('/login', { email, password });
+            const res = await api.post('/owner/login', { email, password });
             const { user, token } = res.data;
-
-            if (user.role !== 'partner') {
-                return { success: false, message: 'Unauthorized. This portal is for restaurant owners only.' };
-            }
 
             localStorage.setItem('auth_token', token);
             localStorage.setItem('auth_user', JSON.stringify(user));
+            localStorage.setItem('user_type', 'owner');
 
             const matchedStore = stores.find(s => s.name === user.restaurant_name);
             const ownerData = {
@@ -71,13 +66,14 @@ export function OwnerAuthProvider({ children }) {
 
     async function logout() {
         try {
-            await api.post('/logout');
+            await api.post('/owner/logout');
         } catch (e) {
             console.error('Logout failed:', e);
         }
         setCurrentOwner(null);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
+        localStorage.removeItem('user_type');
     }
 
     // Get the store this owner manages

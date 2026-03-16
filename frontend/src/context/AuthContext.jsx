@@ -10,7 +10,8 @@ export function AuthProvider({ children }) {
 
     // On mount, if we have a stored token, validate it by fetching the user
     useEffect(() => {
-        if (token) {
+        const userType = localStorage.getItem('user_type');
+        if (token && userType === 'customer') {
             api.get('/user')
                 .then((res) => {
                     setUser(res.data);
@@ -21,6 +22,7 @@ export function AuthProvider({ children }) {
                     setUser(null);
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('auth_user');
+                    localStorage.removeItem('user_type');
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -36,6 +38,7 @@ export function AuthProvider({ children }) {
         setUser(userData);
         localStorage.setItem('auth_token', newToken);
         localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('user_type', 'customer');
 
         return userData;
     };
@@ -88,6 +91,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
+        localStorage.removeItem('user_type');
     };
 
     const value = {

@@ -5596,3 +5596,621 @@
         color: #111827;
     }
 }
+/* ─── Inventory Management Section ─── */
+.inventoryContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.inventoryMetricsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.inventoryMetricCard {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.inventoryMetricHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.inventoryIconBox {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bgLightRed { background: #FEF2F2; }
+.bgLightOrange { background: #FFFBEB; }
+.bgLightGreen { background: #ECFDF5; }
+.bgLightGray { background: #F9FAFB; }
+
+.inventoryMetricLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6B7280;
+}
+
+.inventoryMetricValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.inventoryMetricSub {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+.inventoryControlsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.inventoryFilters {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.inventoryFilterBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4B5563;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.inventoryFilterBtn:hover {
+    background: #F9FAFB;
+    color: #111827;
+}
+
+.inventoryExportBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111827;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.inventoryExportBtn:hover {
+    background: #F9FAFB;
+}
+
+.inventoryTableContainer {
+    width: 100%;
+}
+
+.inventoryMainTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inventoryMainTable th {
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    background: #F9FAFB;
+    color: #6B7280;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.inventoryTableRow td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #F3F4F6;
+    vertical-align: middle;
+}
+
+.inventoryTableRow:hover {
+    background: #FDFDFD;
+}
+
+.inventoryItemCell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.inventoryItemImgBadge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inventoryItemImgBadge img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.itemName {
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.9rem;
+}
+
+.itemCategory {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6B7280;
+    background: #F3F4F6;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.stockLevelNormal { font-weight: 700; color: #111827; }
+.stockLevelLow { font-weight: 700; color: #D97706; }
+.stockLevelOut { font-weight: 700; color: #DC2626; }
+
+.statusPillInv {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.statusAvailable { background: #ECFDF5; color: #059669; }
+.statusLowStock { background: #FFFBEB; color: #D97706; }
+.statusOutOfStock { background: #FEF2F2; color: #DC2626; }
+
+/* Toggle Switch */
+.toggleSwitch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggleSwitch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggleSlider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #E5E7EB;
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.toggleSlider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.toggleSwitch input:checked + .toggleSlider {
+    background-color: #059669;
+}
+
+.toggleSwitch input:checked + .toggleSlider:before {
+    transform: translateX(20px);
+}
+
+.btnRefillNow {
+    background: #991B1B;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btnRefillNow:hover {
+    background: #7F1D1D;
+}
+
+/* Inventory Modals */
+.invModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+}
+
+.invModal {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUpInv 0.3s ease-out;
+}
+
+@keyframes slideUpInv {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.invModalHead {
+    padding: 1.5rem;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.invModalTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.invModalSub {
+    font-size: 0.85rem;
+    color: #6B7280;
+    margin: 4px 0 0;
+}
+
+.invModalBody {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.invLabel {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4B5563;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.invInput {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.invInput:focus {
+    border-color: #991B1B;
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
+}
+
+.invInputRightIcon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.invInputRightText {
+    position: absolute;
+    right: 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #9CA3AF;
+}
+
+.invSelect {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background-color: #F9FAFB;
+    outline: none;
+    cursor: pointer;
+}
+
+.invToggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #F9FAFB;
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.invToggleTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.invToggleDesc {
+    font-size: 0.75rem;
+    color: #6B7280;
+    margin-top: 2px;
+}
+
+.invModalFooter {
+    padding: 1.25rem 1.5rem;
+    background: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.invBtnCancel {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    color: #4B5563;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.invBtnSubmit {
+    background: #991B1B;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Refill specific */
+.refillCounter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.refillBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.refillBtn:hover {
+    background: #F9FAFB;
+}
+
+.refillInput {
+    flex: 1;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    border: none;
+    outline: none;
+}
+
+.quickAddRow {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.quickAddBtn {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4B5563;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.quickAddBtn:hover {
+    background: #F9FAFB;
+}
+
+.quickAddBtnActive {
+    background: #991B1B;
+    color: white;
+    border-color: #991B1B;
+}
+
+.totalRefillRow {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: #ECFDF5;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.totalAfterLabel {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #065F46;
+}
+
+.totalAfterValue {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #047857;
+}
+
+/* Dialog Styles */
+.dialogModal {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.dialogIconWrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialogIconSuccess { background: #ECFDF5; color: #059669; }
+.dialogIconError { background: #FEF2F2; color: #DC2626; }
+
+.dialogTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.dialogDesc {
+    font-size: 0.95rem;
+    color: #6B7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.dialogBtn {
+    width: 100%;
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.dialogLinkBtn {
+    background: none;
+    border: none;
+    color: #6B7280;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.emptyStateContainer {
+    padding: 5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.emptyStateIconWrapper {
+    width: 80px;
+    height: 80px;
+    background: #FEF2F2;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.emptyStateTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 1rem;
+}
+
+.emptyStateSub {
+    font-size: 1rem;
+    color: #6B7280;
+    max-width: 400px;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+}
+
+.btnPrimary {
+    background: #991B1B;
+    color: white;
+    border: none;
+    padding: 0.85rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: 0.2s;
+}
+
+.btnPrimary:hover {
+    background: #7F1D1D;
+    transform: translateY(-2px);
+}

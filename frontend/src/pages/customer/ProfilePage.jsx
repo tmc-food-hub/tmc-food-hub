@@ -43,16 +43,8 @@ function ProfilePage() {
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
             phone: user?.phone || '',
-            ...(user?.role === 'customer' || !user?.role ? {
-                address: user?.address || '',
-                delivery_instructions: user?.delivery_instructions || '',
-            } : {}),
-            ...(user?.role === 'partner' ? {
-                restaurant_name: user?.restaurant_name || '',
-                business_address: user?.business_address || '',
-                business_contact_number: user?.business_contact_number || '',
-                business_permit: user?.business_permit || '',
-            } : {}),
+            address: user?.address || '',
+            delivery_instructions: user?.delivery_instructions || '',
         });
         setEditErrors({});
         setEditServerError('');
@@ -104,26 +96,6 @@ function ProfilePage() {
             errors.address = 'Address must be at least 5 characters';
         }
 
-        // Partner fields
-        if (user?.role === 'partner') {
-            if (!editForm.restaurant_name?.trim()) {
-                errors.restaurant_name = 'Restaurant name is required';
-            } else if (editForm.restaurant_name.trim().length < 2) {
-                errors.restaurant_name = 'Restaurant name must be at least 2 characters';
-            }
-            if (!editForm.business_address?.trim()) {
-                errors.business_address = 'Business address is required';
-            } else if (editForm.business_address.trim().length < 5) {
-                errors.business_address = 'Business address must be at least 5 characters';
-            }
-            if (!editForm.business_contact_number?.trim()) {
-                errors.business_contact_number = 'Business contact is required';
-            } else if (!phoneRegex.test(editForm.business_contact_number.trim())) {
-                errors.business_contact_number = 'Must contain only digits, spaces, dashes, or parentheses';
-            } else if (editForm.business_contact_number.trim().length < 7) {
-                errors.business_contact_number = 'Must be at least 7 characters';
-            }
-        }
 
         if (Object.keys(errors).length) { setEditErrors(errors); return; }
 
@@ -268,24 +240,6 @@ function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Restaurant Info – Partners only */}
-                        {user?.role === 'Partner' && (
-                            <div className={`${styles.infoCard} ${styles.cardFull}`}>
-                                <div className={styles.cardHeader}>
-                                    <div className={styles.cardIcon}><i className="bi bi-shop" /></div>
-                                    <div>
-                                        <h3 className={styles.cardTitle}>Restaurant Information</h3>
-                                        <p className={styles.cardSubtitle}>Your business details as a Partner</p>
-                                    </div>
-                                </div>
-                                <div className={styles.fieldList}>
-                                    <Field label="Restaurant Name" value={user?.restaurant_name} />
-                                    <Field label="Business Contact" value={user?.business_contact_number} />
-                                    <Field label="Business Address" value={user?.business_address} />
-                                    <Field label="Permit / TIN" value={user?.business_permit} />
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -359,69 +313,25 @@ function ProfilePage() {
                                     {editErrors.phone && <span className={styles.editError}>{editErrors.phone}</span>}
                                 </div>
 
-                                {(user?.role === 'customer' || !user?.role) && (
-                                    <>
-                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                            <label className={styles.editLabel}>Address</label>
-                                            <input
-                                                className={styles.editInput}
-                                                value={editForm.address || ''}
-                                                onChange={e => handleEditChange('address', e.target.value)}
-                                            />
-                                            {editErrors.address && <span className={styles.editError}>{editErrors.address}</span>}
-                                        </div>
-                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                            <label className={styles.editLabel}>Delivery Instructions</label>
-                                            <textarea
-                                                className={`${styles.editInput} ${styles.editTextarea}`}
-                                                value={editForm.delivery_instructions || ''}
-                                                onChange={e => handleEditChange('delivery_instructions', e.target.value)}
-                                            />
-                                            {editErrors.delivery_instructions && <span className={styles.editError}>{editErrors.delivery_instructions}</span>}
-                                        </div>
-                                    </>
-                                )}
+                                    <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                        <label className={styles.editLabel}>Address</label>
+                                        <input
+                                            className={styles.editInput}
+                                            value={editForm.address || ''}
+                                            onChange={e => handleEditChange('address', e.target.value)}
+                                        />
+                                        {editErrors.address && <span className={styles.editError}>{editErrors.address}</span>}
+                                    </div>
+                                    <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                        <label className={styles.editLabel}>Delivery Instructions</label>
+                                        <textarea
+                                            className={`${styles.editInput} ${styles.editTextarea}`}
+                                            value={editForm.delivery_instructions || ''}
+                                            onChange={e => handleEditChange('delivery_instructions', e.target.value)}
+                                        />
+                                        {editErrors.delivery_instructions && <span className={styles.editError}>{editErrors.delivery_instructions}</span>}
+                                    </div>
 
-                                {user?.role === 'partner' && (
-                                    <>
-                                        <div className={styles.editFormGroup}>
-                                            <label className={styles.editLabel}>Restaurant Name</label>
-                                            <input
-                                                className={styles.editInput}
-                                                value={editForm.restaurant_name || ''}
-                                                onChange={e => handleEditChange('restaurant_name', e.target.value)}
-                                            />
-                                            {editErrors.restaurant_name && <span className={styles.editError}>{editErrors.restaurant_name}</span>}
-                                        </div>
-                                        <div className={styles.editFormGroup}>
-                                            <label className={styles.editLabel}>Business Contact</label>
-                                            <input
-                                                className={styles.editInput}
-                                                value={editForm.business_contact_number || ''}
-                                                onChange={e => handleEditChange('business_contact_number', e.target.value)}
-                                            />
-                                            {editErrors.business_contact_number && <span className={styles.editError}>{editErrors.business_contact_number}</span>}
-                                        </div>
-                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                            <label className={styles.editLabel}>Business Address</label>
-                                            <input
-                                                className={styles.editInput}
-                                                value={editForm.business_address || ''}
-                                                onChange={e => handleEditChange('business_address', e.target.value)}
-                                            />
-                                            {editErrors.business_address && <span className={styles.editError}>{editErrors.business_address}</span>}
-                                        </div>
-                                        <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                            <label className={styles.editLabel}>Permit / TIN</label>
-                                            <input
-                                                className={styles.editInput}
-                                                value={editForm.business_permit || ''}
-                                                onChange={e => handleEditChange('business_permit', e.target.value)}
-                                            />
-                                            {editErrors.business_permit && <span className={styles.editError}>{editErrors.business_permit}</span>}
-                                        </div>
-                                    </>
-                                )}
                             </div>
 
                             <div className={styles.editActions}>

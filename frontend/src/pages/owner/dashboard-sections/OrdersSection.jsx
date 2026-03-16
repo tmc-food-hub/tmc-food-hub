@@ -9,10 +9,14 @@ export default function OrdersSection({ store }) {
     const [orders, setOrders] = useState([]);
     
     useEffect(() => {
-        // In a real app, this would filter by store ID.
-        // For now, we take all orders since we're mocking multiple stores in one dashboard context.
-        setOrders(allOrders || []);
-    }, [allOrders]);
+        if (allOrders && store) {
+            // Filter orders to only show those belonging to this specific store
+            const storeOrders = allOrders.filter(o => Number(o.restaurantId) === Number(store.id));
+            setOrders(storeOrders);
+        } else {
+            setOrders(allOrders || []);
+        }
+    }, [allOrders, store]);
 
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -165,7 +169,7 @@ export default function OrdersSection({ store }) {
                                                             </div>
                                                         ))}
                                                     </td>
-                                                    <td className={styles.totalCell}>${o.total.toFixed(2)}</td>
+                                                    <td className={styles.totalCell}>${Number(o.total).toFixed(2)}</td>
                                                     <td>
                                                         <span className={`${styles.statusPillSmall} ${
                                                             o.status === 'Pending' ? styles.pillNew :
@@ -227,7 +231,7 @@ export default function OrdersSection({ store }) {
                                         </div>
 
                                         <div className={styles.orderCardFooter}>
-                                            <div className={styles.orderCardTotal}>${o.total.toFixed(2)}</div>
+                                            <div className={styles.orderCardTotal}>${Number(o.total).toFixed(2)}</div>
                                             <div className={styles.timeCell}>{o.time}</div>
                                             {meta.next && (
                                                 <button 
@@ -325,7 +329,7 @@ export default function OrdersSection({ store }) {
                                                 )}
                                                 <div className={styles.panelItemQty}>Qty: x{it.quantity}</div>
                                             </div>
-                                            <div className={styles.panelItemPrice}>${(it.quantity * it.price).toFixed(2)}</div>
+                                            <div className={styles.panelItemPrice}>${Number(it.quantity * it.price).toFixed(2)}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -336,7 +340,7 @@ export default function OrdersSection({ store }) {
                             <div className={styles.panelBreakdown}>
                                 <div className={styles.breakdownRow}>
                                     <span>Subtotal</span>
-                                    <span>${selectedOrder.total.toFixed(2)}</span>
+                                    <span>${Number(selectedOrder.total).toFixed(2)}</span>
                                 </div>
                                 <div className={styles.breakdownRow}>
                                     <span>Delivery Fee</span>
@@ -348,7 +352,7 @@ export default function OrdersSection({ store }) {
                                 </div>
                                 <div className={styles.breakdownTotalRow}>
                                     <span>Total Amount</span>
-                                    <span className={styles.breakdownTotalValue}>${(selectedOrder.total).toFixed(2)} <span className={styles.currency}>USD</span></span>
+                                    <span className={styles.breakdownTotalValue}>${Number(selectedOrder.total).toFixed(2)} <span className={styles.currency}>USD</span></span>
                                 </div>
                             </div>
                         </div>

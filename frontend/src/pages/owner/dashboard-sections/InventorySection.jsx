@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
-import { Package, Plus, Pencil, Search, TrendingDown, Layers, LogOut, CheckCircle2, AlertCircle, FileText, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+    Package, 
+    TrendingDown, 
+    Layers, 
+    LogOut, 
+    Plus, 
+    CheckCircle2, 
+    Pencil, 
+    X, 
+    AlertCircle,
+    FileText
+} from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
+import api from '../../../api/axios';
 
-export default function InventorySection({ store, onUpdate }) {
-    const items = store.menuItems || [];
+export default function InventorySection({ onUpdate }) {
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search] = useState('');
     const [editItem, setEditItem] = useState(null);
     const [refillItem, setRefillItem] = useState(null);
@@ -17,11 +30,27 @@ export default function InventorySection({ store, onUpdate }) {
     // Success/Error Dialog State
     const [dialog, setDialog] = useState(null); // { type: 'success' | 'error', title: string, desc: string }
 
+    // Fetch items on mount
+    useEffect(() => {
+        fetchItems();
+    }, []);
+
+    const fetchItems = async () => {
+        try {
+            const res = await api.get('/owner/inventory/items');
+            setItems(res.data);
+        } catch (error) {
+            console.error('Failed to fetch inventory:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Top Metric stats
     const totalItems = items.length;
-    const lowStockItems = items.filter(i => i.stockLevel > 0 && i.stockLevel <= (i.minThreshold || 10)).length;
-    const outOfStockItems = items.filter(i => i.stockLevel === 0).length;
-    const availableItems = items.filter(i => i.stockLevel > (i.minThreshold || 10)).length;
+    const lowStockItems = items.filter(i => i.stock_level > 0 && i.stock_level <= (i.min_threshold || 10)).length;
+    const outOfStockItems = items.filter(i => i.stock_level === 0).length;
+    const availableItems = items.filter(i => i.stock_level > (i.min_threshold || 10)).length;
     const coverage = totalItems > 0 ? Math.round(((totalItems - outOfStockItems) / totalItems) * 100) : 0;
 
     const filteredItems = items.filter(i => i.title.toLowerCase().includes(search.toLowerCase()));
@@ -30,30 +59,31 @@ export default function InventorySection({ store, onUpdate }) {
     const openEdit = (item) => {
         setEditItem(item);
         setEditForm({
-            stockLevel: item.stockLevel !== undefined ? item.stockLevel : 0,
-            minThreshold: item.minThreshold !== undefined ? item.minThreshold : 10,
+            stockLevel: item.stock_level !== undefined ? item.stock_level : 0,
+            minThreshold: item.min_threshold !== undefined ? item.min_threshold : 10,
             unit: item.unit || 'units',
-            autoToggle: item.autoToggle !== undefined ? item.autoToggle : true
+            autoToggle: item.auto_toggle !== undefined ? !!item.auto_toggle : true
         });
     };
 
-    const saveEdit = () => {
+    const saveEdit = async () => {
         try {
-            const updatedItems = items.map(i => {
-                if (i.id === editItem.id) {
-                    const newStock = parseInt(editForm.stockLevel, 10) || 0;
-                    let available = i.available;
-                    if (editForm.autoToggle) {
-                        available = newStock > 0;
-                    }
-                    return { ...i, stockLevel: newStock, minThreshold: parseInt(editForm.minThreshold, 10) || 10, unit: editForm.unit, autoToggle: editForm.autoToggle, available };
-                }
-                return i;
-            });
-            onUpdate({ ...store, menuItems: updatedItems });
+            const payload = {
+                title: editItem.title,
+                price: editItem.price,
+                stock_level: parseInt(editForm.stockLevel, 10) || 0,
+                min_threshold: parseInt(editForm.minThreshold, 10) || 10,
+                unit: editForm.unit,
+                auto_toggle: editForm.autoToggle
+            };
+
+            const res = await api.put(`/owner/inventory/items/${editItem.id}`, payload);
+            
+            setItems(items.map(i => i.id === editItem.id ? res.data : i));
             setEditItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${editItem.title} have been successfully saved.` });
-        } catch {
+        } catch (error) {
+            console.error('Update failed:', error);
             setDialog({ type: 'error', title: 'Update Failed', desc: `We couldn't save the changes to ${editItem.title}. Please try again.` });
         }
     };
@@ -63,33 +93,30 @@ export default function InventorySection({ store, onUpdate }) {
         setAddQty(0);
     };
 
-    const saveRefill = () => {
+    const saveRefill = async () => {
         try {
-            const updatedItems = items.map(i => {
-                if (i.id === refillItem.id) {
-                    const currentStock = i.stockLevel || 0;
-                    const newStock = currentStock + addQty;
-                    let available = i.available;
-                    if (i.autoToggle !== false && newStock > 0) available = true;
-                    return { ...i, stockLevel: newStock, available };
-                }
-                return i;
-            });
-            onUpdate({ ...store, menuItems: updatedItems });
+            const newStock = (refillItem.stock_level || 0) + addQty;
+            const res = await api.patch(`/owner/inventory/items/${refillItem.id}/stock`, { stock_level: newStock });
+            
+            setItems(items.map(i => i.id === refillItem.id ? res.data : i));
             setRefillItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${refillItem.title} have been successfully saved.` });
-        } catch {
+        } catch (error) {
+            console.error('Refill failed:', error);
             setDialog({ type: 'error', title: 'Update Failed', desc: `We couldn't save the changes to ${refillItem.title}. Please try again.` });
         }
     };
 
-    const handleToggleAvailable = (id, currentVal) => {
-        const updatedItems = items.map(i => {
-            if (i.id === id) return { ...i, available: !currentVal };
-            return i;
-        });
-        onUpdate({ ...store, menuItems: updatedItems });
+    const handleToggleAvailable = async (id, currentVal) => {
+        try {
+            const res = await api.patch(`/owner/inventory/items/${id}/availability`, { available: !currentVal });
+            setItems(items.map(i => i.id === id ? res.data : i));
+        } catch (error) {
+            console.error('Toggle failed:', error);
+        }
     };
+
+    if (loading) return <div className={styles.loadingContainer}>Loading Inventory...</div>;
 
     return (
         <div className={styles.inventoryContainer}>
@@ -195,8 +222,8 @@ export default function InventorySection({ store, onUpdate }) {
                             </thead>
                             <tbody>
                                 {filteredItems.map(item => {
-                                    const stock = item.stockLevel !== undefined ? item.stockLevel : 0;
-                                    const minThreshold = item.minThreshold !== undefined ? item.minThreshold : 10;
+                                    const stock = item.stock_level !== undefined ? item.stock_level : 0;
+                                    const minThreshold = item.min_threshold !== undefined ? item.min_threshold : 10;
                                     const unit = item.unit || 'units';
 
                                     let statusType = 'Normal';
@@ -223,7 +250,7 @@ export default function InventorySection({ store, onUpdate }) {
                                                     <span className={styles.itemName}>{item.title}</span>
                                                 </div>
                                             </td>
-                                            <td><span className={styles.itemCategory}>{item.category}</span></td>
+                                            <td><span className={styles.itemCategory}>{item.category?.name || 'Uncategorized'}</span></td>
                                             <td>
                                                 <span className={
                                                     statusType === 'Out' ? styles.stockLevelOut :
@@ -241,7 +268,7 @@ export default function InventorySection({ store, onUpdate }) {
                                                 {statusType === 'Out' ? (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                         <label className={styles.toggleSwitch}>
-                                                            <input type="checkbox" checked={item.available} disabled />
+                                                            <input type="checkbox" checked={!!item.available} disabled />
                                                             <span className={styles.toggleSlider}></span>
                                                         </label>
                                                         <button className={styles.btnRefillNow} onClick={() => openRefill(item)}>Refill Now</button>
@@ -250,7 +277,7 @@ export default function InventorySection({ store, onUpdate }) {
                                                     <label className={styles.toggleSwitch}>
                                                         <input
                                                             type="checkbox"
-                                                            checked={item.available}
+                                                            checked={!!item.available}
                                                             onChange={() => handleToggleAvailable(item.id, item.available)}
                                                         />
                                                         <span className={styles.toggleSlider}></span>
@@ -340,7 +367,7 @@ export default function InventorySection({ store, onUpdate }) {
                             <div className={styles.formGroup}>
                                 <label className={styles.invLabel}>Current Stock</label>
                                 <div className={styles.invInputRightIcon}>
-                                    <input type="number" className={styles.invInput} value={refillItem.stockLevel !== undefined ? refillItem.stockLevel : 0} disabled />
+                                    <input type="number" className={styles.invInput} value={refillItem.stock_level !== undefined ? refillItem.stock_level : 0} disabled />
                                     <span className={styles.invInputRightText}>{refillItem.unit || 'units'}</span>
                                 </div>
                             </div>
@@ -359,7 +386,7 @@ export default function InventorySection({ store, onUpdate }) {
                             </div>
                             <div className={styles.totalRefillRow}>
                                 <span className={styles.totalAfterLabel}>Total After Refill</span>
-                                <span className={styles.totalAfterValue}>New Stock: {(refillItem.stockLevel !== undefined ? refillItem.stockLevel : 0) + addQty} {refillItem.unit || 'units'}</span>
+                                <span className={styles.totalAfterValue}>New Stock: {(refillItem.stock_level !== undefined ? refillItem.stock_level : 0) + addQty} {refillItem.unit || 'units'}</span>
                             </div>
                         </div>
                         <div className={styles.invModalFooter}>
