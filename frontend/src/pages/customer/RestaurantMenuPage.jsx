@@ -74,20 +74,20 @@ function RestaurantMenuPage() {
                 cuisine: storeData.cuisine || 'Fast Food • Filipino • Asian',
                 deliveryTime: storeData.deliveryTime || '25-40 min',
                 status: storeData.status || 'Operational',
-                logo: storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                logo: storeData.logo || (storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
                     storeData.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
                     storeData.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
                     storeData.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
                     storeData.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
                     storeData.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                    '/assets/images/service/placeholder.svg',
-                cover: storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/jollibee/2pc-Chickenjoy-Solo.svg' :
+                    '/assets/images/service/placeholder.svg'),
+                cover: storeData.cover_image || (storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/jollibee/2pc-Chickenjoy-Solo.svg' :
                     storeData.restaurant_name?.includes("McDonald's") ? '/assets/images/service/mcdonald/Big-Mac.svg' :
                     storeData.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/sushiNori/California-Roll.svg' :
                     storeData.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/mangInasal/Chicken-Paa-Solo.svg' :
                     storeData.restaurant_name?.includes('KFC') ? '/assets/images/service/kfc/1-PC-Fully-Loaded-Meal.svg' :
                     storeData.restaurant_name?.includes('Chowking') ? '/assets/images/service/chowking/Chinese-Style-Fried-Chicken-Lauriat.svg' :
-                    '/assets/images/service/placeholder.svg',
+                    '/assets/images/service/placeholder.svg'),
                 address: storeData.business_address || storeData.address,
                 contact: storeData.business_contact_number || storeData.contact,
                 available_items_count: flattened.length,

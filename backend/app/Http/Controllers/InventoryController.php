@@ -55,6 +55,7 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|string',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'stock_level' => 'integer|min:0',
             'min_threshold' => 'integer|min:0',
             'unit' => 'string|max:50',
@@ -62,6 +63,12 @@ class InventoryController extends Controller
         ]);
 
         $owner = Auth::user();
+        $imagePath = $request->image;
+
+        if ($request->hasFile('image_file')) {
+            $path = $request->file('image_file')->store('menu_items', 'public');
+            $imagePath = asset('storage/' . $path);
+        }
 
         $item = MenuItem::create([
             'restaurant_owner_id' => $owner->id,
@@ -69,7 +76,7 @@ class InventoryController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'price' => $request->price,
-            'image' => $request->image,
+            'image' => $imagePath,
             'available' => $request->auto_toggle ? $request->stock_level > 0 : true,
             'stock_level' => $request->stock_level,
             'min_threshold' => $request->min_threshold,
@@ -91,6 +98,7 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|string',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'available' => 'boolean',
             'stock_level' => 'integer|min:0',
             'min_threshold' => 'integer|min:0',
@@ -98,7 +106,13 @@ class InventoryController extends Controller
             'auto_toggle' => 'boolean',
         ]);
 
-        $data = $request->all();
+        $data = $request->except(['image_file']);
+        
+        if ($request->hasFile('image_file')) {
+            $path = $request->file('image_file')->store('menu_items', 'public');
+            $data['image'] = asset('storage/' . $path);
+        }
+
         if ($request->has('stock_level') && $request->auto_toggle) {
             $data['available'] = $request->stock_level > 0;
         }

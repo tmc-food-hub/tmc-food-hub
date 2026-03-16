@@ -29,6 +29,8 @@ class MenuController extends Controller
                 'business_address'        => $r->business_address,
                 'business_contact_number' => $r->business_contact_number,
                 'available_items_count'   => $r->menu_items_count,
+                'logo'                    => $r->logo,
+                'cover_image'             => $r->cover_image,
             ];
         });
 
@@ -59,6 +61,8 @@ class MenuController extends Controller
                 'owner_name'              => $restaurant->name,
                 'business_address'        => $restaurant->business_address,
                 'business_contact_number' => $restaurant->business_contact_number,
+                'logo'                    => $restaurant->logo,
+                'cover_image'             => $restaurant->cover_image,
             ],
             'menu' => $menuByCategories
         ]);
