@@ -1042,3 +1042,664 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ══════════════════════════════════════
+   DARK MODE OVERRIDES
+   ══════════════════════════════════════ */
+
+/* Page background */
+:global(.dark-mode) .pageWrapper {
+    background: transparent;
+}
+
+:global(.dark-mode) .loadingWrapper {
+    background: transparent;
+    color: #9CA3AF;
+}
+
+/* Breadcrumbs */
+:global(.dark-mode) .breadcrumbs {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .breadcrumbs a {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .breadcrumbs .current {
+    color: #F87171;
+}
+
+/* Restaurant Header */
+:global(.dark-mode) .restaurantLogo {
+    border-color: #374151;
+    background: #1F2937;
+}
+
+:global(.dark-mode) .restaurantCategory {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .restaurantName {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .restaurantMeta {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .statusBadgeOpen {
+    background: rgba(5, 150, 105, 0.15);
+    color: #34D399;
+}
+
+:global(.dark-mode) .statusBadgeClosed {
+    background: rgba(220, 38, 38, 0.15);
+    color: #F87171;
+}
+
+/* Menu Navigation Tabs */
+:global(.dark-mode) .menuNav {
+    border-bottom-color: #374151;
+}
+
+:global(.dark-mode) .tab {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .tab:hover {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .tabActive {
+    color: #F87171;
+}
+
+:global(.dark-mode) .tabActive::after {
+    background: #F87171;
+}
+
+:global(.dark-mode) .menuSearch input {
+    background: #1F2937;
+    border-color: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .menuSearch input::placeholder {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .menuSearch input:focus {
+    border-color: #8B1F1C;
+}
+
+:global(.dark-mode) .menuSearchIcon {
+    color: #6B7280;
+}
+
+/* Sidebar Filters */
+:global(.dark-mode) .sidebar {
+    background: #1E1E1E;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .filterGroupTitle {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .radioLabel {
+    color: #D1D5DB;
+}
+
+:global(.dark-mode) .clearFiltersBtn {
+    background-color: rgba(139, 31, 28, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+:global(.dark-mode) .clearFiltersBtn:hover {
+    background-color: rgba(139, 31, 28, 0.25);
+}
+
+/* Menu Cards */
+:global(.dark-mode) .menuCard {
+    background: #1F2937;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .menuCard:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .menuCardImgWrap {
+    background: #ffffff;
+    border-bottom-color: #374151;
+}
+
+:global(.dark-mode) .menuCardTitle {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .menuCardPrice {
+    color: #F87171;
+}
+
+:global(.dark-mode) .menuCardDesc {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .menuCardRating {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .menuCardRating span {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .bestSellerBadge {
+    background: #8B1F1C;
+}
+
+:global(.dark-mode) .outOfStockBadge {
+    background: #374151;
+}
+
+:global(.dark-mode) .addBtnIcon {
+    background: #8B1F1C;
+}
+
+:global(.dark-mode) .addBtnIcon:hover {
+    background: #a52a27;
+}
+
+/* Section Titles */
+:global(.dark-mode) .sectionTitle {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .menuSectionTitle {
+    color: #F3F4F6;
+}
+
+/* Reviews Section */
+:global(.dark-mode) .reviewsSubtitle {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .reviewsSubtitle strong {
+    color: #F87171;
+}
+
+:global(.dark-mode) .writeReviewBtn {
+    background: #8B1F1C;
+}
+
+:global(.dark-mode) .writeReviewBtn:hover {
+    background: #a52a27;
+}
+
+:global(.dark-mode) .reviewSummaryCard {
+    background: #1F2937;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .reviewScoreBig {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .reviewBasedOn {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .reviewBarBg {
+    background: #374151;
+}
+
+:global(.dark-mode) .reviewBarFill {
+    background: #F87171;
+}
+
+:global(.dark-mode) .reviewBarRow {
+    color: #D1D5DB;
+}
+
+:global(.dark-mode) .reviewBarCount {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .reviewFilterBtn {
+    background: #1F2937;
+    border-color: #374151;
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .reviewFilterBtn:hover {
+    background: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .reviewFilterBtnActive {
+    background: #8B1F1C;
+    color: white;
+    border-color: #8B1F1C;
+}
+
+:global(.dark-mode) .reviewFilterBtnActive:hover {
+    background: #a52a27;
+}
+
+:global(.dark-mode) .reviewCardItem {
+    background: #1F2937;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .reviewUserName {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .reviewTime {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .reviewText {
+    color: #D1D5DB;
+}
+
+:global(.dark-mode) .reviewImg {
+    border-color: #374151;
+}
+
+:global(.dark-mode) .helpfulBtn {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .helpfulBtn:hover {
+    color: #F3F4F6;
+}
+
+/* Similar Restaurants / Product Cards */
+:global(.dark-mode) .productCard {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .cardImageWrapper {
+    background: #ffffff;
+    border-color: #374151;
+}
+
+:global(.dark-mode) .cardTitle {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .cardDesc {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .statusBadgeOpenSmall {
+    color: #F87171;
+}
+
+:global(.dark-mode) .statusBadgeClosedSmall {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .metaIcon {
+    color: #6B7280;
+}
+
+/* Pagination */
+:global(.dark-mode) .pageBtn {
+    background: #1F2937;
+    border-color: #374151;
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .pageBtn:hover:not(.active) {
+    background: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .pageBtn.active {
+    background: #8B1F1C;
+    border-color: #8B1F1C;
+    color: #fff;
+}
+
+:global(.dark-mode) .pageIconBtn {
+    color: #F87171;
+}
+
+/* Write Review Modal */
+:global(.dark-mode) .modalOverlay {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+:global(.dark-mode) .reviewModal {
+    background: #1F2937;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+:global(.dark-mode) .modalTitle {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .closeModalBtn {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .modalSubtitle {
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .modalSubtitle strong {
+    color: #F87171;
+}
+
+:global(.dark-mode) .verifiedOrderBadge {
+    background: rgba(5, 150, 105, 0.15);
+    color: #34D399;
+}
+
+:global(.dark-mode) .formGroup label {
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .reviewTextarea {
+    background: #111827;
+    border-color: #374151;
+    color: #F3F4F6;
+}
+
+:global(.dark-mode) .reviewTextarea::placeholder {
+    color: #6B7280;
+}
+
+:global(.dark-mode) .reviewTextarea:focus {
+    border-color: #8B1F1C;
+}
+
+:global(.dark-mode) .photoUploadArea {
+    border-color: #374151;
+    background: #111827;
+    color: #9CA3AF;
+}
+
+:global(.dark-mode) .photoUploadArea:hover {
+    background: #1F2937;
+}
+
+:global(.dark-mode) .btnCancel {
+    background: #111827;
+    border-color: #374151;
+    color: #D1D5DB;
+}
+
+:global(.dark-mode) .btnCancel:hover {
+    background: #1F2937;
+}
+
+:global(.dark-mode) .btnSubmit {
+    background: #8B1F1C;
+}
+
+:global(.dark-mode) .btnSubmit:hover {
+    background: #a52a27;
+}
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES
+   ══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .pageWrapper {
+        padding: 100px 0 50px 0;
+    }
+
+    .breadcrumbs {
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+    }
+
+    /* Stack restaurant header vertically */
+    .restaurantHeader {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .restaurantLogo {
+        width: 80px;
+        height: 80px;
+        border-radius: 14px;
+    }
+
+    .restaurantInfo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .restaurantName {
+        font-size: 1.6rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .restaurantCategory {
+        font-size: 0.8rem;
+    }
+
+    .restaurantMeta {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem 1rem;
+        font-size: 0.78rem;
+    }
+
+    /* Stack menu nav vertically */
+    .menuNav {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .menuTabs {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: 1rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .menuTabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        font-size: 0.88rem;
+        white-space: nowrap;
+    }
+
+    .menuSearch {
+        width: 100%;
+    }
+
+    .menuSearch input {
+        font-size: 0.85rem;
+    }
+
+    /* Sidebar adjustments */
+    .sidebar {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Menu cards */
+    .menuCardImgWrap {
+        height: 140px;
+    }
+
+    .menuCardTitle {
+        font-size: 0.95rem;
+    }
+
+    .menuCardPrice {
+        font-size: 0.95rem;
+    }
+
+    .menuCardDesc {
+        font-size: 0.78rem;
+    }
+
+    /* Reviews section */
+    .sectionHeader {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.15rem;
+    }
+
+    .writeReviewBtn {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.88rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .reviewSummaryCard {
+        padding: 1.25rem;
+    }
+
+    .reviewScoreBig {
+        font-size: 2.5rem;
+    }
+
+    .reviewCardItem {
+        min-width: unset;
+        padding: 1rem;
+    }
+
+    .reviewFilters {
+        gap: 0.5rem;
+    }
+
+    .reviewFilterBtn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.78rem;
+    }
+
+    /* Similar restaurants section */
+    .similarSection {
+        margin-top: 3rem;
+    }
+
+    .cardImageWrapper {
+        height: 150px;
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .cardTitle {
+        font-size: 1.05rem;
+    }
+
+    .cardDesc {
+        font-size: 0.78rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin: 1.5rem 0;
+    }
+
+    .pageBtn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+
+    /* Modal adjustments */
+    .reviewModal {
+        padding: 1.5rem;
+    }
+
+    .modalTitle {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageWrapper {
+        padding: 90px 0 40px 0;
+    }
+
+    .restaurantLogo {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+    }
+
+    .restaurantName {
+        font-size: 1.4rem;
+    }
+
+    .restaurantMeta {
+        font-size: 0.75rem;
+        gap: 0.4rem 0.8rem;
+    }
+
+    .menuTabs {
+        gap: 0.75rem;
+    }
+
+    .tab {
+        font-size: 0.82rem;
+        padding: 0.4rem 0;
+    }
+
+    .menuCardImgWrap {
+        height: 130px;
+        padding: 0.75rem;
+    }
+
+    .menuCardBody {
+        padding: 0.75rem;
+    }
+
+    .menuCardTitle {
+        font-size: 0.9rem;
+    }
+
+    .menuCardPrice {
+        font-size: 0.9rem;
+    }
+
+    .addBtnIcon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+    }
+
+    .cardImageWrapper {
+        height: 130px;
+    }
+
+    .cardTitle {
+        font-size: 0.95rem;
+    }
+
+    .reviewSummaryCard {
+        padding: 1rem;
+    }
+
+    .reviewScoreBig {
+        font-size: 2.2rem;
+    }
+
+    .reviewBarRow {
+        font-size: 0.75rem;
+        gap: 0.5rem;
+    }
+}

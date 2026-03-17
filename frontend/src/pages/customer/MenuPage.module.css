@@ -422,6 +422,106 @@
 }
 
 /* ══════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES
+   ══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .menuPage {
+        padding: 100px 0 50px 0;
+    }
+
+    .breadcrumbs {
+        margin-bottom: 1rem;
+    }
+
+    .topSearchBarWrapper {
+        margin-bottom: 1.25rem;
+    }
+
+    .searchInputBig {
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        font-size: 0.9rem;
+    }
+
+    .sidebar {
+        padding: 0 0 1rem 0;
+    }
+
+    .cuisinesCarousel {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .cuisineIconBox {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+    }
+
+    .cuisineName {
+        font-size: 0.75rem;
+    }
+
+    .cuisineItem {
+        min-width: 64px;
+        gap: 0.5rem;
+    }
+
+    .sectionTitleMain {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .cardImageWrapper {
+        height: 150px;
+    }
+
+    .cardTitle {
+        font-size: 1.05rem;
+    }
+
+    .cardDesc {
+        font-size: 0.78rem;
+    }
+
+    .pagination {
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .menuPage {
+        padding: 90px 0 40px 0;
+    }
+
+    .cardImageWrapper {
+        height: 140px;
+    }
+
+    .cardTitle {
+        font-size: 1rem;
+    }
+
+    .price {
+        font-size: 0.8rem;
+    }
+
+    .filterHeader {
+        font-size: 1.1rem;
+    }
+
+    .filterGroupTitle {
+        font-size: 0.75rem;
+    }
+
+    .radioLabel,
+    .checkboxLabel {
+        font-size: 0.85rem;
+        margin-bottom: 0.6rem;
+    }
+}
+
+/* ══════════════════════════════════════
    DARK MODE OVERRIDES
    ══════════════════════════════════════ */
 
@@ -537,7 +637,7 @@
 }
 
 :global(.dark-mode) .cardImageWrapper {
-    background-color: #1F2937;
+    background-color: #ffffff;
     border-color: #374151;
 }
 

@@ -12,7 +12,7 @@ const IMG = {
 const LOGO = {
     jollibee: '/assets/images/service/resturant_logo/jollibee.svg',
     mcdonalds: '/assets/images/service/resturant_logo/mcdonald-s-7.svg',
-    sushiNori: '/assets/images/service/resturant_logo/sushi nori.svg',
+    sushiNori: '/assets/images/service/resturant_logo/sushi-nori.svg',
     mangInasal: '/assets/images/service/resturant_logo/Mang_Inasal.svg',
     chowking: '/assets/images/service/resturant_logo/chowking.svg',
     kfc: '/assets/images/service/resturant_logo/KFC.svg',
@@ -319,8 +319,9 @@ export function getStores() {
             const hasOldStores = parsed.some(s => s.name === 'Steak & Co.' || s.name === 'Té Hana Ramen' || s.name === 'Patty Shack');
             const hasOldImages = parsed.some(s => s.menuItems && s.menuItems.some(m => m.image && (m.image.includes('fries.png') || m.image.includes('burger.png'))));
             const hasFoodCovers = parsed.some(s => s.cover && (s.cover.includes('Chickenjoy-Bucket') || s.cover.includes('Big-Mac') || s.cover.includes('Party-Platter')));
+            const hasBrokenSushiNori = parsed.some(s => s.cover && s.cover.includes('sushi nori.svg'));
 
-            if (hasOldStores || hasOldImages || hasFoodCovers) {
+            if (hasOldStores || hasOldImages || hasFoodCovers || hasBrokenSushiNori) {
                 localStorage.removeItem('tmcStores');
                 return defaultStores;
             }
