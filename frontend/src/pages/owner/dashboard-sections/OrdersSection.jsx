@@ -109,7 +109,7 @@ export default function OrdersSection({ store }) {
                                             <th>Total</th>
                                             <th>Status</th>
                                             <th>Time</th>
-                                            <th className={styles.textRight}>Actions</th>
+                                            <th style={{ textAlign: 'right' }}>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
