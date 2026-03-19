@@ -31,6 +31,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middle
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
+    Route::post('/user/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Orders — customer places orders; controller checks role/model type internally

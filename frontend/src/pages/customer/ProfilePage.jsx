@@ -7,7 +7,7 @@ import Footer from '../../components/sections/Footer';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
-    const { user, isAuthenticated, loading, logout, updateProfile } = useAuth();
+    const { user, isAuthenticated, loading, logout, updateProfile, changePassword } = useAuth();
     const { isDarkMode } = useContext(ThemeContext);
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -16,6 +16,13 @@ function ProfilePage() {
     const [editErrors, setEditErrors] = useState({});
     const [editServerError, setEditServerError] = useState('');
     const [editLoading, setEditLoading] = useState(false);
+
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({});
+    const [passwordErrors, setPasswordErrors] = useState({});
+    const [passwordServerError, setPasswordServerError] = useState('');
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState('');
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -118,6 +125,70 @@ function ProfilePage() {
         }
     };
 
+    const openPasswordModal = () => {
+        setPasswordForm({
+            current_password: '',
+            password: '',
+            password_confirmation: '',
+        });
+        setPasswordErrors({});
+        setPasswordServerError('');
+        setPasswordSuccess('');
+        setShowPasswordModal(true);
+    };
+
+    const handlePasswordChange = (field, value) => {
+        setPasswordForm(prev => ({ ...prev, [field]: value }));
+        if (passwordErrors[field]) {
+            setPasswordErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+        }
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        const errors = {};
+
+        if (!passwordForm.current_password) {
+            errors.current_password = 'Current password is required';
+        }
+        if (!passwordForm.password) {
+            errors.password = 'New password is required';
+        } else if (passwordForm.password.length < 8) {
+            errors.password = 'New password must be at least 8 characters';
+        }
+        if (passwordForm.password !== passwordForm.password_confirmation) {
+            errors.password_confirmation = 'Passwords do not match';
+        }
+
+        if (Object.keys(errors).length) { setPasswordErrors(errors); return; }
+
+        setPasswordLoading(true);
+        setPasswordServerError('');
+        setPasswordSuccess('');
+        try {
+            await changePassword(passwordForm.current_password, passwordForm.password, passwordForm.password_confirmation);
+            setPasswordSuccess('Password updated successfully! Redirecting to login...');
+            setTimeout(async () => {
+                setShowPasswordModal(false);
+                setPasswordSuccess('');
+                setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
+                await logout();
+                navigate('/login');
+            }, 2000);
+        } catch (err) {
+            if (err.response?.status === 422) {
+                const serverErrors = err.response.data.errors || {};
+                const mapped = {};
+                Object.entries(serverErrors).forEach(([key, msgs]) => { mapped[key] = msgs[0]; });
+                setPasswordErrors(mapped);
+            } else {
+                setPasswordServerError(err.response?.data?.message || 'Failed to change password. Please try again.');
+            }
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
     const getInitials = (name) => {
         if (!name) return 'U';
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -174,6 +245,9 @@ function ProfilePage() {
                         <div className={styles.identityActions}>
                             <button className={styles.btnOutline} onClick={openEditModal}>
                                 <i className="bi bi-pencil-square" /> Edit Profile
+                            </button>
+                            <button className={styles.btnOutline} onClick={openPasswordModal}>
+                                <i className="bi bi-shield-lock" /> Change Password
                             </button>
                             <button className={styles.btnRed} onClick={() => setShowLogoutModal(true)}>
                                 <i className="bi bi-box-arrow-right" /> Logout
@@ -340,6 +414,78 @@ function ProfilePage() {
                                 </button>
                                 <button type="submit" className={styles.btnSave} disabled={editLoading}>
                                     {editLoading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showPasswordModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowPasswordModal(false)}>
+                    <div className={styles.editModalBox} onClick={e => e.stopPropagation()}>
+                        <div className={styles.editModalHeader}>
+                            <div className={styles.editModalIcon}>
+                                <i className="bi bi-shield-lock" />
+                            </div>
+                            <div>
+                                <h3 className={styles.editModalTitle}>Change Password</h3>
+                                <p className={styles.editModalSubtitle}>Update your account security</p>
+                            </div>
+                        </div>
+
+                        {passwordServerError && (
+                            <div className={styles.editServerError}>{passwordServerError}</div>
+                        )}
+                        {passwordSuccess && (
+                            <div className="alert alert-success" style={{ padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem', backgroundColor: 'rgba(25, 135, 84, 0.1)', color: '#198754', border: '1px solid rgba(25, 135, 84, 0.2)' }}>
+                                {passwordSuccess}
+                            </div>
+                        )}
+
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className={styles.editFormGrid}>
+                                <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
+                                    <label className={styles.editLabel}>Current Password</label>
+                                    <input
+                                        type="password"
+                                        className={styles.editInput}
+                                        value={passwordForm.current_password || ''}
+                                        onChange={e => handlePasswordChange('current_password', e.target.value)}
+                                        disabled={passwordLoading || passwordSuccess}
+                                    />
+                                    {passwordErrors.current_password && <span className={styles.editError}>{passwordErrors.current_password}</span>}
+                                </div>
+                                <div className={styles.editFormGroup}>
+                                    <label className={styles.editLabel}>New Password</label>
+                                    <input
+                                        type="password"
+                                        className={styles.editInput}
+                                        value={passwordForm.password || ''}
+                                        onChange={e => handlePasswordChange('password', e.target.value)}
+                                        disabled={passwordLoading || passwordSuccess}
+                                    />
+                                    {passwordErrors.password && <span className={styles.editError}>{passwordErrors.password}</span>}
+                                </div>
+                                <div className={styles.editFormGroup}>
+                                    <label className={styles.editLabel}>Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        className={styles.editInput}
+                                        value={passwordForm.password_confirmation || ''}
+                                        onChange={e => handlePasswordChange('password_confirmation', e.target.value)}
+                                        disabled={passwordLoading || passwordSuccess}
+                                    />
+                                    {passwordErrors.password_confirmation && <span className={styles.editError}>{passwordErrors.password_confirmation}</span>}
+                                </div>
+                            </div>
+
+                            <div className={styles.editActions}>
+                                <button type="button" className={styles.btnOutline} onClick={() => setShowPasswordModal(false)} disabled={passwordLoading}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className={styles.btnSave} disabled={passwordLoading || passwordSuccess}>
+                                    {passwordLoading ? 'Saving...' : 'Update Password'}
                                 </button>
                             </div>
                         </form>

@@ -261,6 +261,36 @@ class AuthController extends Controller
     }
 
     /**
+     * Change the authenticated user's password.
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided current password does not match our records.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Revoke all existing tokens to force re-login
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+        ]);
+    }
+
+    /**
      * Send a password reset OTP to the provided email.
      */
     public function forgotPassword(Request $request)

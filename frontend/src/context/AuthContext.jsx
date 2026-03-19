@@ -73,6 +73,11 @@ export function AuthProvider({ children }) {
         return res.data;
     };
 
+    const changePassword = async (current_password, password, password_confirmation) => {
+        const res = await api.post('/user/password', { current_password, password, password_confirmation });
+        return res.data;
+    };
+
     const updateProfile = async (data) => {
         const res = await api.put('/user', data);
         const updatedUser = res.data;
@@ -106,6 +111,7 @@ export function AuthProvider({ children }) {
         forgotPassword,
         verifyResetOtp,
         resetPassword,
+        changePassword,
         updateProfile,
         logout,
     };
