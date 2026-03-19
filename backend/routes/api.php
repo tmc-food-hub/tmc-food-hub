@@ -23,17 +23,18 @@ Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->mid
 Route::get('/restaurants', [MenuController::class, 'index']);
 Route::get('/restaurants/{id}/menu', [MenuController::class, 'show']);
 
-// ── Customer Authenticated Routes ─────────────────────────────────────────
+// ── Customer Password Reset Routes ────────────────────────────────────────
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
 Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp'])->middleware('throttle:10,1');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
+// ── Customer Authenticated Routes ─────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Orders — customer places orders; controller checks role/model type internally
+    // Customer: place orders and view/cancel their own orders
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
@@ -46,19 +47,20 @@ Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
     Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
     Route::post('/logout', [OwnerAuthController::class, 'logout']);
 
-    // Owner also uses the shared /orders endpoint — OrderController detects RestaurantOwner model
+    // Owner: fetch only their restaurant's orders and update status
     Route::get('/orders', [OrderController::class, 'index']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
-    // Inventory Management
+    // Inventory Management — Categories
     Route::get('/inventory/categories', [InventoryController::class, 'getCategories']);
     Route::post('/inventory/categories', [InventoryController::class, 'storeCategory']);
     Route::delete('/inventory/categories/{id}', [InventoryController::class, 'destroyCategory']);
 
+    // Inventory Management — Menu Items
     Route::get('/inventory/items', [InventoryController::class, 'getMenuItems']);
     Route::post('/inventory/items', [InventoryController::class, 'storeMenuItem']);
     Route::put('/inventory/items/{id}', [InventoryController::class, 'updateMenuItem']);
+    Route::delete('/inventory/items/{id}', [InventoryController::class, 'destroyMenuItem']);
     Route::patch('/inventory/items/{id}/stock', [InventoryController::class, 'updateStock']);
     Route::patch('/inventory/items/{id}/availability', [InventoryController::class, 'toggleAvailability']);
 });
-

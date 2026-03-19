@@ -154,4 +154,12 @@ class InventoryController extends Controller
 
         return response()->json($item);
     }
+
+    public function destroyMenuItem($id)
+    {
+        $owner = Auth::user();
+        $item = MenuItem::where('restaurant_owner_id', $owner->id)->findOrFail($id);
+        $item->delete();
+        return response()->json(['message' => 'Menu item deleted successfully.']);
+    }
 }

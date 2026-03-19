@@ -24,7 +24,7 @@ import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
 import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
-import { buildOrders } from './dashboard-sections/shared';
+import { useOrders } from '../../context/OrderContext';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
     {
@@ -75,6 +75,7 @@ const NAV_GROUPS = [
 
 function OwnerDashboard() {
     const { currentOwner, ownerStore, logout, updateStore, loading } = useOwnerAuth();
+    const { orders, loading: ordersLoading } = useOrders();
     const navigate = useNavigate();
     const [active, setActive] = useState('overview');
     const [profileOpen, setProfileOpen] = useState(false);
@@ -94,8 +95,7 @@ function OwnerDashboard() {
     if (!currentOwner) { return <Navigate to="/owner-login" replace />; }
     if (!ownerStore) return <p>Store not found.</p>;
 
-    const mockOrders = buildOrders(ownerStore);
-    const pendingCount = mockOrders.filter(o => o.status === 'Pending').length;
+    const pendingCount = orders.filter(o => o.status === 'Pending').length;
 
     let activeLabel = 'Dashboard';
     let subTitle = `Welcome back, ${ownerStore.branchName}!`;
@@ -252,7 +252,7 @@ function OwnerDashboard() {
                     </div>
                 )}
                 <div className={styles.content} style={active === 'payout' ? { padding: '1.5rem', background: '#FAFAFA' } : {}}>
-                    {active === 'overview' && <OverviewSection store={ownerStore} orders={mockOrders} />}
+                    {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
                     {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
