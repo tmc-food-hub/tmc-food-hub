@@ -32,6 +32,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middle
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
+    Route::post('/user/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Customer: place orders and view/cancel their own orders
