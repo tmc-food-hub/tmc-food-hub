@@ -4,11 +4,20 @@ import api from '../api/axios';
 
 export const OrderContext = createContext();
 
-// Local storage and reducer removed as we are now using the backend API.
-
 export function OrderProvider({ children }) {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Determine endpoint based on logged-in user type
+    function getOrdersEndpoint() {
+        const userType = localStorage.getItem('user_type');
+        return userType === 'owner' ? '/owner/orders' : '/orders';
+    }
+
+    function getUpdateStatusEndpoint(id) {
+        const userType = localStorage.getItem('user_type');
+        return userType === 'owner' ? `/owner/orders/${id}/status` : `/orders/${id}/status`;
+    }
 
     const fetchOrders = useCallback(async (isInitial = false, signal = null) => {
         const token = localStorage.getItem('auth_token');
@@ -19,24 +28,25 @@ export function OrderProvider({ children }) {
 
         try {
             if (isInitial) setLoading(true);
-            const response = await api.get('/orders', { signal });
+            const endpoint = getOrdersEndpoint();
+            const response = await api.get(endpoint, { signal });
             const formattedOrders = response.data.map(o => {
-                // Map legacy/old statuses to new simplified flow
+                // Normalize any legacy statuses from older DB records
                 let currentStatus = o.status;
-                if (currentStatus === 'Order Placed') currentStatus = 'Pending';
+                if (currentStatus === 'Order Placed') currentStatus = 'Pending'; // legacy fallback
                 if (currentStatus === 'Being Prepared') currentStatus = 'Order Confirmed';
                 if (currentStatus === 'Picked Up') currentStatus = 'Out for Delivery';
-                
+
                 const createdAt = new Date(o.created_at);
                 const updatedAt = new Date(o.updated_at);
-                
+
                 const statusList = [
                     'Pending',
                     'Order Confirmed',
                     'Out for Delivery',
                     'Delivered'
                 ];
-                
+
                 const currentStatusIndex = statusList.indexOf(currentStatus);
                 const timeline = statusList.map((label, index) => {
                     let state = 'pending';
@@ -48,7 +58,7 @@ export function OrderProvider({ children }) {
                     } else {
                         state = 'completed';
                     }
-                    
+
                     const getStatusDesc = (label, state) => {
                         if (state === 'pending') return 'Pending';
                         if (state === 'completed') {
@@ -56,9 +66,10 @@ export function OrderProvider({ children }) {
                             return 'Done';
                         }
                         const activeDescs = {
-                            'Order Confirmed': 'Waiting for restaurant confirmation',
-                            'Out for Delivery': 'Kitchen is preparing your food',
-                            'Delivered': 'Your rider is on the way'
+                            'Pending': 'Your order has been placed',
+                            'Order Confirmed': 'Restaurant is preparing your food',
+                            'Out for Delivery': 'Your rider is on the way',
+                            'Delivered': 'Enjoy your meal!'
                         };
                         return activeDescs[label] || 'In progress';
                     };
@@ -67,7 +78,7 @@ export function OrderProvider({ children }) {
 
                     return {
                         label,
-                        time: (state === 'completed' || state === 'active') ? stepTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
+                        time: (state === 'completed' || state === 'active') ? stepTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
                         description: getStatusDesc(label, state),
                         state
                     };
@@ -84,47 +95,61 @@ export function OrderProvider({ children }) {
 
                 const orderNumber = `${getOrderPrefix(o.store_name)}-${String(o.id).padStart(5, '0')}`;
 
+                // Build full customer name from customer relation or fallback
+                const customerName = o.customer
+                    ? `${o.customer.first_name || ''} ${o.customer.last_name || ''}`.trim()
+                    : `Customer #${o.customer_id}`;
+
                 return {
                     id: o.id,
                     orderNumber: orderNumber,
                     restaurant: o.store_name,
-                    customer: o.customer ? `${o.customer.first_name} ${o.customer.last_name}` : `Customer ${o.customer_id}`,
-                    customerName: o.customer ? `${o.customer.first_name} ${o.customer.last_name}` : `Customer ${o.customer_id}`,
+                    restaurantId: o.restaurant_owner_id,
+                    // Customer info — from the eagerly-loaded customer relation
+                    customer: customerName,
+                    customerName: customerName,
                     customerPhone: o.customer?.phone || o.contact_number || 'N/A',
                     customerAddress: o.customer?.address || o.delivery_address || 'N/A',
+                    // Delivery info saved at order time
                     address: o.delivery_address,
                     deliveryAddress: o.delivery_address,
-                    items: o.items.map(i => ({ 
+                    contactNumber: o.contact_number,
+                    specialInstructions: o.special_instructions || '',
+                    note: o.special_instructions || '',
+                    // Items ordered
+                    items: o.items.map(i => ({
                         id: i.id,
-                        name: i.item_name, 
-                        quantity: i.quantity, 
+                        menuItemId: i.menu_item_id,
+                        name: i.item_name,
+                        quantity: i.quantity,
                         qty: i.quantity,
-                        image: i.image, 
-                        price: parseFloat(i.price), 
-                        variations: i.variations 
+                        image: i.image,
+                        price: parseFloat(i.price),
+                        variations: i.variations
                     })),
+                    // Pricing
                     subtotal: parseFloat(o.subtotal),
                     deliveryFee: parseFloat(o.delivery_fee),
                     discount: parseFloat(o.discount),
                     total: parseFloat(o.total),
+                    paymentMethod: o.payment_method,
+                    // Status & timing
                     status: currentStatus,
                     placedAt: o.created_at,
-                    time: createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    note: o.special_instructions || o.customer?.delivery_instructions || '',
-                    paymentMethod: o.payment_method,
-                    contactNumber: o.contact_number || (o.customer ? o.customer.phone : 'N/A'),
+                    time: createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    // Delivery scheduling
                     deliveryType: o.delivery_type || 'asap',
                     scheduledDate: o.scheduled_date || null,
                     scheduledTime: o.scheduled_time || null,
-                    restaurantId: o.restaurant_owner_id,
+                    // Timeline for tracking
                     timeline: timeline
                 };
             });
             setOrders(formattedOrders);
         } catch (error) {
-            if (axios.isCancel(error) || 
-                error.name === 'CanceledError' || 
-                error.name === 'AbortError' || 
+            if (axios.isCancel(error) ||
+                error.name === 'CanceledError' ||
+                error.name === 'AbortError' ||
                 error.code === 'ERR_CANCELED' ||
                 error.message === 'Request aborted') {
                 return;
@@ -141,7 +166,7 @@ export function OrderProvider({ children }) {
 
         const poll = async (isInitial = false) => {
             await fetchOrders(isInitial, controller.signal);
-            
+
             // Re-schedule next poll ONLY IF not aborted
             if (!controller.signal.aborted) {
                 timeoutId = setTimeout(() => poll(false), 5000);
@@ -159,7 +184,7 @@ export function OrderProvider({ children }) {
     const placeOrder = useCallback(async (orderData) => {
         try {
             const response = await api.post('/orders', orderData);
-            await fetchOrders(); // Re-fetch to get the new order with ID
+            await fetchOrders();
             return response.data;
         } catch (error) {
             console.error('Failed to place order', error);
@@ -169,7 +194,8 @@ export function OrderProvider({ children }) {
 
     const updateStatus = useCallback(async (id, status) => {
         try {
-            await api.put(`/orders/${id}/status`, { status });
+            const endpoint = getUpdateStatusEndpoint(id);
+            await api.put(endpoint, { status });
             await fetchOrders();
         } catch (error) {
             console.error('Failed to update status', error);
@@ -186,7 +212,8 @@ export function OrderProvider({ children }) {
     const cancelledOrders = useMemo(() => orders.filter(o => o.status === 'Cancelled'), [orders]);
 
     const value = useMemo(() => ({
-        orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, updateStatus, loading, fetchOrders
+        orders, activeOrders, completedOrders, cancelledOrders,
+        placeOrder, cancelOrder, updateStatus, loading, fetchOrders
     }), [orders, activeOrders, completedOrders, cancelledOrders, placeOrder, cancelOrder, updateStatus, loading, fetchOrders]);
 
     return (

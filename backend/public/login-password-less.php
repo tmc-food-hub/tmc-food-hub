@@ -20,16 +20,21 @@ class AdminerLoginPasswordLess extends Adminer\Plugin {
 	}
 
 	function credentials() {
-		// Pull database credentials from Laravel config
-		$_ENV['DB_HOST'] = $_ENV['DB_HOST'] ?? '127.0.0.1';
-		$_ENV['DB_USERNAME'] = $_ENV['DB_USERNAME'] ?? 'root';
-		$_ENV['DB_PASSWORD'] = $_ENV['DB_PASSWORD'] ?? '';
+		// Pull database credentials from Laravel config/env
+		$host = $_ENV['DB_HOST'] ?? '127.0.0.1';
+		$username = $_ENV['DB_USERNAME'] ?? 'root';
+		$password = $_ENV['DB_PASSWORD'] ?? '';
 		
-		return array($_ENV['DB_HOST'], $_ENV['DB_USERNAME'], $_ENV['DB_PASSWORD']);
+		return array($host, $username, $password);
 	}
 
 	function login($login, $password) {
-		return true;
+		// Pseudo credentials for Adminer access
+		$validUsername = 'tmcadmin';
+		$validPassword = 'ladyjoker333';
+		
+		// Only allow if the correct credentials are entered
+		return ($login === $validUsername && $password === $validPassword);
 	}
 
 	protected $translations = array(

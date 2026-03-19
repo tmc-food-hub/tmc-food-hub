@@ -6,47 +6,51 @@ import styles from '../OwnerDashboard.module.css';
 export default function OverviewSection({ store, orders }) {
     const [hoveredBar, setHoveredBar] = useState(null);
 
+    // Compute real stats from live API orders
+    const today = new Date().toDateString();
+    const todaysOrders = orders.filter(o => new Date(o.placedAt).toDateString() === today);
+    const activeOrdersCount = orders.filter(o => !['Delivered', 'Cancelled'].includes(o.status)).length;
+    const todaysRevenue = todaysOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
     const salesBarData = [
-        { day: 'Mon', revenue: '$3,000', orders: 24, current: 20, trend: '+5%' },
-        { day: 'Tue', revenue: '$9,750', orders: 68, current: 65, trend: '+18%' },
-        { day: 'Wed', revenue: '$5,250', orders: 42, current: 35, trend: '+8%' },
-        { day: 'Thu', revenue: '$8,250', orders: 58, current: 55, trend: '+12%' },
-        { day: 'Fri', revenue: '$6,000', orders: 48, current: 40, trend: '+9%' },
-        { day: 'Sat', revenue: '$11,250', orders: 86, current: 75, trend: '+22%' },
-        { day: 'Sun', revenue: '$13,500', orders: 102, current: 90, trend: '+28%' },
+        { day: 'Mon', revenue: '₱3,000', orders: 24, current: 20, trend: '+5%' },
+        { day: 'Tue', revenue: '₱9,750', orders: 68, current: 65, trend: '+18%' },
+        { day: 'Wed', revenue: '₱5,250', orders: 42, current: 35, trend: '+8%' },
+        { day: 'Thu', revenue: '₱8,250', orders: 58, current: 55, trend: '+12%' },
+        { day: 'Fri', revenue: '₱6,000', orders: 48, current: 40, trend: '+9%' },
+        { day: 'Sat', revenue: '₱11,250', orders: 86, current: 75, trend: '+22%' },
+        { day: 'Sun', revenue: '₱13,500', orders: 102, current: 90, trend: '+28%' },
     ];
 
-    // Example metrics mapping to the design shown
     const stats = [
         {
             icon: <ShoppingBag size={18} color="#DC2626" />,
             label: "Today's Orders",
-            value: '142',
-            trend: '+12%',
+            value: String(todaysOrders.length),
+            trend: null,
             trendUp: true,
             iconBg: '#FEF2F2'
         },
         {
             icon: <Package size={18} color="#DC2626" />,
             label: 'Active Orders',
-            value: '12',
-            trend: '+8%',
+            value: String(activeOrdersCount),
+            trend: null,
             trendUp: true,
             iconBg: '#FEF2F2'
         },
         {
             icon: <DollarSign size={18} color="#DC2626" />,
             label: "Revenue Today",
-            value: `$2,450.00`,
-            trend: '-12%',
-            trendUp: false,
+            value: `₱${todaysRevenue.toFixed(2)}`,
+            trend: null,
+            trendUp: true,
             iconBg: '#FEF2F2'
         },
         {
             icon: <AlertCircle size={18} color="#DC2626" />,
-            label: 'Inventory Alerts',
-            value: '5',
-            badge: 'Critical',
+            label: 'Total Orders',
+            value: String(orders.length),
             iconBg: '#FEF2F2'
         },
     ];
@@ -101,18 +105,18 @@ export default function OverviewSection({ store, orders }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.slice(0, 3).map(o => {
+                                {orders.slice(0, 5).map(o => {
                                     const m = statusMeta(o.status);
-                                    let statusPillClass = styles.pillPending;
-                                    if (o.status === 'Preparing') statusPillClass = styles.pillPreparing;
-                                    if (o.status === 'Delivering') statusPillClass = styles.pillDelivering;
+                                    let statusPillClass = styles.pillNew;
+                                    if (o.status === 'Order Confirmed') statusPillClass = styles.pillPreparing;
+                                    if (o.status === 'Out for Delivery') statusPillClass = styles.pillReady;
                                     if (o.status === 'Delivered') statusPillClass = styles.pillDelivered;
 
                                     return (
                                         <tr key={o.id}>
-                                            <td className={styles.orderIdCell}>{o.id}</td>
+                                            <td className={styles.orderIdCell}>{o.orderNumber || `#${o.id}`}</td>
                                             <td className={styles.itemsSummaryCell}>
-                                                {o.items.map(it => `${it.qty}x ${it.name}`).join(', ')}
+                                                {o.items.map(it => `${it.quantity || it.qty}x ${it.name}`).join(', ')}
                                             </td>
                                             <td>
                                                 <span className={`${styles.statusPillSmall} ${statusPillClass}`}>{o.status}</span>

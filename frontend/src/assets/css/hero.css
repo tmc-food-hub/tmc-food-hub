@@ -36,6 +36,11 @@ a.btn.btn-white-outline {
     font-size: 30px;
   }
 }
+@media (max-width: 575.98px) {
+  .hero__v6 {
+    padding-top: 7rem !important;
+  }
+}
 .hero__v6 .logos .logos-title {
   font-size: 12px;
   letter-spacing: 1px;

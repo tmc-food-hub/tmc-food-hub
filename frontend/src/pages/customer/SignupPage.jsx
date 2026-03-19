@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
+import { useOwnerAuth } from '../../context/OwnerAuthContext';
 import api from '../../api/axios';
 import styles from './AuthPages.module.css';
 
@@ -24,6 +25,7 @@ function SignupPage() {
     const otpInputRefs = useRef([]);
 
     const { register, sendOtp, verifyOtp } = useAuth();
+    const { setAuthData } = useOwnerAuth();
     const navigate = useNavigate();
 
     // Form fields
@@ -267,12 +269,17 @@ function SignupPage() {
 
         try {
             const endpoint = role === 'Customer' ? '/register' : '/owner/register';
-            await api.post(endpoint, payload);
+            const res = await api.post(endpoint, payload);
+
             if (role === 'Partner') {
-                navigate('/owner-login', { state: { signupSuccess: true } });
+                // Auto-login the owner using the token returned from registration
+                const { token, user } = res.data;
+                setAuthData(token, user);
+                navigate('/owner-dashboard', { state: { signupSuccess: true } });
             } else {
                 navigate('/login', { state: { signupSuccess: true } });
             }
+
         } catch (err) {
             if (err.response?.data?.errors) {
                 setErrors(err.response.data.errors);

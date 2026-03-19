@@ -8,15 +8,11 @@ export default function OrdersSection({ store }) {
     const { orders: allOrders, loading, fetchOrders, updateStatus } = useOrders();
     const [orders, setOrders] = useState([]);
     
+    // Backend already filters orders by this owner's restaurant_owner_id.
+    // No client-side filtering needed.
     useEffect(() => {
-        if (allOrders && store) {
-            // Filter orders to only show those belonging to this specific store
-            const storeOrders = allOrders.filter(o => Number(o.restaurantId) === Number(store.id));
-            setOrders(storeOrders);
-        } else {
-            setOrders(allOrders || []);
-        }
-    }, [allOrders, store]);
+        setOrders(allOrders || []);
+    }, [allOrders]);
 
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -113,7 +109,7 @@ export default function OrdersSection({ store }) {
                                             <th>Total</th>
                                             <th>Status</th>
                                             <th>Time</th>
-                                            <th className={styles.textRight}>Actions</th>
+                                            <th style={{ textAlign: 'right' }}>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -269,24 +265,33 @@ export default function OrdersSection({ store }) {
                         </div>
 
                         <div className={styles.panelContent}>
-                            <div className={styles.statusAlert}>
-                                <AlertCircle size={16} /> Awaiting Kitchen Approval
-                            </div>
+                            {selectedOrder.status !== 'Delivered' && selectedOrder.status !== 'Cancelled' && (
+                                <div className={styles.statusAlert}>
+                                    <AlertCircle size={16} />
+                                    {selectedOrder.status === 'Pending' && ' Awaiting restaurant confirmation'}
+                                    {selectedOrder.status === 'Order Confirmed' && ' Kitchen is preparing the order'}
+                                    {selectedOrder.status === 'Out for Delivery' && ' Rider is on the way to customer'}
+                                </div>
+                            )}
 
-                            {/* Status Tracker */}
+                            {/* Status Tracker using real timeline data */}
                             <div className={styles.statusTracker}>
-                                <div className={styles.trackerStepInfo}>
-                                    <div className={styles.trackerDotActive}><Check size={12} color="#fff" /></div>
-                                    <div>
-                                        <div className={styles.trackerLabelActive}>Pending</div>
-                                        <div className={styles.trackerTime}>12:30 PM</div>
-                                    </div>
-                                </div>
-                                <div className={styles.trackerLine}></div>
-                                <div className={styles.trackerStepInfo}>
-                                    <div className={styles.trackerDotInactive}></div>
-                                    <div className={styles.trackerLabelInactive}>Confirmed</div>
-                                </div>
+                                {(selectedOrder.timeline || []).map((step, idx, arr) => (
+                                    <React.Fragment key={step.label}>
+                                        <div className={styles.trackerStepInfo}>
+                                            <div className={step.state === 'completed' || step.state === 'active' ? styles.trackerDotActive : styles.trackerDotInactive}>
+                                                {(step.state === 'completed' || step.state === 'active') && <Check size={12} color="#fff" />}
+                                            </div>
+                                            <div>
+                                                <div className={step.state === 'completed' || step.state === 'active' ? styles.trackerLabelActive : styles.trackerLabelInactive}>
+                                                    {step.label}
+                                                </div>
+                                                {step.time && <div className={styles.trackerTime}>{step.time}</div>}
+                                            </div>
+                                        </div>
+                                        {idx < arr.length - 1 && <div className={styles.trackerLine}></div>}
+                                    </React.Fragment>
+                                ))}
                             </div>
 
                             {/* Customer Info */}
@@ -298,17 +303,22 @@ export default function OrdersSection({ store }) {
                                     </div>
                                     <div>
                                         <div className={styles.customerNameLarge}>{selectedOrder.customerName}</div>
-                                        <div className={styles.customerPhone}>{selectedOrder.customerPhone}</div>
-                                        <div className={styles.customerAddress} style={{fontSize: '0.85rem', color: '#6B7280', marginTop: '4px'}}>{selectedOrder.customerAddress}</div>
-                                        {selectedOrder.note && (
+                                        <div className={styles.customerPhone}>
+                                            📞 {selectedOrder.contactNumber || selectedOrder.customerPhone || 'N/A'}
+                                        </div>
+                                        <div className={styles.customerAddress} style={{fontSize: '0.85rem', color: '#6B7280', marginTop: '4px'}}>
+                                            📍 {selectedOrder.deliveryAddress || selectedOrder.customerAddress || 'N/A'}
+                                        </div>
+                                        {(selectedOrder.specialInstructions || selectedOrder.note) && (
                                             <div style={{ marginTop: '0.75rem', padding: '0.75rem', backgroundColor: '#FEF2F2', borderLeft: '3px solid #B91C1C', borderRadius: '4px' }}>
                                                 <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#B91C1C', textTransform: 'uppercase', marginBottom: '2px' }}>Special Instructions</div>
-                                                <div style={{ fontSize: '0.85rem', color: '#B91C1C', fontStyle: 'italic' }}>"{selectedOrder.note}"</div>
+                                                <div style={{ fontSize: '0.85rem', color: '#B91C1C', fontStyle: 'italic' }}>"{selectedOrder.specialInstructions || selectedOrder.note}"</div>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
+
 
                             {/* Items List */}
                             <div className={styles.panelSection}>
@@ -335,24 +345,25 @@ export default function OrdersSection({ store }) {
                                 </div>
                             </div>
 
-
                             {/* Price Breakdown */}
                             <div className={styles.panelBreakdown}>
                                 <div className={styles.breakdownRow}>
                                     <span>Subtotal</span>
-                                    <span>${Number(selectedOrder.total).toFixed(2)}</span>
+                                    <span>₱{Number(selectedOrder.subtotal).toFixed(2)}</span>
                                 </div>
                                 <div className={styles.breakdownRow}>
                                     <span>Delivery Fee</span>
-                                    <span>$3.00</span>
+                                    <span>₱{Number(selectedOrder.deliveryFee).toFixed(2)}</span>
                                 </div>
-                                <div className={`${styles.breakdownRow} ${styles.breakdownDiscount}`}>
-                                    <span>Discount (PROMO5)</span>
-                                    <span>-$5.00</span>
-                                </div>
+                                {selectedOrder.discount > 0 && (
+                                    <div className={`${styles.breakdownRow} ${styles.breakdownDiscount}`}>
+                                        <span>Discount</span>
+                                        <span>-₱{Number(selectedOrder.discount).toFixed(2)}</span>
+                                    </div>
+                                )}
                                 <div className={styles.breakdownTotalRow}>
                                     <span>Total Amount</span>
-                                    <span className={styles.breakdownTotalValue}>${Number(selectedOrder.total).toFixed(2)} <span className={styles.currency}>USD</span></span>
+                                    <span className={styles.breakdownTotalValue}>₱{Number(selectedOrder.total).toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

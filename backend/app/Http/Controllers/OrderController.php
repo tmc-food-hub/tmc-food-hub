@@ -87,7 +87,7 @@ class OrderController extends Controller
                 'delivery_type'        => $validated['deliveryType'],
                 'scheduled_date'       => $validated['scheduledDate'] ?? null,
                 'scheduled_time'       => $validated['scheduledTime'] ?? null,
-                'status'               => 'Order Placed',
+                'status'               => 'Pending',
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -132,7 +132,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:Order Placed,Order Confirmed,Out for Delivery,Delivered,Cancelled',
+            'status' => 'required|string|in:Pending,Order Confirmed,Out for Delivery,Delivered,Cancelled',
         ]);
 
         // Use lockForUpdate to prevent race conditions during status changes
@@ -141,12 +141,12 @@ class OrderController extends Controller
 
         // Owners: strict FK-based ownership check
         if ($user instanceof RestaurantOwner) {
-            if ($order->restaurant_owner_id !== $user->id) {
+            if ($order->restaurant_owner_id != $user->id) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         } elseif ($user->role === 'customer') {
             // Customers can only cancel their own orders
-            if ($order->customer_id !== $user->id) {
+            if ($order->customer_id != $user->id) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
             if ($validated['status'] !== 'Cancelled') {
