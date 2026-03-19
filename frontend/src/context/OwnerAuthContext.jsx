@@ -35,6 +35,20 @@ export function OwnerAuthProvider({ children }) {
             // The owner's DB id IS the restaurant owner id used in orders
             storeId: user.id,
             storeName: user.restaurant_name,
+            logo: user.logo || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
+                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
+                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
+                  '/assets/images/service/placeholder.svg'),
+            cover_image: user.cover_image || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
+                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
+                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
+                  '/assets/images/service/placeholder.svg')
         };
     }
 
@@ -107,6 +121,14 @@ export function OwnerAuthProvider({ children }) {
         setCurrentOwner(prev => prev ? { ...prev, ...updatedData } : prev);
     }
 
+    // Set auth data directly after registration
+    function setAuthData(token, user) {
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        localStorage.setItem('user_type', 'owner');
+        setCurrentOwner(buildOwner(user));
+    }
+
     const value = {
         currentOwner,
         ownerStore,
@@ -114,6 +136,7 @@ export function OwnerAuthProvider({ children }) {
         logout,
         updateStore,
         refreshOwner,
+        setAuthData,
         loading,
     };
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Navigate, Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, Clock, Settings, LogOut,
     Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Save, X, Check,
@@ -77,10 +77,24 @@ function OwnerDashboard() {
     const { currentOwner, ownerStore, logout, updateStore, loading } = useOwnerAuth();
     const { orders, loading: ordersLoading } = useOrders();
     const navigate = useNavigate();
+    const location = useLocation();
     const [active, setActive] = useState('overview');
     const [profileOpen, setProfileOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [payoutViewData, setPayoutViewData] = useState(null);
+    const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
+
+    useEffect(() => {
+        const isMissingOrPlaceholder = (img) => !img || img.includes('placeholder.svg');
+
+        if (welcomeBanner && ownerStore && (isMissingOrPlaceholder(ownerStore.logo) || isMissingOrPlaceholder(ownerStore.cover))) {
+            setActive('settings');
+        }
+        if (welcomeBanner) {
+            const t = setTimeout(() => setWelcomeBanner(false), 5000);
+            return () => clearTimeout(t);
+        }
+    }, [welcomeBanner, ownerStore]);
 
     // Prevent redirect until authentication check is complete
     if (loading) {
@@ -252,7 +266,24 @@ function OwnerDashboard() {
                     </div>
                 )}
                 <div className={styles.content} style={active === 'payout' ? { padding: '1.5rem', background: '#FAFAFA' } : {}}>
+                    {welcomeBanner && (
+                        <div style={{
+                            background: 'linear-gradient(135deg, #10B981, #059669)',
+                            color: '#fff', borderRadius: '12px', padding: '1rem 1.5rem',
+                            marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem'
+                        }}>
+                            <CheckCircle2 size={20} />
+                            <div>
+                                <strong>Welcome to your dashboard, {ownerStore.branchName}! 🎉</strong>
+                                <div style={{ fontSize: '0.82rem', opacity: 0.9 }}>Your restaurant partner account is ready. Start by adding your menu items.</div>
+                            </div>
+                            <button onClick={() => setWelcomeBanner(false)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                                <X size={16} />
+                            </button>
+                        </div>
+                    )}
                     {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
+
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
                     {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
