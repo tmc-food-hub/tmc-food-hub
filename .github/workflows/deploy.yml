@@ -40,7 +40,7 @@ jobs:
           npm run build
 
       # --- DEPLOYMENT ---
-      - name: Deploy Backend to Hostinger via rsync
+      - name: Deploy to Hostinger via rsync
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
@@ -64,7 +64,7 @@ jobs:
           TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/public_html/"
           EXCLUDE: ".git/"
 
-      # --- POST-DEPLOYMENT COMMANDS ---
+      # --- POST-DEPLOYMENT COMMANDS (Optional but recommended) ---
       - name: Run Laravel Migrations and Clear Cache
         uses: appleboy/ssh-action@master
         with:
@@ -81,7 +81,6 @@ jobs:
             APP_ENV=production
             APP_DEBUG=false
             APP_URL=https://${{ secrets.HOSTINGER_DOMAIN }}
-            FRONTEND_URL=https://${{ secrets.HOSTINGER_DOMAIN }}
             APP_KEY=
 
             DB_CONNECTION=mysql
@@ -100,32 +99,16 @@ jobs:
             MAIL_FROM_ADDRESS="${{ secrets.MAIL_FROM_ADDRESS }}"
             MAIL_FROM_NAME="TMC Food Hub"
 
-            # Use file drivers — safe for shared hosting (no database driver required)
-            CACHE_STORE=file
+            CACHE_DRIVER=file
             SESSION_DRIVER=file
-            QUEUE_CONNECTION=sync
+            QUEUE_DRIVER=sync
 
-            # Sanctum token auth — must include the live frontend domain so bearer
-            # tokens issued to the frontend are accepted by the backend
-            SANCTUM_STATEFUL_DOMAINS=${{ secrets.HOSTINGER_DOMAIN }},www.${{ secrets.HOSTINGER_DOMAIN }}
+            SANCTUM_STATEFUL_DOMAINS=""
             ENVEOF
 
             # Generate app key if not set
             grep -q "^APP_KEY=base64:" .env || php artisan key:generate --force
 
-            # Clear all caches first
             php artisan config:clear
-            php artisan cache:clear
-            php artisan route:clear
-            php artisan view:clear
-
-            # Run migrations only (no --seed, to avoid wiping production data)
-            php artisan migrate --force
-
-            # Create the public storage symlink so uploaded images are accessible
-            # at /storage/ on the live site (restaurant logos, covers, etc.)
-            php artisan storage:link --force 2>/dev/null || true
-
-            # Re-cache for production performance
-            php artisan config:cache
-            php artisan route:cache
+            php artisan optimize:clear
+            php artisan migrate --force --seed
