@@ -74,4 +74,32 @@ class RestaurantOwner extends Authenticatable
     {
         return $this->hasMany(Review::class, 'restaurant_owner_id');
     }
+
+    public function getLogoAttribute($value)
+    {
+        return $this->normalizeMediaPath($value);
+    }
+
+    public function getCoverImageAttribute($value)
+    {
+        return $this->normalizeMediaPath($value);
+    }
+
+    private function normalizeMediaPath($value)
+    {
+        if (!$value || !is_string($value)) {
+            return $value;
+        }
+
+        if (preg_match('/^https?:\/\//i', $value)) {
+            $path = parse_url($value, PHP_URL_PATH);
+            return $path ?: $value;
+        }
+
+        if (str_starts_with($value, 'storage/')) {
+            return '/' . $value;
+        }
+
+        return $value;
+    }
 }
