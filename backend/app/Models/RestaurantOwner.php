@@ -69,4 +69,9 @@ class RestaurantOwner extends Authenticatable
     {
         return $this->hasMany(Order::class , 'restaurant_owner_id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'restaurant_owner_id');
+    }
 }

@@ -57,4 +57,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'customer_id');
+    }
+
+    public function reviewHelpfulVotes()
+    {
+        return $this->hasMany(ReviewHelpfulVote::class);
+    }
 }
