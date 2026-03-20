@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 
 export default function InventorySection({ items = [], setItems, loading = false, refreshInventory }) {
     const [search] = useState('');
@@ -230,7 +231,7 @@ export default function InventorySection({ items = [], setItems, loading = false
                                             <td>
                                                 <div className={styles.inventoryItemCell}>
                                                     <div className={styles.inventoryItemImgBadge}>
-                                                        <img src={item.image} alt={item.title} />
+                                                        <img src={resolveMediaUrl(item.image)} alt={item.title} />
                                                     </div>
                                                     <span className={styles.itemName}>{item.title}</span>
                                                 </div>
