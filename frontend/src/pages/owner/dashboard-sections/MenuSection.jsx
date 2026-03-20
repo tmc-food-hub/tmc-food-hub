@@ -4,7 +4,99 @@ import { IMAGES } from './shared';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
 
-const BLANK = { title: '', description: '', price: '', category_name: '', category_id: '', available: true, image: IMAGES[0] };
+const MAX_IMAGE_DIMENSION = 1600;
+const IMAGE_QUALITY = 0.82;
+
+const createBlankForm = () => ({
+    title: '',
+    description: '',
+    price: '',
+    category_name: '',
+    category_id: '',
+    available: true,
+    image: IMAGES[0],
+    image_file: null,
+    preview: '',
+});
+
+const BLANK = createBlankForm();
+
+function revokePreviewUrl(url) {
+    if (url && typeof url === 'string' && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+    }
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+    });
+}
+
+async function optimizeImageUpload(file) {
+    if (!file) return null;
+
+    const optimizableTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!optimizableTypes.includes(file.type)) {
+        return {
+            uploadFile: file,
+            previewUrl: URL.createObjectURL(file),
+        };
+    }
+
+    const sourceUrl = URL.createObjectURL(file);
+
+    try {
+        const image = await loadImage(sourceUrl);
+        const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement('canvas');
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext('2d');
+        if (!context) {
+            throw new Error('Could not optimize image.');
+        }
+
+        context.drawImage(image, 0, 0, width, height);
+
+        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(
+                (result) => {
+                    if (!result) {
+                        reject(new Error('Could not create optimized image.'));
+                        return;
+                    }
+
+                    resolve(result);
+                },
+                outputType,
+                outputType === 'image/png' ? undefined : IMAGE_QUALITY
+            );
+        });
+
+        const extension = outputType === 'image/png' ? 'png' : 'jpg';
+        const baseName = (file.name || 'menu-item-image').replace(/\.[^.]+$/, '');
+        const optimizedFile = new File([blob], `${baseName}.${extension}`, {
+            type: outputType,
+            lastModified: Date.now(),
+        });
+
+        return {
+            uploadFile: optimizedFile,
+            previewUrl: URL.createObjectURL(blob),
+        };
+    } finally {
+        URL.revokeObjectURL(sourceUrl);
+    }
+}
 
 export default function MenuSection({ store, onUpdate }) {
     const [addOpen, setAddOpen] = useState(false);
@@ -23,6 +115,13 @@ export default function MenuSection({ store, onUpdate }) {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        return () => {
+            revokePreviewUrl(form.preview);
+            revokePreviewUrl(editForm.preview);
+        };
+    }, [form.preview, editForm.preview]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -88,8 +187,9 @@ export default function MenuSection({ store, onUpdate }) {
             const res = await api.post('/owner/inventory/items', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setItems(prev => [...prev, res.data]);
-            setForm(BLANK);
+            await fetchData();
+            revokePreviewUrl(form.preview);
+            setForm(createBlankForm());
             setAddOpen(false);
             setError('');
             setDialog({ type: 'success', title: 'Item Added Successfully', desc: `${form.title} has been added to your menu and is now live.` });
@@ -101,11 +201,30 @@ export default function MenuSection({ store, onUpdate }) {
 
     async function handleDelete(id) {
         if (!window.confirm('Delete this item?')) return;
-        // Backend doesn't have a direct delete for menu items in InventoryController?
-        // Wait, I should check api.php again. It doesn't.
-        // But for now let's just use local state update or add a route later.
-        // Actually, let's skip delete implementation if route is missing to avoid errors.
-        alert('Delete functionality is currently being implemented on the server.');
+
+        const itemToDelete = items.find(item => item.id === id);
+
+        try {
+            await api.delete(`/owner/inventory/items/${id}`);
+            setItems(prev => prev.filter(item => item.id !== id));
+            if (editId === id) {
+                revokePreviewUrl(editForm.preview);
+                setEditId(null);
+                setEditForm({});
+            }
+            setDialog({
+                type: 'success',
+                title: 'Item Deleted',
+                desc: `${itemToDelete?.title || 'The menu item'} has been removed from your menu.`,
+            });
+        } catch (err) {
+            console.error(err);
+            setDialog({
+                type: 'error',
+                title: 'Failed to Delete Item',
+                desc: `We couldn't delete ${itemToDelete?.title || 'this item'}. Please try again.`,
+            });
+        }
     }
 
     async function toggle(item) {
@@ -157,8 +276,10 @@ export default function MenuSection({ store, onUpdate }) {
             const res = await api.post(`/owner/inventory/items/${editId}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setItems(prev => prev.map(i => i.id === editId ? res.data : i));
+            await fetchData();
+            revokePreviewUrl(editForm.preview);
             setEditId(null);
+            setEditForm({});
             setDialog({ type: 'success', title: 'Item Updated Successfully', desc: `${editForm.title} has been updated.` });
         } catch (err) {
             console.error(err);
@@ -277,7 +398,19 @@ export default function MenuSection({ store, onUpdate }) {
                     <div className={styles.menuModal}>
                         <div className={styles.menuModalHead}>
                             <h3 className={styles.menuModalTitle}>Add New Item</h3>
-                            <button type="button" className={styles.iconBtn} onClick={() => { setAddOpen(false); setError(''); }} style={{ background: 'transparent' }}><X size={20} color="#6B7280" /></button>
+                            <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => {
+                                    revokePreviewUrl(form.preview);
+                                    setAddOpen(false);
+                                    setForm(createBlankForm());
+                                    setError('');
+                                }}
+                                style={{ background: 'transparent' }}
+                            >
+                                <X size={20} color="#6B7280" />
+                            </button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className={styles.menuModalBody}>
@@ -290,10 +423,20 @@ export default function MenuSection({ store, onUpdate }) {
                                             type="file" 
                                             hidden 
                                             accept="image/*" 
-                                            onChange={e => {
+                                            onChange={async (e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
-                                                    setForm({ ...form, image_file: file, preview: URL.createObjectURL(file) });
+                                                    const optimized = await optimizeImageUpload(file);
+                                                    setForm((prev) => {
+                                                        revokePreviewUrl(prev.preview);
+
+                                                        return {
+                                                            ...prev,
+                                                            image: '',
+                                                            image_file: optimized.uploadFile,
+                                                            preview: optimized.previewUrl,
+                                                        };
+                                                    });
                                                 }
                                             }}
                                         />
@@ -336,7 +479,18 @@ export default function MenuSection({ store, onUpdate }) {
                                 </div>
                             </div>
                             <div className={styles.menuModalFooter}>
-                                <button type="button" className={styles.menuBtnCancel} onClick={() => { setAddOpen(false); setError(''); }}>Cancel</button>
+                                <button
+                                    type="button"
+                                    className={styles.menuBtnCancel}
+                                    onClick={() => {
+                                        revokePreviewUrl(form.preview);
+                                        setAddOpen(false);
+                                        setForm(createBlankForm());
+                                        setError('');
+                                    }}
+                                >
+                                    Cancel
+                                </button>
                                 <button type="submit" className={styles.menuBtnSubmit}>Save Item</button>
                             </div>
                         </form>
@@ -350,7 +504,18 @@ export default function MenuSection({ store, onUpdate }) {
                     <div className={styles.menuModal}>
                         <div className={styles.menuModalHead}>
                             <h3 className={styles.menuModalTitle}>Edit Item</h3>
-                            <button type="button" className={styles.iconBtn} onClick={() => setEditId(null)} style={{ background: 'transparent' }}><X size={20} color="#6B7280" /></button>
+                            <button
+                                type="button"
+                                className={styles.iconBtn}
+                                onClick={() => {
+                                    revokePreviewUrl(editForm.preview);
+                                    setEditId(null);
+                                    setEditForm({});
+                                }}
+                                style={{ background: 'transparent' }}
+                            >
+                                <X size={20} color="#6B7280" />
+                            </button>
                         </div>
                         <form onSubmit={saveEdit}>
                             <div className={styles.menuModalBody}>
@@ -362,10 +527,19 @@ export default function MenuSection({ store, onUpdate }) {
                                             type="file" 
                                             hidden 
                                             accept="image/*" 
-                                            onChange={e => {
+                                            onChange={async (e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
-                                                    setEditForm({ ...editForm, image_file: file, preview: URL.createObjectURL(file) });
+                                                    const optimized = await optimizeImageUpload(file);
+                                                    setEditForm((prev) => {
+                                                        revokePreviewUrl(prev.preview);
+
+                                                        return {
+                                                            ...prev,
+                                                            image_file: optimized.uploadFile,
+                                                            preview: optimized.previewUrl,
+                                                        };
+                                                    });
                                                 }
                                             }}
                                         />
@@ -408,7 +582,17 @@ export default function MenuSection({ store, onUpdate }) {
                                 </div>
                             </div>
                             <div className={styles.menuModalFooter}>
-                                <button type="button" className={styles.menuBtnCancel} onClick={() => setEditId(null)}>Cancel</button>
+                                <button
+                                    type="button"
+                                    className={styles.menuBtnCancel}
+                                    onClick={() => {
+                                        revokePreviewUrl(editForm.preview);
+                                        setEditId(null);
+                                        setEditForm({});
+                                    }}
+                                >
+                                    Cancel
+                                </button>
                                 <button type="submit" className={styles.menuBtnSubmit}>Save Changes</button>
                             </div>
                         </form>
