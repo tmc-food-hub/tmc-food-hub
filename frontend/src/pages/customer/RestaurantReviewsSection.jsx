@@ -187,6 +187,11 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
             return;
         }
 
+        if (!reviewableOrders.length) {
+            setReviewModalError('You can only review this restaurant after you have a delivered order.');
+            return;
+        }
+
         setReviewModalError('');
         setSelectedReviewOrderId(reviewableOrders[0]?.id || '');
         setReviewModalOpen(true);
@@ -277,6 +282,9 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
     const displayedReviews = reviewsData.reviews;
     const selectedOrder = reviewableOrders.find((order) => String(order.id) === String(selectedReviewOrderId)) || reviewableOrders[0];
     const avgRating = reviewSummary.total_reviews ? reviewSummary.average_rating : fallbackRating;
+    const isCustomer = localStorage.getItem('user_type') === 'customer';
+    const canWriteReview = isAuthenticated && isCustomer && reviewableOrders.length > 0;
+    const writeReviewLabel = canWriteReview ? 'Write a review' : 'Order first to review';
 
     return (
         <div className={styles.reviewsSection}>
@@ -285,10 +293,20 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
                     <h2 className={styles.sectionTitle}>Reviews & Feedbacks</h2>
                     <p className={styles.reviewsSubtitle}><strong>{storeName}</strong> • {reviewSummary.total_reviews} verified reviews</p>
                 </div>
-                <button className={styles.writeReviewBtn} onClick={openReviewModal}>
-                    <PenLine size={16} /> Write a review
+                <button
+                    className={styles.writeReviewBtn}
+                    onClick={openReviewModal}
+                    title={!isAuthenticated ? 'Log in to write a review' : !canWriteReview && isCustomer ? 'You need a delivered order from this restaurant first' : 'Write a review'}
+                >
+                    <PenLine size={16} /> {writeReviewLabel}
                 </button>
             </div>
+
+            {isAuthenticated && isCustomer && !reviewableOrders.length && !reviewsLoading && (
+                <div style={{ marginBottom: '1rem', background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412', padding: '0.9rem 1rem', borderRadius: '14px', fontSize: '0.9rem' }}>
+                    You can only leave a review after you have a delivered order from this restaurant.
+                </div>
+            )}
 
             <div className={styles.reviewsGrid}>
                 <div className={styles.reviewSummaryCard}>

@@ -47,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ── Owner Authenticated Routes ────────────────────────────────────────────
-Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
+Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::get('/user', [OwnerAuthController::class, 'user']);
     Route::put('/user', [OwnerAuthController::class, 'updateProfile']);
     Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
