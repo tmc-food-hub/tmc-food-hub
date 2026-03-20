@@ -36,11 +36,27 @@ function loadImage(src) {
     });
 }
 
+function getFirstApiError(error, fallback) {
+    const validationErrors = error?.response?.data?.errors;
+
+    if (validationErrors && typeof validationErrors === 'object') {
+        for (const value of Object.values(validationErrors)) {
+            if (Array.isArray(value) && value[0]) {
+                return value[0];
+            }
+            if (typeof value === 'string' && value) {
+                return value;
+            }
+        }
+    }
+
+    return error?.response?.data?.message || fallback;
+}
+
 async function optimizeImageUpload(file) {
     if (!file) return null;
 
-    const optimizableTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!optimizableTypes.includes(file.type)) {
+    if (!file.type?.startsWith('image/')) {
         return {
             uploadFile: file,
             previewUrl: URL.createObjectURL(file),
@@ -66,7 +82,9 @@ async function optimizeImageUpload(file) {
 
         context.drawImage(image, 0, 0, width, height);
 
-        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const outputType = file.type === 'image/png' || file.type === 'image/svg+xml'
+            ? 'image/png'
+            : 'image/jpeg';
         const blob = await new Promise((resolve, reject) => {
             canvas.toBlob(
                 (result) => {
@@ -92,6 +110,11 @@ async function optimizeImageUpload(file) {
         return {
             uploadFile: optimizedFile,
             previewUrl: URL.createObjectURL(blob),
+        };
+    } catch {
+        return {
+            uploadFile: file,
+            previewUrl: URL.createObjectURL(file),
         };
     } finally {
         URL.revokeObjectURL(sourceUrl);
@@ -195,7 +218,9 @@ export default function MenuSection({ store, onUpdate }) {
             setDialog({ type: 'success', title: 'Item Added Successfully', desc: `${form.title} has been added to your menu and is now live.` });
         } catch (err) {
             console.error(err);
-            setDialog({ type: 'error', title: 'Failed to Add Item', desc: `We couldn't add ${form.title} to your menu. Please try again.` });
+            const message = getFirstApiError(err, `We couldn't add ${form.title} to your menu. Please try again.`);
+            setError(message);
+            setDialog({ type: 'error', title: 'Failed to Add Item', desc: message });
         }
     }
 
@@ -283,7 +308,11 @@ export default function MenuSection({ store, onUpdate }) {
             setDialog({ type: 'success', title: 'Item Updated Successfully', desc: `${editForm.title} has been updated.` });
         } catch (err) {
             console.error(err);
-            setDialog({ type: 'error', title: 'Failed to Update Item', desc: `We couldn't update ${editForm.title}.` });
+            setDialog({
+                type: 'error',
+                title: 'Failed to Update Item',
+                desc: getFirstApiError(err, `We couldn't update ${editForm.title}.`),
+            });
         }
     }
 

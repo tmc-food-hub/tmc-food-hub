@@ -24,6 +24,7 @@ import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
 import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
+import ReviewsSection from './dashboard-sections/ReviewsSection';
 import { useOrders } from '../../context/OrderContext';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -129,6 +130,9 @@ function OwnerDashboard() {
     if (active === 'earnings' || active === 'transactions' || active === 'payout' || active === 'payment-settings') {
         activeLabel = 'Earnings';
         subTitle = 'Track your revenue, payouts, and financial performance over time.';
+    } else if (active === 'reviews') {
+        activeLabel = 'Reviews';
+        subTitle = 'Monitor customer ratings, feedback, and restaurant replies in one place.';
     } else if (active === 'analytics') {
         subTitle = 'Monitor your store\'s performance and sales metrics.';
     } else if (active === 'settings') {
@@ -292,6 +296,7 @@ function OwnerDashboard() {
                     {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'categories' && <CategoriesSection />}
                     {active === 'promotions' && <PromotionsSection />}
+                    {active === 'reviews' && <ReviewsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
                     {active === 'earnings' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
                     {active === 'transactions' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}

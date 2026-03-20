@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             OwnerSeeder::class,
             MenuSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }

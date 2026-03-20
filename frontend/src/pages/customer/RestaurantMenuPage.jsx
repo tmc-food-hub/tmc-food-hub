@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+﻿import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight, PenLine, ThumbsUp, X, UploadCloud, CheckCircle2, ShoppingCart } from 'lucide-react';
 import Navbar from '../../components/sections/Navbar';
@@ -7,6 +7,7 @@ import BackToTop from '../../components/ui/BackToTop';
 import { CartContext } from '../../components/ui/CartContext';
 import AddToCartModal from '../../components/ui/AddToCartModal';
 import { getStores } from '../../data/storesData';
+import RestaurantReviewsSection from './RestaurantReviewsSection';
 import styles from './RestaurantMenuPage.module.css';
 import api from '../../api/axios';
 
@@ -36,8 +37,6 @@ function RestaurantMenuPage() {
     const [activeCategory, setActiveCategory] = useState('All');
     const [activeDietary, setActiveDietary] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isReviewModalOpen, setReviewModalOpen] = useState(false);
-    const [reviewRating, setReviewRating] = useState(0);
 
     // Modal state for Add To Cart Variations
     const [selectedItemForModal, setSelectedItemForModal] = useState(null);
@@ -92,8 +91,7 @@ function RestaurantMenuPage() {
                 contact: storeData.business_contact_number || storeData.contact,
                 available_items_count: flattened.length,
                 menuItems: flattened,
-                reviews: storeData.reviews || [],
-                rating: storeData.rating || 4.5
+                rating: storeData.rating || 0
             };
 
             setStore(formattedStore);
@@ -137,10 +135,6 @@ function RestaurantMenuPage() {
         setSelectedItemForModal(null);
     };
 
-    const avgRating = (store.reviews && store.reviews.length)
-        ? (store.reviews.reduce((sum, r) => sum + r.rating, 0) / store.reviews.length).toFixed(1)
-        : (store.rating || 4.5);
-
     const similarStores = allStores.filter(s => s.id !== store.id).slice(0, 4);
 
     return (
@@ -166,7 +160,7 @@ function RestaurantMenuPage() {
                                 <h1 className={styles.restaurantName}>{store.name}</h1>
                                 <div className={styles.restaurantMeta}>
                                     <span className={store.status === 'Operational' ? styles.statusBadgeOpen : styles.statusBadgeClosed}>
-                                        ● {store.status}
+                                        ? {store.status}
                                     </span>
                                     <span><MapPin size={14} className="me-1" /> 2.5 km radius</span>
                                     <span><Clock size={14} className="me-1" /> {store.deliveryTime} delivery</span>
@@ -301,94 +295,11 @@ function RestaurantMenuPage() {
                             </div>
                         </div>
 
-                        {/* Reviews & Feedbacks section */}
-                        <div className={styles.reviewsSection}>
-                            <div className={styles.sectionHeader}>
-                                <div>
-                                    <h2 className={styles.sectionTitle}>Reviews & Feedbacks</h2>
-                                    <p className={styles.reviewsSubtitle}><strong>{store.name}</strong> • 1,240 verified reviews</p>
-                                </div>
-                                <button className={styles.writeReviewBtn} onClick={() => setReviewModalOpen(true)}>
-                                    <PenLine size={16} /> Write a review
-                                </button>
-                            </div>
-
-                            <div className={styles.reviewsGrid}>
-                                {/* Review Summary Card */}
-                                <div className={styles.reviewSummaryCard}>
-                                    <div className={styles.reviewScore}>
-                                        <div className={styles.reviewScoreBig}>{avgRating}</div>
-                                        <div className={styles.reviewStars}>
-                                            <StarRow rating={avgRating} size={16} />
-                                        </div>
-                                        <div className={styles.reviewBasedOn}>Based on 1,248 reviews</div>
-                                    </div>
-                                    <div className={styles.reviewBars} style={{ width: '100%' }}>
-                                        {[
-                                            { star: 5, count: 864, pct: 70 },
-                                            { star: 4, count: 242, pct: 20 },
-                                            { star: 3, count: 98, pct: 8 },
-                                            { star: 2, count: 30, pct: 1 },
-                                            { star: 1, count: 14, pct: 1 }
-                                        ].map(bar => (
-                                            <div key={bar.star} className={styles.reviewBarRow}>
-                                                <span>{bar.star}</span>
-                                                <div className={styles.reviewBarBg}>
-                                                    <div className={styles.reviewBarFill} style={{ width: `${bar.pct}%` }}></div>
-                                                </div>
-                                                <span className={styles.reviewBarCount}>{bar.count}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Review Comments List Column */}
-                                <div className={styles.reviewsListColumn}>
-
-                                    {/* Review Filters */}
-                                    <div className={styles.reviewFilters}>
-                                        <button className={`${styles.reviewFilterBtn} ${styles.reviewFilterBtnActive}`}>Most Recent</button>
-                                        <button className={styles.reviewFilterBtn}>Highest Rated</button>
-                                        <button className={styles.reviewFilterBtn}>With Photos</button>
-                                        <button className={styles.reviewFilterBtn}>Verified Only</button>
-                                    </div>
-
-                                    {/* Review Comments List */}
-                                    <div className={styles.reviewCardsListVertical}>
-                                        {store.reviews.map(review => (
-                                            <div key={review.id} className={styles.reviewCardItem}>
-                                                <div className={styles.reviewUserRow}>
-                                                    <div className={styles.reviewUser}>
-                                                        <div className={styles.reviewAvatar}>
-                                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontWeight: 'bold' }}>{review.avatar}</div>
-                                                        </div>
-                                                        <div>
-                                                            <p className={styles.reviewUserName}>{review.name}</p>
-                                                            <span className={styles.reviewTime}>{review.date}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className={styles.reviewStars}>
-                                                        <StarRow rating={review.rating} size={14} />
-                                                    </div>
-                                                </div>
-                                                <p className={styles.reviewText}>{review.text}</p>
-
-                                                {/* Dummy images for some reviews just to show layout */}
-                                                {review.id === 1 && (
-                                                    <div className={styles.reviewImages}>
-                                                        <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?q=80&w=2070&auto=format&fit=crop" alt="Review Photo" className={styles.reviewImg} />
-                                                    </div>
-                                                )}
-
-                                                <button className={styles.helpfulBtn}>
-                                                    <ThumbsUp size={14} /> Helpful ({Math.floor(Math.random() * 30) + 1})
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <RestaurantReviewsSection
+                            storeId={store.id}
+                            storeName={store.name}
+                            fallbackRating={store.rating}
+                        />
 
                         {/* Similar Restaurants */}
                         <div className={styles.similarSection}>
@@ -424,60 +335,6 @@ function RestaurantMenuPage() {
                             </div>
                         </div>
 
-                        {/* Write a Review Modal */}
-                        {isReviewModalOpen && (
-                            <div className={styles.modalOverlay}>
-                                <div className={styles.reviewModal}>
-                                    <div className={styles.modalHeader}>
-                                        <h3 className={styles.modalTitle}>Write a Review</h3>
-                                        <button className={styles.closeModalBtn} onClick={() => setReviewModalOpen(false)}>
-                                            <X size={20} />
-                                        </button>
-                                    </div>
-                                    <p className={styles.modalSubtitle}>For <strong>{store.name}</strong></p>
-                                    <div className={styles.verifiedOrderBadge}>
-                                        <CheckCircle2 size={12} /> Verified Order
-                                    </div>
-
-                                    <div className={styles.modalBody}>
-                                        <div className={styles.formGroup}>
-                                            <label>Overall Rating</label>
-                                            <div className={styles.ratingStarsInput}>
-                                                {[1, 2, 3, 4, 5].map(star => (
-                                                    <Star
-                                                        key={star}
-                                                        size={24}
-                                                        fill={star <= reviewRating ? '#8B1F1C' : 'none'}
-                                                        color={star <= reviewRating ? '#8B1F1C' : '#D1D5DB'}
-                                                        onClick={() => setReviewRating(star)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className={styles.formGroup}>
-                                            <label>Your Review</label>
-                                            <textarea className={styles.reviewTextarea} placeholder="Share your experience with the food and delivery..."></textarea>
-                                        </div>
-
-                                        <div className={styles.formGroup}>
-                                            <label>Add Photos</label>
-                                            <div className={styles.photoUploadArea}>
-                                                <UploadCloud size={24} color="#888" className="mb-2" />
-                                                <span>Add Photos</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.modalFooter}>
-                                        <button className={styles.btnCancel} onClick={() => setReviewModalOpen(false)}>Cancel</button>
-                                        <button className={styles.btnSubmit}>Submit Review</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                     </div>
                 </main>
 
@@ -498,3 +355,4 @@ function RestaurantMenuPage() {
 }
 
 export default RestaurantMenuPage;
+
