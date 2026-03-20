@@ -3,6 +3,17 @@ import api from '../api/axios';
 
 const OwnerAuthContext = createContext(null);
 
+function getDefaultRestaurantImage(restaurantName = '') {
+    if (restaurantName.includes('Jollibee')) return '/assets/images/service/resturant_logo/jollibee.svg';
+    if (restaurantName.includes("McDonald's") || restaurantName.includes('McDonald')) return '/assets/images/service/resturant_logo/mcdonald-s-7.svg';
+    if (restaurantName.includes('Sushi Nori')) return '/assets/images/service/resturant_logo/sushi-nori.svg';
+    if (restaurantName.includes('Mang Inasal')) return '/assets/images/service/resturant_logo/Mang_Inasal.svg';
+    if (restaurantName.includes('KFC')) return '/assets/images/service/resturant_logo/KFC.svg';
+    if (restaurantName.includes('Chowking')) return '/assets/images/service/resturant_logo/chowking.svg';
+
+    return '/assets/images/service/placeholder.svg';
+}
+
 export function OwnerAuthProvider({ children }) {
     const [currentOwner, setCurrentOwner] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -30,12 +41,14 @@ export function OwnerAuthProvider({ children }) {
     }, []);
 
     function buildOwner(user) {
+        const fallbackImage = getDefaultRestaurantImage(user.restaurant_name);
+
         return {
             ...user,
             storeId: user.id,
             storeName: user.restaurant_name,
-            logo: user.logo || '/assets/images/service/placeholder.svg',
-            cover_image: user.cover_image || '/assets/images/service/placeholder.svg',
+            logo: user.logo || fallbackImage,
+            cover_image: user.cover_image || fallbackImage,
         };
     }
 
