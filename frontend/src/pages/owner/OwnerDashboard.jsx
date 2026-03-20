@@ -74,7 +74,7 @@ const NAV_GROUPS = [
 ];
 
 function OwnerDashboard() {
-    const { currentOwner, ownerStore, logout, updateStore, loading } = useOwnerAuth();
+    const { currentOwner, ownerStore, logout, updateStore, refreshOwner, loading } = useOwnerAuth();
     const { orders, loading: ordersLoading } = useOrders();
     const navigate = useNavigate();
     const location = useLocation();
@@ -131,6 +131,9 @@ function OwnerDashboard() {
         subTitle = 'Track your revenue, payouts, and financial performance over time.';
     } else if (active === 'analytics') {
         subTitle = 'Monitor your store\'s performance and sales metrics.';
+    } else if (active === 'settings') {
+        activeLabel = 'Settings';
+        subTitle = 'Manage your account, notifications, payment details, and restaurant preferences.';
     }
 
     // Check if a parent item is "active" because one of its subItems is active
@@ -295,7 +298,7 @@ function OwnerDashboard() {
                     {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
                     {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}
+                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} currentOwner={currentOwner} refreshOwner={refreshOwner} />}
                 </div>
             </div>
         </div>

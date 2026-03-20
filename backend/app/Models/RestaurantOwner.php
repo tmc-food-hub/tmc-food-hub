@@ -29,6 +29,9 @@ class RestaurantOwner extends Authenticatable
         'business_address',
         'business_contact_number',
         'business_permit',
+        'cuisine_type',
+        'price_range',
+        'business_registration_number',
         'logo',
         'cover_image',
     ];
@@ -53,6 +56,7 @@ class RestaurantOwner extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'cuisine_type' => 'array',
         ];
     }
 

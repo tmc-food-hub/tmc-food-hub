@@ -32,23 +32,10 @@ export function OwnerAuthProvider({ children }) {
     function buildOwner(user) {
         return {
             ...user,
-            // The owner's DB id IS the restaurant owner id used in orders
             storeId: user.id,
             storeName: user.restaurant_name,
-            logo: user.logo || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
-                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
-                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                  '/assets/images/service/placeholder.svg'),
-            cover_image: user.cover_image || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
-                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
-                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                  '/assets/images/service/placeholder.svg')
+            logo: user.logo || '/assets/images/service/placeholder.svg',
+            cover_image: user.cover_image || '/assets/images/service/placeholder.svg',
         };
     }
 
@@ -86,7 +73,7 @@ export function OwnerAuthProvider({ children }) {
     const ownerStore = useMemo(() => {
         if (!currentOwner) return null;
         return {
-            id: currentOwner.id,               // Real DB restaurant_owner_id
+            id: currentOwner.id,
             storeId: currentOwner.id,
             name: currentOwner.restaurant_name,
             branchName: currentOwner.restaurant_name,
@@ -102,7 +89,14 @@ export function OwnerAuthProvider({ children }) {
             firstName: currentOwner.first_name,
             lastName: currentOwner.last_name,
             email: currentOwner.email,
+            personalPhone: currentOwner.phone,
+            personalAddress: currentOwner.address,
             businessPermit: currentOwner.business_permit,
+            // Restaurant profile fields
+            cuisineType: currentOwner.cuisine_type || [],
+            priceRange: currentOwner.price_range || '',
+            businessRegistrationNumber: currentOwner.business_registration_number || '',
+            emailVerifiedAt: currentOwner.email_verified_at,
         };
     }, [currentOwner]);
 
