@@ -5,9 +5,6 @@ import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
 import { resolveMediaUrl } from '../../../utils/media';
 
-const MAX_IMAGE_DIMENSION = 1600;
-const IMAGE_QUALITY = 0.82;
-
 const createBlankForm = () => ({
     title: '',
     description: '',
@@ -23,17 +20,15 @@ const createBlankForm = () => ({
 const BLANK = createBlankForm();
 
 function revokePreviewUrl(url) {
-    if (url && typeof url === 'string' && url.startsWith('blob:')) {
-        URL.revokeObjectURL(url);
-    }
+    return url;
 }
 
-function loadImage(src) {
+function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = src;
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
     });
 }
 
@@ -54,71 +49,19 @@ function getFirstApiError(error, fallback) {
     return error?.response?.data?.message || fallback;
 }
 
-async function optimizeImageUpload(file) {
+async function prepareImageUpload(file) {
     if (!file) return null;
 
-    if (!file.type?.startsWith('image/')) {
+    try {
         return {
             uploadFile: file,
-            previewUrl: URL.createObjectURL(file),
-        };
-    }
-
-    const sourceUrl = URL.createObjectURL(file);
-
-    try {
-        const image = await loadImage(sourceUrl);
-        const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
-        const canvas = document.createElement('canvas');
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const context = canvas.getContext('2d');
-        if (!context) {
-            throw new Error('Could not optimize image.');
-        }
-
-        context.drawImage(image, 0, 0, width, height);
-
-        const outputType = file.type === 'image/png' || file.type === 'image/svg+xml'
-            ? 'image/png'
-            : 'image/jpeg';
-        const blob = await new Promise((resolve, reject) => {
-            canvas.toBlob(
-                (result) => {
-                    if (!result) {
-                        reject(new Error('Could not create optimized image.'));
-                        return;
-                    }
-
-                    resolve(result);
-                },
-                outputType,
-                outputType === 'image/png' ? undefined : IMAGE_QUALITY
-            );
-        });
-
-        const extension = outputType === 'image/png' ? 'png' : 'jpg';
-        const baseName = (file.name || 'menu-item-image').replace(/\.[^.]+$/, '');
-        const optimizedFile = new File([blob], `${baseName}.${extension}`, {
-            type: outputType,
-            lastModified: Date.now(),
-        });
-
-        return {
-            uploadFile: optimizedFile,
-            previewUrl: URL.createObjectURL(blob),
+            previewUrl: await readFileAsDataUrl(file),
         };
     } catch {
         return {
             uploadFile: file,
-            previewUrl: URL.createObjectURL(file),
+            previewUrl: '',
         };
-    } finally {
-        URL.revokeObjectURL(sourceUrl);
     }
 }
 
@@ -443,7 +386,7 @@ export default function MenuSection({
                                             onChange={async (e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
-                                                    const optimized = await optimizeImageUpload(file);
+                                                    const optimized = await prepareImageUpload(file);
                                                     setForm((prev) => {
                                                         revokePreviewUrl(prev.preview);
 
@@ -547,7 +490,7 @@ export default function MenuSection({
                                             onChange={async (e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
-                                                    const optimized = await optimizeImageUpload(file);
+                                                    const optimized = await prepareImageUpload(file);
                                                     setEditForm((prev) => {
                                                         revokePreviewUrl(prev.preview);
 
