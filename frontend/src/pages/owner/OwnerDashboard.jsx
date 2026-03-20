@@ -26,6 +26,7 @@ import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
 import ReviewsSection from './dashboard-sections/ReviewsSection';
 import { useOrders } from '../../context/OrderContext';
+import api from '../../api/axios';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
     {
@@ -84,6 +85,27 @@ function OwnerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [payoutViewData, setPayoutViewData] = useState(null);
     const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
+    const [inventoryItems, setInventoryItems] = useState([]);
+    const [inventoryCategories, setInventoryCategories] = useState([]);
+    const [inventoryLoading, setInventoryLoading] = useState(true);
+
+    const refreshInventory = async () => {
+        if (!currentOwner) return;
+
+        setInventoryLoading(true);
+        try {
+            const [itemsRes, categoriesRes] = await Promise.all([
+                api.get('/owner/inventory/items'),
+                api.get('/owner/inventory/categories'),
+            ]);
+            setInventoryItems(itemsRes.data);
+            setInventoryCategories(categoriesRes.data);
+        } catch (error) {
+            console.error('Failed to refresh owner inventory data:', error);
+        } finally {
+            setInventoryLoading(false);
+        }
+    };
 
     useEffect(() => {
         const isMissingOrPlaceholder = (img) => !img || img.includes('placeholder.svg');
@@ -96,6 +118,16 @@ function OwnerDashboard() {
             return () => clearTimeout(t);
         }
     }, [welcomeBanner, ownerStore]);
+
+    useEffect(() => {
+        if (currentOwner) {
+            refreshInventory();
+        } else {
+            setInventoryItems([]);
+            setInventoryCategories([]);
+            setInventoryLoading(false);
+        }
+    }, [currentOwner]);
 
     // Prevent redirect until authentication check is complete
     if (loading) {
@@ -292,8 +324,28 @@ function OwnerDashboard() {
                     {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
 
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
-                    {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
+                    {active === 'inventory' && (
+                        <InventorySection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            items={inventoryItems}
+                            setItems={setInventoryItems}
+                            loading={inventoryLoading}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
+                    {active === 'menu' && (
+                        <MenuSection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            items={inventoryItems}
+                            setItems={setInventoryItems}
+                            categories={inventoryCategories}
+                            setCategories={setInventoryCategories}
+                            loading={inventoryLoading}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
                     {active === 'categories' && <CategoriesSection />}
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'reviews' && <ReviewsSection />}

@@ -121,7 +121,16 @@ async function optimizeImageUpload(file) {
     }
 }
 
-export default function MenuSection({ store, onUpdate }) {
+export default function MenuSection({
+    store,
+    onUpdate,
+    items = [],
+    setItems,
+    categories = [],
+    setCategories,
+    loading = false,
+    refreshInventory,
+}) {
     const [addOpen, setAddOpen] = useState(false);
     const [form, setForm] = useState(BLANK);
     const [editId, setEditId] = useState(null);
@@ -131,36 +140,12 @@ export default function MenuSection({ store, onUpdate }) {
     const [activeCategory, setActiveCategory] = useState('All Items');
     const [dialog, setDialog] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
-    const [items, setItems] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetchData();
-    }, []);
-
     useEffect(() => {
         return () => {
             revokePreviewUrl(form.preview);
             revokePreviewUrl(editForm.preview);
         };
     }, [form.preview, editForm.preview]);
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const [itemsRes, catsRes] = await Promise.all([
-                api.get('/owner/inventory/items'),
-                api.get('/owner/inventory/categories')
-            ]);
-            setItems(itemsRes.data);
-            setCategories(catsRes.data);
-        } catch (err) {
-            console.error('Failed to fetch menu data:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Derived Categories with Counts
     const catsData = [{ name: 'All Items', count: items.length }];
@@ -207,10 +192,10 @@ export default function MenuSection({ store, onUpdate }) {
                 formData.append('image', form.image);
             }
 
-            const res = await api.post('/owner/inventory/items', formData, {
+            await api.post('/owner/inventory/items', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            await fetchData();
+            await refreshInventory?.();
             revokePreviewUrl(form.preview);
             setForm(createBlankForm());
             setAddOpen(false);
@@ -232,6 +217,7 @@ export default function MenuSection({ store, onUpdate }) {
         try {
             await api.delete(`/owner/inventory/items/${id}`);
             setItems(prev => prev.filter(item => item.id !== id));
+            await refreshInventory?.();
             if (editId === id) {
                 revokePreviewUrl(editForm.preview);
                 setEditId(null);
@@ -255,7 +241,8 @@ export default function MenuSection({ store, onUpdate }) {
     async function toggle(item) {
         try {
             const res = await api.patch(`/owner/inventory/items/${item.id}/availability`, { available: !item.available });
-            setItems(prev => prev.map(i => i.id === item.id ? res.data : i));
+            setItems(prev => prev.map(i => i.id === item.id ? { ...i, ...res.data } : i));
+            await refreshInventory?.();
         } catch (err) {
             console.error(err);
         }
@@ -298,10 +285,10 @@ export default function MenuSection({ store, onUpdate }) {
                 formData.append('image', editForm.image);
             }
 
-            const res = await api.post(`/owner/inventory/items/${editId}`, formData, {
+            await api.post(`/owner/inventory/items/${editId}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            await fetchData();
+            await refreshInventory?.();
             revokePreviewUrl(editForm.preview);
             setEditId(null);
             setEditForm({});
@@ -373,8 +360,8 @@ export default function MenuSection({ store, onUpdate }) {
             {/* Menu Grid */}
             <div className={styles.newMenuGrid}>
                 {filteredItems.map(item => {
-                    const stock = item.stockLevel !== undefined ? item.stockLevel : 100;
-                    const minThreshold = item.minThreshold !== undefined ? item.minThreshold : 10;
+                    const stock = item.stock_level !== undefined ? item.stock_level : 0;
+                    const minThreshold = item.min_threshold !== undefined ? item.min_threshold : 10;
 
                     let statusType = 'Available';
                     let statusPillClass = styles.statusAvailable;

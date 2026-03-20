@@ -3,6 +3,17 @@ import api from '../api/axios';
 
 const OwnerAuthContext = createContext(null);
 
+function getStoredOwner() {
+    try {
+        const userType = localStorage.getItem('user_type');
+        if (userType !== 'owner') return null;
+        const raw = localStorage.getItem('auth_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
 function getDefaultRestaurantImage(restaurantName = '') {
     if (restaurantName.includes('Jollibee')) return '/assets/images/service/resturant_logo/jollibee.svg';
     if (restaurantName.includes("McDonald's") || restaurantName.includes('McDonald')) return '/assets/images/service/resturant_logo/mcdonald-s-7.svg';
@@ -15,7 +26,10 @@ function getDefaultRestaurantImage(restaurantName = '') {
 }
 
 export function OwnerAuthProvider({ children }) {
-    const [currentOwner, setCurrentOwner] = useState(null);
+    const [currentOwner, setCurrentOwner] = useState(() => {
+        const stored = getStoredOwner();
+        return stored ? buildOwner(stored) : null;
+    });
     const [loading, setLoading] = useState(true);
 
     // Validate owner on mount via token
@@ -27,12 +41,15 @@ export function OwnerAuthProvider({ children }) {
             api.get('/owner/user')
                 .then(res => {
                     setCurrentOwner(buildOwner(res.data));
+                    localStorage.setItem('auth_user', JSON.stringify(res.data));
                 })
-                .catch(() => {
-                    setCurrentOwner(null);
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('auth_user');
-                    localStorage.removeItem('user_type');
+                .catch((error) => {
+                    if (error?.response?.status === 401) {
+                        setCurrentOwner(null);
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('auth_user');
+                        localStorage.removeItem('user_type');
+                    }
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -118,6 +135,7 @@ export function OwnerAuthProvider({ children }) {
         try {
             const res = await api.get('/owner/user');
             setCurrentOwner(buildOwner(res.data));
+            localStorage.setItem('auth_user', JSON.stringify(res.data));
         } catch (e) {
             console.error('Failed to refresh owner:', e);
         }
@@ -125,7 +143,12 @@ export function OwnerAuthProvider({ children }) {
 
     // Update the store in context after a profile update
     function updateStore(updatedData) {
-        setCurrentOwner(prev => prev ? { ...prev, ...updatedData } : prev);
+        setCurrentOwner(prev => {
+            if (!prev) return prev;
+            const next = { ...prev, ...updatedData };
+            localStorage.setItem('auth_user', JSON.stringify(next));
+            return next;
+        });
     }
 
     // Set auth data directly after registration
