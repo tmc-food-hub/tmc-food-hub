@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\MenuItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class InventoryController extends Controller
 {
@@ -67,7 +68,7 @@ class InventoryController extends Controller
 
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $imagePath = asset('storage/' . $path);
+            $imagePath = Storage::url($path);
         }
 
         $item = MenuItem::create([
@@ -110,7 +111,7 @@ class InventoryController extends Controller
         
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $data['image'] = asset('storage/' . $path);
+            $data['image'] = Storage::url($path);
         }
 
         if ($request->has('stock_level') && $request->auto_toggle) {

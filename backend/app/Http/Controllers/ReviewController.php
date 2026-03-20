@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\ReviewHelpfulVote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ReviewController extends Controller
@@ -115,7 +116,7 @@ class ReviewController extends Controller
         if ($request->hasFile('photo_files')) {
             foreach ($request->file('photo_files') as $photo) {
                 $path = $photo->store('reviews', 'public');
-                $photoPaths[] = asset('storage/' . $path);
+                $photoPaths[] = Storage::url($path);
             }
         }
 

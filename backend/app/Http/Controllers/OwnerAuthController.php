@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class OwnerAuthController extends Controller
@@ -230,12 +231,12 @@ class OwnerAuthController extends Controller
 
         if ($request->hasFile('logo_file')) {
             $path = $request->file('logo_file')->store('restaurants/logos', 'public');
-            $data['logo'] = asset('storage/' . $path);
+            $data['logo'] = Storage::url($path);
         }
 
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('restaurants/covers', 'public');
-            $data['cover_image'] = asset('storage/' . $path);
+            $data['cover_image'] = Storage::url($path);
         }
 
         $owner->update($data);
