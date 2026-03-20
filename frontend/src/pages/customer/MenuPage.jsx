@@ -6,6 +6,7 @@ import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import styles from './MenuPage.module.css';
 import api from '../../api/axios';
+import { resolveMediaUrl } from '../../utils/media';
 
 import { Pizza, Utensils, Coffee, Cake, IceCream, Soup, Drumstick } from 'lucide-react';
 
@@ -43,7 +44,7 @@ function MenuPage() {
                 status: s.status || 'Operational',
                 rating: s.rating || 4.5,
                 dietary: s.dietary || 'All',
-                cover: s.cover_image || s.logo || 
+                cover: resolveMediaUrl(s.cover_image || s.logo) || 
                     (s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
                     s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
                     s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :

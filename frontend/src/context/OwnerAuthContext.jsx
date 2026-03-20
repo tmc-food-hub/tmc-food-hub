@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
+import { resolveMediaUrl } from '../utils/media';
 
 const OwnerAuthContext = createContext(null);
 
@@ -64,8 +65,8 @@ export function OwnerAuthProvider({ children }) {
             ...user,
             storeId: user.id,
             storeName: user.restaurant_name,
-            logo: user.logo || fallbackImage,
-            cover_image: user.cover_image || fallbackImage,
+            logo: resolveMediaUrl(user.logo) || fallbackImage,
+            cover_image: resolveMediaUrl(user.cover_image) || fallbackImage,
         };
     }
 

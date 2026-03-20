@@ -3,6 +3,7 @@ import { Search, Bell, AlertCircle, CheckCircle2, LayoutDashboard, Layers, Plus,
 import { IMAGES } from './shared';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 
 const MAX_IMAGE_DIMENSION = 1600;
 const IMAGE_QUALITY = 0.82;
@@ -377,7 +378,7 @@ export default function MenuSection({
                     return (
                         <div key={item.id} className={`${styles.newMenuCard} ${(!item.available || stock === 0) ? styles.newMenuCardDim : ''}`}>
                             <div className={styles.newMenuCardImgWrap}>
-                                <img src={item.image} alt={item.title} className={styles.newMenuCardImg} />
+                                <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.newMenuCardImg} />
                                 {item.title.toLowerCase().includes('burger') && <span className={styles.bestSellerBadge}>Best Seller</span>}
                                 <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 5 }}>
                                     <button className={`${styles.rowBtn} ${styles.rowBtnBlue}`} onClick={() => startEdit(item)}><Pencil size={12} /></button>
@@ -433,7 +434,7 @@ export default function MenuSection({
                                 {error && <div className={styles.formError} style={{ marginBottom: 15 }}><AlertCircle size={13} /> {error}</div>}
                                 <div className={styles.menuFormTop}>
                                     <div className={styles.menuPhotoUpload} onClick={() => document.getElementById('itemPhotoAdd').click()}>
-                                        {form.preview ? <img src={form.preview} alt="Upload" /> : form.image ? <img src={form.image} alt="Default" /> : <><Package size={24} /><div className={styles.menuPhotoText}>Add Photo</div></>}
+                                        {form.preview ? <img src={form.preview} alt="Upload" /> : form.image ? <img src={resolveMediaUrl(form.image)} alt="Default" /> : <><Package size={24} /><div className={styles.menuPhotoText}>Add Photo</div></>}
                                         <input 
                                             id="itemPhotoAdd" 
                                             type="file" 
@@ -537,7 +538,7 @@ export default function MenuSection({
                             <div className={styles.menuModalBody}>
                                 <div className={styles.menuFormTop}>
                                     <div className={styles.menuPhotoUpload} onClick={() => document.getElementById('itemPhotoEdit').click()}>
-                                        {editForm.preview ? <img src={editForm.preview} alt="Upload" /> : <img src={editForm.image} alt="Default" />}
+                                        {editForm.preview ? <img src={editForm.preview} alt="Upload" /> : <img src={resolveMediaUrl(editForm.image)} alt="Default" />}
                                         <input 
                                             id="itemPhotoEdit" 
                                             type="file" 
