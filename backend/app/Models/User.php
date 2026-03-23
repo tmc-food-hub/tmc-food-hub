@@ -33,6 +33,7 @@ class User extends Authenticatable
         'business_contact_number',
         'business_permit',
         'email_verified_at',
+        'google_id',
     ];
 
     /**

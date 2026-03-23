@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\InventoryController;
@@ -13,6 +14,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/send-otp', [AuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+
+// ── Google OAuth Routes ────────────────────────────────────────────────────
+Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 // ── Owner Auth Routes ─────────────────────────────────────────────────────
 Route::post('/owner/login', [OwnerAuthController::class, 'login']);
