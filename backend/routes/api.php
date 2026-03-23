@@ -18,6 +18,8 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('th
 // ── Google OAuth Routes ────────────────────────────────────────────────────
 Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+Route::post('/auth/google-signup', [GoogleAuthController::class, 'signupWithToken']);
+Route::post('/auth/google-login', [GoogleAuthController::class, 'loginWithToken']);
 
 // ── Owner Auth Routes ─────────────────────────────────────────────────────
 Route::post('/owner/login', [OwnerAuthController::class, 'login']);

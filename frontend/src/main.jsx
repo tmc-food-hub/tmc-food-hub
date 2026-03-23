@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './components/ui/ThemeContext.jsx';
 import { CartProvider } from './components/ui/CartContext.jsx';
@@ -29,20 +30,22 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <BrowserRouter>
-        <NotificationProvider>
-          <AuthProvider>
-            <CartProvider>
-              <OrderProvider>
-                <OwnerAuthProvider>
-                  <App />
-                </OwnerAuthProvider>
-              </OrderProvider>
-            </CartProvider>
-          </AuthProvider>
-        </NotificationProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <ThemeProvider>
+        <BrowserRouter>
+          <NotificationProvider>
+            <AuthProvider>
+              <CartProvider>
+                <OrderProvider>
+                  <OwnerAuthProvider>
+                    <App />
+                  </OwnerAuthProvider>
+                </OrderProvider>
+              </CartProvider>
+            </AuthProvider>
+          </NotificationProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   </StrictMode>,
 )
