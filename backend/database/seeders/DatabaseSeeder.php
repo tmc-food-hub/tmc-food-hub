@@ -33,6 +33,17 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['email' => 'admin@tmcfoodhub.com'],
+            [
+                'name' => 'Platform Admin',
+                'first_name' => 'Platform',
+                'last_name' => 'Admin',
+                'role' => 'admin',
+                'password' => bcrypt('admin12345'),
+            ]
+        );
+
         $this->call([
             OwnerSeeder::class,
             MenuSeeder::class,

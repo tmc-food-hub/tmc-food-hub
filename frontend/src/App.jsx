@@ -21,6 +21,8 @@ import MyOrdersPage from './pages/customer/MyOrdersPage';
 import ProfilePage from './pages/customer/ProfilePage';
 import OwnerLoginPage from './pages/owner/OwnerLoginPage';
 import OwnerDashboard from './pages/owner/OwnerDashboard';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   const { pathname } = useLocation();
@@ -65,6 +67,8 @@ function App() {
         {/* ── Restaurant Owner Portal ── */}
         <Route path="/owner-login" element={<OwnerLoginPage />} />
         <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </>
   )
