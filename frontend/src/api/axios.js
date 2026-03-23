@@ -34,6 +34,8 @@ api.interceptors.request.use((config) => {
     // Check if the request is strictly for the owner portal
     if (config.url && config.url.startsWith('/owner')) {
         token = localStorage.getItem('owner_auth_token');
+    } else if (config.url && config.url.startsWith('/admin')) {
+        token = localStorage.getItem('admin_auth_token');
     } else {
         token = localStorage.getItem('auth_token');
     }

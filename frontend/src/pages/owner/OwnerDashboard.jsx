@@ -77,7 +77,7 @@ const NAV_GROUPS = [
 
 function OwnerDashboard() {
     const { currentOwner, ownerStore, logout, updateStore, refreshOwner, loading } = useOwnerAuth();
-    const { orders, loading: ordersLoading } = useOrders();
+    const { orders } = useOrders();
     const navigate = useNavigate();
     const location = useLocation();
     const [active, setActive] = useState('overview');
@@ -321,7 +321,14 @@ function OwnerDashboard() {
                             </button>
                         </div>
                     )}
-                    {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
+                    {active === 'overview' && (
+                        <OverviewSection
+                            store={ownerStore}
+                            orders={orders}
+                            items={inventoryItems}
+                            onNavigate={setActive}
+                        />
+                    )}
 
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
                     {active === 'inventory' && (
@@ -355,7 +362,16 @@ function OwnerDashboard() {
                     {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
                     {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} currentOwner={currentOwner} refreshOwner={refreshOwner} />}
+                    {active === 'settings' && (
+                        <SettingsSection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            currentOwner={currentOwner}
+                            refreshOwner={refreshOwner}
+                            items={inventoryItems}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
                 </div>
             </div>
         </div>

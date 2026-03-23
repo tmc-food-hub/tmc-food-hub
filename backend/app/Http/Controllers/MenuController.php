@@ -37,6 +37,7 @@ class MenuController extends Controller
                 'cover_image'             => $r->cover_image,
                 'rating'                  => $averageRating ? round($averageRating, 1) : 0,
                 'reviews_count'           => $reviewsCount,
+                'operating_status'        => $r->operating_status,
             ];
         });
 
@@ -71,6 +72,7 @@ class MenuController extends Controller
                 'cover_image'             => $restaurant->cover_image,
                 'rating'                  => round((float) Review::where('restaurant_owner_id', $restaurant->id)->avg('rating'), 1),
                 'reviews_count'           => Review::where('restaurant_owner_id', $restaurant->id)->count(),
+                'operating_status'        => $restaurant->operating_status,
             ],
             'menu' => $menuByCategories
         ]);

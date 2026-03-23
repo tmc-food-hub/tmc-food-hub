@@ -26,6 +26,18 @@ function getDefaultRestaurantImage(restaurantName = '') {
     return '/assets/images/service/placeholder.svg';
 }
 
+function buildOwner(user) {
+    const fallbackImage = getDefaultRestaurantImage(user.restaurant_name);
+
+    return {
+        ...user,
+        storeId: user.id,
+        storeName: user.restaurant_name,
+        logo: resolveMediaUrl(user.logo) || fallbackImage,
+        cover_image: resolveMediaUrl(user.cover_image) || fallbackImage,
+    };
+}
+
 export function OwnerAuthProvider({ children }) {
     const [currentOwner, setCurrentOwner] = useState(() => {
         const stored = getStoredOwner();
@@ -57,18 +69,6 @@ export function OwnerAuthProvider({ children }) {
             setLoading(false);
         }
     }, []);
-
-    function buildOwner(user) {
-        const fallbackImage = getDefaultRestaurantImage(user.restaurant_name);
-
-        return {
-            ...user,
-            storeId: user.id,
-            storeName: user.restaurant_name,
-            logo: resolveMediaUrl(user.logo) || fallbackImage,
-            cover_image: resolveMediaUrl(user.cover_image) || fallbackImage,
-        };
-    }
 
     async function login(email, password) {
         try {
@@ -128,6 +128,10 @@ export function OwnerAuthProvider({ children }) {
             priceRange: currentOwner.price_range || '',
             businessRegistrationNumber: currentOwner.business_registration_number || '',
             emailVerifiedAt: currentOwner.email_verified_at,
+            operatingStatus: currentOwner.operating_status || 'open',
+            autoAcceptOrders: currentOwner.auto_accept_orders ?? true,
+            manualConfirmation: currentOwner.manual_confirmation ?? false,
+            defaultPrepTime: currentOwner.default_prep_time || 15,
         };
     }, [currentOwner]);
 

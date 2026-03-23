@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
 import { OrderProvider } from './context/OrderContext.jsx';
 import { OwnerAuthProvider } from './context/OwnerAuthContext.jsx';
+import { AdminAuthProvider } from './context/AdminAuthContext.jsx';
 import './assets/css/App.css';
 import './assets/css/about.css';
 import './assets/css/contact.css';
@@ -36,7 +37,9 @@ createRoot(document.getElementById('root')).render(
             <CartProvider>
               <OrderProvider>
                 <OwnerAuthProvider>
-                  <App />
+                  <AdminAuthProvider>
+                    <App />
+                  </AdminAuthProvider>
                 </OwnerAuthProvider>
               </OrderProvider>
             </CartProvider>
