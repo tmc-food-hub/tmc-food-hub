@@ -5,6 +5,7 @@ import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useOwnerAuth } from '../../context/OwnerAuthContext';
 import api from '../../api/axios';
+import { getFirstApiError, normalizeApiErrors } from '../../utils/apiErrors';
 import styles from './AuthPages.module.css';
 
 function SignupPage() {
@@ -24,9 +25,16 @@ function SignupPage() {
     const [verifiedEmail, setVerifiedEmail] = useState('');
     const otpInputRefs = useRef([]);
 
-    const { register, sendOtp, verifyOtp } = useAuth();
-    const { setAuthData } = useOwnerAuth();
+    const { register, sendOtp, verifyOtp, setAuthData: setCustomerAuthData } = useAuth();
+    const { setAuthData: setOwnerAuthData } = useOwnerAuth();
     const navigate = useNavigate();
+    const apiFieldMap = {
+        phone: 'contactNumber',
+        restaurant_name: 'restaurantName',
+        business_address: 'businessAddress',
+        business_contact_number: 'businessContactNumber',
+        business_permit: 'businessPermit',
+    };
 
     // Form fields
     const [formData, setFormData] = useState({
@@ -97,9 +105,9 @@ function SignupPage() {
             setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
         } catch (err) {
             if (err.response?.data?.errors) {
-                setErrors(err.response.data.errors);
+                setErrors(normalizeApiErrors(err, apiFieldMap));
             } else {
-                setErrors({ general: [err.response?.data?.message || 'Failed to send verification code. Please try again.'] });
+                setErrors({ general: [getFirstApiError(err, 'Failed to send verification code. Please try again.')] });
             }
         } finally {
             setOtpSending(false);
@@ -122,7 +130,7 @@ function SignupPage() {
             setOtpValues(['', '', '', '', '', '']);
             setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
         } catch (err) {
-            setErrors({ general: [err.response?.data?.message || 'Failed to resend code. Please try again.'] });
+            setErrors({ general: [getFirstApiError(err, 'Failed to resend code. Please try again.')] });
         } finally {
             setOtpSending(false);
         }
@@ -192,9 +200,9 @@ function SignupPage() {
             setStep(3);
         } catch (err) {
             if (err.response?.data?.errors) {
-                setErrors(err.response.data.errors);
+                setErrors(normalizeApiErrors(err, apiFieldMap));
             } else {
-                setErrors({ general: [err.response?.data?.message || 'Verification failed. Please try again.'] });
+                setErrors({ general: [getFirstApiError(err, 'Verification failed. Please try again.')] });
             }
         } finally {
             setOtpVerifying(false);
@@ -274,22 +282,26 @@ function SignupPage() {
             if (role === 'Partner') {
                 // Auto-login the owner using the token returned from registration
                 const { token, user } = res.data;
-                setAuthData(token, user);
+                setOwnerAuthData(token, user);
                 navigate('/owner-dashboard', { state: { signupSuccess: true } });
             } else {
-                navigate('/login', { state: { signupSuccess: true } });
+                const { token, user } = res.data;
+                setCustomerAuthData(token, user);
+                navigate('/', { state: { signupSuccess: true } });
             }
 
         } catch (err) {
-            if (err.response?.data?.errors) {
-                setErrors(err.response.data.errors);
-                const errorKeys = Object.keys(err.response.data.errors);
+            const apiErrors = err.response?.data?.errors;
+
+            if (apiErrors) {
+                setErrors(normalizeApiErrors(err, apiFieldMap));
+                const errorKeys = Object.keys(apiErrors);
                 const step1Fields = ['first_name', 'last_name', 'email', 'password'];
                 if (errorKeys.some(k => step1Fields.includes(k))) {
                     setStep(1);
                 }
             } else {
-                setErrors({ general: [err.response?.data?.message || 'Registration failed. Please try again.'] });
+                setErrors({ general: [getFirstApiError(err, 'Registration failed. Please try again.')] });
             }
         } finally {
             setIsLoading(false);
@@ -586,12 +598,13 @@ function SignupPage() {
                                 <input
                                     type="text"
                                     name="address"
-                                    className={styles.formControl}
+                                    className={`${styles.formControl} ${errors.address ? styles.isInvalid : ''}`}
                                     placeholder="Enter full unit/building number, street, and barangay"
                                     value={formData.address}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.address && <span className={styles.errorText}>{errors.address[0]}</span>}
                             </div>
 
                             <div className={styles.formGroup}>
@@ -638,12 +651,13 @@ function SignupPage() {
                                 <input
                                     type="text"
                                     name="restaurantName"
-                                    className={styles.formControl}
+                                    className={`${styles.formControl} ${errors.restaurantName ? styles.isInvalid : ''}`}
                                     placeholder="e.g. Mama Sita's Kitchen"
                                     value={formData.restaurantName}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.restaurantName && <span className={styles.errorText}>{errors.restaurantName[0]}</span>}
                             </div>
 
                             <div className={styles.formGroup}>
@@ -651,12 +665,13 @@ function SignupPage() {
                                 <input
                                     type="text"
                                     name="businessAddress"
-                                    className={styles.formControl}
+                                    className={`${styles.formControl} ${errors.businessAddress ? styles.isInvalid : ''}`}
                                     placeholder="Enter full unit/building number, street, and barangay"
                                     value={formData.businessAddress}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.businessAddress && <span className={styles.errorText}>{errors.businessAddress[0]}</span>}
                             </div>
 
                             <div className={styles.formGroup}>
@@ -679,12 +694,13 @@ function SignupPage() {
                                 <input
                                     type="text"
                                     name="businessPermit"
-                                    className={styles.formControl}
+                                    className={`${styles.formControl} ${errors.businessPermit ? styles.isInvalid : ''}`}
                                     placeholder="Enter 12-digit BIR TIN or Permit No."
                                     value={formData.businessPermit}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.businessPermit && <span className={styles.errorText}>{errors.businessPermit[0]}</span>}
                             </div>
 
                             <div className={styles.actionRow}>

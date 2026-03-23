@@ -6,12 +6,18 @@ import axios from 'axios';
 // 3. If on localhost, default to php artisan serve (http://127.0.0.1:8000/api)
 // 4. Otherwise, use the production backend
 const hostname = window.location.hostname;
+const isLocal = hostname === 'localhost'
+    || hostname === '127.0.0.1'
+    || hostname.startsWith('192.168.')
+    || hostname.startsWith('10.')
+    || hostname.startsWith('172.')
+    || hostname.endsWith('.local')
+    || hostname.endsWith('.test');
+
 const baseURL = import.meta.env.VITE_API_URL
-    || (hostname.endsWith('.test')
-        ? 'https://tmc-backend.test/api'
-        : (hostname === 'localhost' || hostname === '127.0.0.1')
-            ? 'http://127.0.0.1:8000/api'
-            : 'https://foodhub.tmc-innovations.com/api');
+    || (isLocal
+        ? (hostname.endsWith('.test') ? 'https://tmc-backend.test/api' : 'http://127.0.0.1:8000/api')
+        : 'https://foodhub.tmc-innovations.com/api');
 
 const api = axios.create({
     baseURL: baseURL,
@@ -23,24 +29,24 @@ const api = axios.create({
 
 // Attach Bearer token from localStorage on every request
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('auth_token');
+    let token = null;
+
+    // Check if the request is strictly for the owner portal
+    if (config.url && config.url.startsWith('/owner')) {
+        token = localStorage.getItem('owner_auth_token');
+    } else {
+        token = localStorage.getItem('auth_token');
+    }
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
 
-// On 401, clear all stored auth state
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('auth_user');
-            localStorage.removeItem('user_type');
-        }
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 export default api;

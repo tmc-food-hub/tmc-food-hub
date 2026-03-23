@@ -1,27 +1,56 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
+import { resolveMediaUrl } from '../utils/media';
 
 const OwnerAuthContext = createContext(null);
 
+function getStoredOwner() {
+    try {
+        const userType = localStorage.getItem('owner_user_type');
+        if (userType !== 'owner') return null;
+        const raw = localStorage.getItem('owner_auth_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function getDefaultRestaurantImage(restaurantName = '') {
+    if (restaurantName.includes('Jollibee')) return '/assets/images/service/resturant_logo/jollibee.svg';
+    if (restaurantName.includes("McDonald's") || restaurantName.includes('McDonald')) return '/assets/images/service/resturant_logo/mcdonald-s-7.svg';
+    if (restaurantName.includes('Sushi Nori')) return '/assets/images/service/resturant_logo/sushi-nori.svg';
+    if (restaurantName.includes('Mang Inasal')) return '/assets/images/service/resturant_logo/Mang_Inasal.svg';
+    if (restaurantName.includes('KFC')) return '/assets/images/service/resturant_logo/KFC.svg';
+    if (restaurantName.includes('Chowking')) return '/assets/images/service/resturant_logo/chowking.svg';
+
+    return '/assets/images/service/placeholder.svg';
+}
+
 export function OwnerAuthProvider({ children }) {
-    const [currentOwner, setCurrentOwner] = useState(null);
+    const [currentOwner, setCurrentOwner] = useState(() => {
+        const stored = getStoredOwner();
+        return stored ? buildOwner(stored) : null;
+    });
     const [loading, setLoading] = useState(true);
 
     // Validate owner on mount via token
     useEffect(() => {
-        const token = localStorage.getItem('auth_token');
-        const userType = localStorage.getItem('user_type');
+        const token = localStorage.getItem('owner_auth_token');
+        const userType = localStorage.getItem('owner_user_type');
 
         if (token && userType === 'owner') {
             api.get('/owner/user')
                 .then(res => {
                     setCurrentOwner(buildOwner(res.data));
+                    localStorage.setItem('owner_auth_user', JSON.stringify(res.data));
                 })
-                .catch(() => {
-                    setCurrentOwner(null);
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('auth_user');
-                    localStorage.removeItem('user_type');
+                .catch((error) => {
+                    if (error?.response?.status === 401) {
+                        setCurrentOwner(null);
+                        localStorage.removeItem('owner_auth_token');
+                        localStorage.removeItem('owner_auth_user');
+                        localStorage.removeItem('owner_user_type');
+                    }
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -30,25 +59,14 @@ export function OwnerAuthProvider({ children }) {
     }, []);
 
     function buildOwner(user) {
+        const fallbackImage = getDefaultRestaurantImage(user.restaurant_name);
+
         return {
             ...user,
-            // The owner's DB id IS the restaurant owner id used in orders
             storeId: user.id,
             storeName: user.restaurant_name,
-            logo: user.logo || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
-                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
-                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                  '/assets/images/service/placeholder.svg'),
-            cover_image: user.cover_image || (user.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                  user.restaurant_name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                  user.restaurant_name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
-                  user.restaurant_name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                  user.restaurant_name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
-                  user.restaurant_name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                  '/assets/images/service/placeholder.svg')
+            logo: resolveMediaUrl(user.logo) || fallbackImage,
+            cover_image: resolveMediaUrl(user.cover_image) || fallbackImage,
         };
     }
 
@@ -57,9 +75,9 @@ export function OwnerAuthProvider({ children }) {
             const res = await api.post('/owner/login', { email, password });
             const { user, token } = res.data;
 
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('auth_user', JSON.stringify(user));
-            localStorage.setItem('user_type', 'owner');
+            localStorage.setItem('owner_auth_token', token);
+            localStorage.setItem('owner_auth_user', JSON.stringify(user));
+            localStorage.setItem('owner_user_type', 'owner');
 
             setCurrentOwner(buildOwner(user));
             return { success: true };
@@ -77,16 +95,16 @@ export function OwnerAuthProvider({ children }) {
             console.error('Logout failed:', e);
         }
         setCurrentOwner(null);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('user_type');
+        localStorage.removeItem('owner_auth_token');
+        localStorage.removeItem('owner_auth_user');
+        localStorage.removeItem('owner_user_type');
     }
 
     // Build a store-shaped object from the owner's DB data
     const ownerStore = useMemo(() => {
         if (!currentOwner) return null;
         return {
-            id: currentOwner.id,               // Real DB restaurant_owner_id
+            id: currentOwner.id,
             storeId: currentOwner.id,
             name: currentOwner.restaurant_name,
             branchName: currentOwner.restaurant_name,
@@ -102,7 +120,14 @@ export function OwnerAuthProvider({ children }) {
             firstName: currentOwner.first_name,
             lastName: currentOwner.last_name,
             email: currentOwner.email,
+            personalPhone: currentOwner.phone,
+            personalAddress: currentOwner.address,
             businessPermit: currentOwner.business_permit,
+            // Restaurant profile fields
+            cuisineType: currentOwner.cuisine_type || [],
+            priceRange: currentOwner.price_range || '',
+            businessRegistrationNumber: currentOwner.business_registration_number || '',
+            emailVerifiedAt: currentOwner.email_verified_at,
         };
     }, [currentOwner]);
 
@@ -111,6 +136,7 @@ export function OwnerAuthProvider({ children }) {
         try {
             const res = await api.get('/owner/user');
             setCurrentOwner(buildOwner(res.data));
+            localStorage.setItem('owner_auth_user', JSON.stringify(res.data));
         } catch (e) {
             console.error('Failed to refresh owner:', e);
         }
@@ -118,14 +144,19 @@ export function OwnerAuthProvider({ children }) {
 
     // Update the store in context after a profile update
     function updateStore(updatedData) {
-        setCurrentOwner(prev => prev ? { ...prev, ...updatedData } : prev);
+        setCurrentOwner(prev => {
+            if (!prev) return prev;
+            const next = { ...prev, ...updatedData };
+            localStorage.setItem('owner_auth_user', JSON.stringify(next));
+            return next;
+        });
     }
 
     // Set auth data directly after registration
     function setAuthData(token, user) {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_user', JSON.stringify(user));
-        localStorage.setItem('user_type', 'owner');
+        localStorage.setItem('owner_auth_token', token);
+        localStorage.setItem('owner_auth_user', JSON.stringify(user));
+        localStorage.setItem('owner_user_type', 'owner');
         setCurrentOwner(buildOwner(user));
     }
 

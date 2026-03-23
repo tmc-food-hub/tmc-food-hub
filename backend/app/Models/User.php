@@ -32,6 +32,7 @@ class User extends Authenticatable
         'business_address',
         'business_contact_number',
         'business_permit',
+        'email_verified_at',
     ];
 
     /**
@@ -55,5 +56,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'customer_id');
+    }
+
+    public function reviewHelpfulVotes()
+    {
+        return $this->hasMany(ReviewHelpfulVote::class);
     }
 }

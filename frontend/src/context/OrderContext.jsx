@@ -8,19 +8,21 @@ export function OrderProvider({ children }) {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Determine endpoint based on logged-in user type
+    // Determine endpoint based on URL
     function getOrdersEndpoint() {
-        const userType = localStorage.getItem('user_type');
-        return userType === 'owner' ? '/owner/orders' : '/orders';
+        const isOwnerPortal = window.location.pathname.startsWith('/owner-dashboard') || window.location.pathname.startsWith('/owner');
+        return isOwnerPortal ? '/owner/orders' : '/orders';
     }
 
     function getUpdateStatusEndpoint(id) {
-        const userType = localStorage.getItem('user_type');
-        return userType === 'owner' ? `/owner/orders/${id}/status` : `/orders/${id}/status`;
+        const isOwnerPortal = window.location.pathname.startsWith('/owner-dashboard') || window.location.pathname.startsWith('/owner');
+        return isOwnerPortal ? `/owner/orders/${id}/status` : `/orders/${id}/status`;
     }
 
     const fetchOrders = useCallback(async (isInitial = false, signal = null) => {
-        const token = localStorage.getItem('auth_token');
+        const isOwnerPortal = window.location.pathname.startsWith('/owner-dashboard') || window.location.pathname.startsWith('/owner');
+        const token = isOwnerPortal ? localStorage.getItem('owner_auth_token') : localStorage.getItem('auth_token');
+        
         if (!token || token === 'undefined' || token === 'null') {
             setLoading(false);
             return;

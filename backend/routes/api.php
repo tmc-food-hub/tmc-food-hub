@@ -5,6 +5,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public Auth Routes ────────────────────────────────────────────────────
@@ -22,6 +23,7 @@ Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->mid
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────
 Route::get('/restaurants', [MenuController::class, 'index']);
 Route::get('/restaurants/{id}/menu', [MenuController::class, 'show']);
+Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'index']);
 
 // ── Customer Password Reset Routes ────────────────────────────────────────
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
@@ -34,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/user/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/restaurants/{id}/reviewable-orders', [ReviewController::class, 'reviewableOrders']);
+    Route::post('/restaurants/{id}/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful']);
 
     // Customer: place orders and view/cancel their own orders
     Route::get('/orders', [OrderController::class, 'index']);
@@ -42,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ── Owner Authenticated Routes ────────────────────────────────────────────
-Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
+Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::get('/user', [OwnerAuthController::class, 'user']);
     Route::put('/user', [OwnerAuthController::class, 'updateProfile']);
     Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
@@ -64,4 +69,6 @@ Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
     Route::delete('/inventory/items/{id}', [InventoryController::class, 'destroyMenuItem']);
     Route::patch('/inventory/items/{id}/stock', [InventoryController::class, 'updateStock']);
     Route::patch('/inventory/items/{id}/availability', [InventoryController::class, 'toggleAvailability']);
+    Route::get('/reviews', [ReviewController::class, 'ownerIndex']);
+    Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply']);
 });

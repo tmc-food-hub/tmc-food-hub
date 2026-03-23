@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\MenuItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class InventoryController extends Controller
 {
@@ -55,7 +56,7 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|string',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'stock_level' => 'integer|min:0',
             'min_threshold' => 'integer|min:0',
             'unit' => 'string|max:50',
@@ -67,7 +68,7 @@ class InventoryController extends Controller
 
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $imagePath = asset('storage/' . $path);
+            $imagePath = Storage::url($path);
         }
 
         $item = MenuItem::create([
@@ -98,7 +99,7 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'image' => 'nullable|string',
-            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'available' => 'boolean',
             'stock_level' => 'integer|min:0',
             'min_threshold' => 'integer|min:0',
@@ -110,7 +111,7 @@ class InventoryController extends Controller
         
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $data['image'] = asset('storage/' . $path);
+            $data['image'] = Storage::url($path);
         }
 
         if ($request->has('stock_level') && $request->auto_toggle) {

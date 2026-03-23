@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\RestaurantOwner;
 use App\Models\MenuItem;
+use App\Models\Review;
 
 class MenuController extends Controller
 {
@@ -21,6 +22,9 @@ class MenuController extends Controller
         }])
         ->get()
         ->map(function ($r) {
+            $averageRating = Review::where('restaurant_owner_id', $r->id)->avg('rating');
+            $reviewsCount = Review::where('restaurant_owner_id', $r->id)->count();
+
             return [
                 'id'                      => $r->id,
                 'name'                    => $r->restaurant_name,
@@ -31,6 +35,8 @@ class MenuController extends Controller
                 'available_items_count'   => $r->menu_items_count,
                 'logo'                    => $r->logo,
                 'cover_image'             => $r->cover_image,
+                'rating'                  => $averageRating ? round($averageRating, 1) : 0,
+                'reviews_count'           => $reviewsCount,
             ];
         });
 
@@ -63,9 +69,10 @@ class MenuController extends Controller
                 'business_contact_number' => $restaurant->business_contact_number,
                 'logo'                    => $restaurant->logo,
                 'cover_image'             => $restaurant->cover_image,
+                'rating'                  => round((float) Review::where('restaurant_owner_id', $restaurant->id)->avg('rating'), 1),
+                'reviews_count'           => Review::where('restaurant_owner_id', $restaurant->id)->count(),
             ],
             'menu' => $menuByCategories
         ]);
     }
 }
-

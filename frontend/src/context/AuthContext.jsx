@@ -3,8 +3,19 @@ import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
+function getStoredCustomer() {
+    try {
+        const userType = localStorage.getItem('user_type');
+        if (userType !== 'customer') return null;
+        const raw = localStorage.getItem('auth_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(getStoredCustomer);
     const [token, setToken] = useState(localStorage.getItem('auth_token'));
     const [loading, setLoading] = useState(true);
 
@@ -15,14 +26,16 @@ export function AuthProvider({ children }) {
             api.get('/user')
                 .then((res) => {
                     setUser(res.data);
+                    localStorage.setItem('auth_user', JSON.stringify(res.data));
                 })
-                .catch(() => {
-                    // Token is invalid/expired
-                    setToken(null);
-                    setUser(null);
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('auth_user');
-                    localStorage.removeItem('user_type');
+                .catch((error) => {
+                    if (error?.response?.status === 401) {
+                        setToken(null);
+                        setUser(null);
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('auth_user');
+                        localStorage.removeItem('user_type');
+                    }
                 })
                 .finally(() => setLoading(false));
         } else {
@@ -46,6 +59,14 @@ export function AuthProvider({ children }) {
     const register = async (formData) => {
         const res = await api.post('/register', formData);
         return res.data;
+    };
+
+    const setAuthData = (newToken, userData) => {
+        setToken(newToken);
+        setUser(userData);
+        localStorage.setItem('auth_token', newToken);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('user_type', 'customer');
     };
 
     const sendOtp = async (email) => {
@@ -114,6 +135,7 @@ export function AuthProvider({ children }) {
         changePassword,
         updateProfile,
         logout,
+        setAuthData,
     };
 
     return (

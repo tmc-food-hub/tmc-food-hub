@@ -141,12 +141,12 @@ class OrderController extends Controller
 
         // Owners: strict FK-based ownership check
         if ($user instanceof RestaurantOwner) {
-            if ($order->restaurant_owner_id !== $user->id) {
+            if ($order->restaurant_owner_id != $user->id) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         } elseif ($user->role === 'customer') {
             // Customers can only cancel their own orders
-            if ($order->customer_id !== $user->id) {
+            if ($order->customer_id != $user->id) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
             if ($validated['status'] !== 'Cancelled') {

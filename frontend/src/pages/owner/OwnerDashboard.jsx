@@ -24,7 +24,9 @@ import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
 import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
+import ReviewsSection from './dashboard-sections/ReviewsSection';
 import { useOrders } from '../../context/OrderContext';
+import api from '../../api/axios';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
     {
@@ -74,7 +76,7 @@ const NAV_GROUPS = [
 ];
 
 function OwnerDashboard() {
-    const { currentOwner, ownerStore, logout, updateStore, loading } = useOwnerAuth();
+    const { currentOwner, ownerStore, logout, updateStore, refreshOwner, loading } = useOwnerAuth();
     const { orders, loading: ordersLoading } = useOrders();
     const navigate = useNavigate();
     const location = useLocation();
@@ -83,6 +85,27 @@ function OwnerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [payoutViewData, setPayoutViewData] = useState(null);
     const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
+    const [inventoryItems, setInventoryItems] = useState([]);
+    const [inventoryCategories, setInventoryCategories] = useState([]);
+    const [inventoryLoading, setInventoryLoading] = useState(true);
+
+    const refreshInventory = async () => {
+        if (!currentOwner) return;
+
+        setInventoryLoading(true);
+        try {
+            const [itemsRes, categoriesRes] = await Promise.all([
+                api.get('/owner/inventory/items'),
+                api.get('/owner/inventory/categories'),
+            ]);
+            setInventoryItems(itemsRes.data);
+            setInventoryCategories(categoriesRes.data);
+        } catch (error) {
+            console.error('Failed to refresh owner inventory data:', error);
+        } finally {
+            setInventoryLoading(false);
+        }
+    };
 
     useEffect(() => {
         const isMissingOrPlaceholder = (img) => !img || img.includes('placeholder.svg');
@@ -95,6 +118,16 @@ function OwnerDashboard() {
             return () => clearTimeout(t);
         }
     }, [welcomeBanner, ownerStore]);
+
+    useEffect(() => {
+        if (currentOwner) {
+            refreshInventory();
+        } else {
+            setInventoryItems([]);
+            setInventoryCategories([]);
+            setInventoryLoading(false);
+        }
+    }, [currentOwner]);
 
     // Prevent redirect until authentication check is complete
     if (loading) {
@@ -129,8 +162,14 @@ function OwnerDashboard() {
     if (active === 'earnings' || active === 'transactions' || active === 'payout' || active === 'payment-settings') {
         activeLabel = 'Earnings';
         subTitle = 'Track your revenue, payouts, and financial performance over time.';
+    } else if (active === 'reviews') {
+        activeLabel = 'Reviews';
+        subTitle = 'Monitor customer ratings, feedback, and restaurant replies in one place.';
     } else if (active === 'analytics') {
         subTitle = 'Monitor your store\'s performance and sales metrics.';
+    } else if (active === 'settings') {
+        activeLabel = 'Settings';
+        subTitle = 'Manage your account, notifications, payment details, and restaurant preferences.';
     }
 
     // Check if a parent item is "active" because one of its subItems is active
@@ -285,17 +324,38 @@ function OwnerDashboard() {
                     {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
 
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
-                    {active === 'inventory' && <InventorySection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'menu' && <MenuSection store={ownerStore} onUpdate={updateStore} />}
+                    {active === 'inventory' && (
+                        <InventorySection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            items={inventoryItems}
+                            setItems={setInventoryItems}
+                            loading={inventoryLoading}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
+                    {active === 'menu' && (
+                        <MenuSection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            items={inventoryItems}
+                            setItems={setInventoryItems}
+                            categories={inventoryCategories}
+                            setCategories={setInventoryCategories}
+                            loading={inventoryLoading}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
                     {active === 'categories' && <CategoriesSection />}
                     {active === 'promotions' && <PromotionsSection />}
+                    {active === 'reviews' && <ReviewsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
                     {active === 'earnings' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
                     {active === 'transactions' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
                     {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
                     {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} />}
+                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} currentOwner={currentOwner} refreshOwner={refreshOwner} />}
                 </div>
             </div>
         </div>

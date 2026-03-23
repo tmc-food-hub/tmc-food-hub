@@ -235,6 +235,12 @@ function ProfilePage() {
                                     <span className={styles.badgePulse} />
                                     Active
                                 </span>
+                                {user?.email_verified_at && (
+                                    <span className={`${styles.badge} ${styles.badgeVerified}`}>
+                                        <i className="bi bi-patch-check-fill" />
+                                        &nbsp;Verified
+                                    </span>
+                                )}
                                 <span className={`${styles.badge} ${styles.badgeMember}`}>
                                     <i className="bi bi-calendar2-check" />
                                     &nbsp;{memberSince}

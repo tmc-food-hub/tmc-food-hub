@@ -38,5 +38,9 @@ class Order extends Model
     {
         return $this->belongsTo(RestaurantOwner::class, 'restaurant_owner_id');
     }
-}
 
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+}

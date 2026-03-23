@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class OwnerAuthController extends Controller
@@ -212,10 +213,15 @@ class OwnerAuthController extends Controller
             'first_name' => ['required', 'string', 'min:2', 'max:255'],
             'last_name' => ['required', 'string', 'min:2', 'max:255'],
             'phone' => ['nullable', 'string', 'min:7', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
             'restaurant_name' => ['required', 'string', 'min:2', 'max:255'],
             'business_address' => 'required|string|min:5|max:500',
             'business_contact_number' => ['required', 'string', 'min:7', 'max:20'],
             'business_permit' => 'nullable|string|max:255',
+            'business_registration_number' => 'nullable|string|max:255',
+            'cuisine_type' => 'nullable|array',
+            'cuisine_type.*' => 'string|max:50',
+            'price_range' => 'nullable|string|max:10',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'cover_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -225,12 +231,12 @@ class OwnerAuthController extends Controller
 
         if ($request->hasFile('logo_file')) {
             $path = $request->file('logo_file')->store('restaurants/logos', 'public');
-            $data['logo'] = asset('storage/' . $path);
+            $data['logo'] = Storage::url($path);
         }
 
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('restaurants/covers', 'public');
-            $data['cover_image'] = asset('storage/' . $path);
+            $data['cover_image'] = Storage::url($path);
         }
 
         $owner->update($data);

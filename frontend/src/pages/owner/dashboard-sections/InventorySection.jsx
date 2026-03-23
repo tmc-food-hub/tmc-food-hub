@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
     Package, 
     TrendingDown, 
@@ -13,10 +13,9 @@ import {
 } from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 
-export default function InventorySection({ onUpdate }) {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function InventorySection({ items = [], setItems, loading = false, refreshInventory }) {
     const [search] = useState('');
     const [editItem, setEditItem] = useState(null);
     const [refillItem, setRefillItem] = useState(null);
@@ -29,22 +28,6 @@ export default function InventorySection({ onUpdate }) {
 
     // Success/Error Dialog State
     const [dialog, setDialog] = useState(null); // { type: 'success' | 'error', title: string, desc: string }
-
-    // Fetch items on mount
-    useEffect(() => {
-        fetchItems();
-    }, []);
-
-    const fetchItems = async () => {
-        try {
-            const res = await api.get('/owner/inventory/items');
-            setItems(res.data);
-        } catch (error) {
-            console.error('Failed to fetch inventory:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Top Metric stats
     const totalItems = items.length;
@@ -79,7 +62,8 @@ export default function InventorySection({ onUpdate }) {
 
             const res = await api.put(`/owner/inventory/items/${editItem.id}`, payload);
             
-            setItems(items.map(i => i.id === editItem.id ? res.data : i));
+            setItems(prev => prev.map(i => i.id === editItem.id ? { ...i, ...res.data } : i));
+            await refreshInventory?.();
             setEditItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${editItem.title} have been successfully saved.` });
         } catch (error) {
@@ -98,7 +82,8 @@ export default function InventorySection({ onUpdate }) {
             const newStock = (refillItem.stock_level || 0) + addQty;
             const res = await api.patch(`/owner/inventory/items/${refillItem.id}/stock`, { stock_level: newStock });
             
-            setItems(items.map(i => i.id === refillItem.id ? res.data : i));
+            setItems(prev => prev.map(i => i.id === refillItem.id ? { ...i, ...res.data } : i));
+            await refreshInventory?.();
             setRefillItem(null);
             setDialog({ type: 'success', title: 'Inventory Updated', desc: `Stock levels for ${refillItem.title} have been successfully saved.` });
         } catch (error) {
@@ -110,7 +95,8 @@ export default function InventorySection({ onUpdate }) {
     const handleToggleAvailable = async (id, currentVal) => {
         try {
             const res = await api.patch(`/owner/inventory/items/${id}/availability`, { available: !currentVal });
-            setItems(items.map(i => i.id === id ? res.data : i));
+            setItems(prev => prev.map(i => i.id === id ? { ...i, ...res.data } : i));
+            await refreshInventory?.();
         } catch (error) {
             console.error('Toggle failed:', error);
         }
@@ -245,7 +231,7 @@ export default function InventorySection({ onUpdate }) {
                                             <td>
                                                 <div className={styles.inventoryItemCell}>
                                                     <div className={styles.inventoryItemImgBadge}>
-                                                        <img src={item.image} alt={item.title} />
+                                                        <img src={resolveMediaUrl(item.image)} alt={item.title} />
                                                     </div>
                                                     <span className={styles.itemName}>{item.title}</span>
                                                 </div>

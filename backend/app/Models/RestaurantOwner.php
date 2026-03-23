@@ -29,6 +29,9 @@ class RestaurantOwner extends Authenticatable
         'business_address',
         'business_contact_number',
         'business_permit',
+        'cuisine_type',
+        'price_range',
+        'business_registration_number',
         'logo',
         'cover_image',
     ];
@@ -53,6 +56,7 @@ class RestaurantOwner extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'cuisine_type' => 'array',
         ];
     }
 
@@ -64,5 +68,38 @@ class RestaurantOwner extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class , 'restaurant_owner_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'restaurant_owner_id');
+    }
+
+    public function getLogoAttribute($value)
+    {
+        return $this->normalizeMediaPath($value);
+    }
+
+    public function getCoverImageAttribute($value)
+    {
+        return $this->normalizeMediaPath($value);
+    }
+
+    private function normalizeMediaPath($value)
+    {
+        if (!$value || !is_string($value)) {
+            return $value;
+        }
+
+        if (preg_match('/^https?:\/\//i', $value)) {
+            $path = parse_url($value, PHP_URL_PATH);
+            return $path ?: $value;
+        }
+
+        if (str_starts_with($value, 'storage/')) {
+            return '/' . $value;
+        }
+
+        return $value;
     }
 }

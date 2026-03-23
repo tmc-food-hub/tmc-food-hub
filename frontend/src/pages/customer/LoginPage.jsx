@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
+import { getFirstApiError } from '../../utils/apiErrors';
 import styles from './AuthPages.module.css';
 
 function LoginPage() {
@@ -44,7 +45,7 @@ function LoginPage() {
             await login(email, password);
             navigate('/profile');
         } catch (err) {
-            const message = err.response?.data?.message || 'Login failed. Please try again.';
+            const message = getFirstApiError(err, 'Login failed. Please try again.');
             setErrors({ email: message, password: '' });
         } finally {
             setIsLoading(false);

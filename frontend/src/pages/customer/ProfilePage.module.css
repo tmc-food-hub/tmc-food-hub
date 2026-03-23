@@ -149,6 +149,18 @@
     color: #F59E0B;
 }
 
+.badgeVerified {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+.profilePageDark .badgeVerified {
+    background: rgba(29, 78, 216, 0.1);
+    border-color: rgba(29, 78, 216, 0.25);
+    color: #60A5FA;
+}
+
 .identityActions {
     display: flex;
     gap: 0.65rem;
