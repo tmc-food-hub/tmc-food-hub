@@ -406,3 +406,113 @@
         justify-content: center;
     }
 }
+
+/* ── Dark Mode ────────────────────────────────── */
+.myOrdersPageDark {
+    background: #0D1117;
+}
+
+.myOrdersPageDark .title {
+    color: #F9FAFB;
+}
+
+.myOrdersPageDark .subtitle {
+    color: #9CA3AF;
+}
+
+.myOrdersPageDark .tabBar {
+    border-bottom-color: #21262D;
+}
+
+.myOrdersPageDark .tabBtn {
+    color: #9CA3AF;
+}
+
+.myOrdersPageDark .tabBtn:hover, .myOrdersPageDark .tabBtnActive {
+    color: #EF4444;
+}
+
+.myOrdersPageDark .tabBtnActive {
+    border-bottom-color: #EF4444;
+}
+
+.myOrdersPageDark .tabCount {
+    background: #21262D;
+    color: #9CA3AF;
+}
+
+.myOrdersPageDark .tabBtnActive .tabCount {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+}
+
+.myOrdersPageDark .emptyState {
+    background: #161B22;
+    border-color: #21262D;
+}
+
+.myOrdersPageDark .emptyState h3 {
+    color: #F9FAFB;
+}
+
+.myOrdersPageDark .emptyState p {
+    color: #9CA3AF;
+}
+
+.myOrdersPageDark .orderCard {
+    background: #161B22;
+    border-color: #21262D;
+}
+
+.myOrdersPageDark .orderCard:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.myOrdersPageDark .orderId {
+    background: #0D1117;
+    color: #E5E7EB;
+}
+
+.myOrdersPageDark .orderRestaurant {
+    color: #F9FAFB;
+}
+
+.myOrdersPageDark .orderItemChip {
+    background: #0D1117;
+    border-color: #21262D;
+}
+
+.myOrdersPageDark .orderItemName {
+    color: #E5E7EB;
+}
+
+.myOrdersPageDark .orderTotal {
+    color: #F9FAFB;
+}
+
+.myOrdersPageDark .reorderBtn {
+    background: #1F2937;
+    color: #E5E7EB;
+    border-color: #374151;
+}
+
+.myOrdersPageDark .reorderBtn:hover {
+    background: #253343;
+    border-color: #4B5563;
+}
+
+.myOrdersPageDark .scheduledBadge {
+    background: rgba(124, 58, 237, 0.15);
+    border-color: rgba(124, 58, 237, 0.3);
+    color: #A78BFA;
+}
+
+.myOrdersPageDark .etaBar {
+    background: rgba(146, 64, 14, 0.15);
+    border-color: rgba(146, 64, 14, 0.3);
+    color: #FBBF24;
+}
+
+.myOrdersPageDark .current {
+    color: #9CA3AF;
+}

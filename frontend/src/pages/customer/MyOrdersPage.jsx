@@ -10,6 +10,7 @@ import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import { useAuth } from '../../context/AuthContext';
 import { CartContext } from '../../components/ui/CartContext';
+import { ThemeContext } from '../../components/ui/ThemeContext';
 import { useContext } from 'react';
 import styles from './MyOrdersPage.module.css';
 
@@ -30,7 +31,7 @@ function statusMeta(s) {
     return map[s] || { color: '#6B7280', bg: '#F3F4F6', icon: <Clock size={12} /> };
 }
 
-function OrderCard({ order, navigate }) {
+function OrderCard({ order, navigate, isDarkMode }) {
     const meta = statusMeta(order.status);
     const isActive = !['Delivered', 'Cancelled'].includes(order.status);
     const date = new Date(order.placedAt);
@@ -44,7 +45,7 @@ function OrderCard({ order, navigate }) {
                     <span className={styles.orderId}>{order.orderNumber}</span>
                     <span className={styles.orderDate}>{dateStr} at {timeStr}</span>
                 </div>
-                <span className={styles.statusPill} style={{ background: meta.bg, color: meta.color }}>
+                <span className={styles.statusPill} style={isDarkMode ? { background: `${meta.color}20`, color: meta.color, border: `1px solid ${meta.color}40` } : { background: meta.bg, color: meta.color }}>
                     {meta.icon} {order.status}
                 </span>
             </div>
@@ -121,9 +122,10 @@ function OrderCard({ order, navigate }) {
 }
 
 function MyOrdersPage() {
-    const { user, isAuthenticated, loading } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
     const { activeOrders, completedOrders, cancelledOrders } = useOrders();
     const { reorder } = useContext(CartContext);
+    const { isDarkMode } = useContext(ThemeContext);
     const [tab, setTab] = useState('active');
     const navigate = useNavigate();
 
@@ -146,9 +148,9 @@ function MyOrdersPage() {
 
     return (
         <>
-            <div className="site-wrap">
+            <div className={`site-wrap ${isDarkMode ? 'dark-mode-global' : ''}`}>
                 <Navbar />
-                <main className={styles.myOrdersPage}>
+                <main className={`${styles.myOrdersPage} ${isDarkMode ? styles.myOrdersPageDark : ''}`}>
                     <div className="container-lg">
                         {/* Header */}
                         <div className={styles.pageHeader}>
@@ -188,7 +190,7 @@ function MyOrdersPage() {
                                 </div>
                             ) : (
                                 displayed.map(order => (
-                                    <OrderCard key={order.id} order={{...order, handleReorder}} navigate={navigate} />
+                                    <OrderCard key={order.id} order={{...order, handleReorder}} navigate={navigate} isDarkMode={isDarkMode} />
                                 ))
                             )}
                         </div>
