@@ -1,6 +1,6 @@
 <?php
 
-// Test endpoint for curl
+// Test endpoint for curl verification
 if (isset($_GET['test'])) {
 	header('Content-Type: application/json');
 	echo json_encode([
@@ -12,20 +12,22 @@ if (isset($_GET['test'])) {
 	exit;
 }
 
-// Load Adminer first
-require_once __DIR__ . '/adminer.php';
-
+/** 
+ * Adminer Object Creator 
+ * This must be defined BEFORE including adminer.php or inside a script that is executed BEFORE adminer.php 
+ */
 function adminer_object() {
-	// Load the plugin AFTER adminer.php establishes the Adminer\Plugin class
+	// 1. Ensure the login-password-less.php file is loaded (contains the Plugin base class extensions)
 	require_once __DIR__ . '/login-password-less.php';
 	
-	// Create custom Adminer class that includes plugins
+	// 2. Define a custom class that ties the plugins together
 	class CustomAdminer extends Adminer\Adminer {
 		protected $plugins;
 		
 		function __construct() {
+			// Initialize the plugin with no requirement, let login() handle it
 			$this->plugins = array(
-				new AdminerLoginPasswordLess(password_hash("", PASSWORD_DEFAULT)),
+				new AdminerLoginPasswordLess(null),
 			);
 		}
 		
@@ -45,6 +47,7 @@ function adminer_object() {
 					return false;
 				}
 			}
+			// Always successful if it reaches here
 			return true;
 		}
 	}
@@ -52,3 +55,5 @@ function adminer_object() {
 	return new CustomAdminer();
 }
 
+// 3. FINALLY load Adminer itself
+require_once __DIR__ . '/adminer.php';

@@ -6,10 +6,10 @@ import axios from 'axios';
 // 3. If on localhost, default to php artisan serve (http://127.0.0.1:8000/api)
 // 4. Otherwise, use the production backend
 const hostname = window.location.hostname;
-const isLocal = hostname === 'localhost' 
-    || hostname === '127.0.0.1' 
-    || hostname.startsWith('192.168.') 
-    || hostname.startsWith('10.') 
+const isLocal = hostname === 'localhost'
+    || hostname === '127.0.0.1'
+    || hostname.startsWith('192.168.')
+    || hostname.startsWith('10.')
     || hostname.startsWith('172.')
     || hostname.endsWith('.local')
     || hostname.endsWith('.test');
@@ -29,7 +29,15 @@ const api = axios.create({
 
 // Attach Bearer token from localStorage on every request
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('auth_token');
+    let token = null;
+
+    // Check if the request is strictly for the owner portal
+    if (config.url && config.url.startsWith('/owner')) {
+        token = localStorage.getItem('owner_auth_token');
+    } else {
+        token = localStorage.getItem('auth_token');
+    }
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }

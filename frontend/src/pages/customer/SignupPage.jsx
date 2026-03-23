@@ -25,8 +25,8 @@ function SignupPage() {
     const [verifiedEmail, setVerifiedEmail] = useState('');
     const otpInputRefs = useRef([]);
 
-    const { register, sendOtp, verifyOtp } = useAuth();
-    const { setAuthData } = useOwnerAuth();
+    const { register, sendOtp, verifyOtp, setAuthData: setCustomerAuthData } = useAuth();
+    const { setAuthData: setOwnerAuthData } = useOwnerAuth();
     const navigate = useNavigate();
     const apiFieldMap = {
         phone: 'contactNumber',
@@ -282,10 +282,12 @@ function SignupPage() {
             if (role === 'Partner') {
                 // Auto-login the owner using the token returned from registration
                 const { token, user } = res.data;
-                setAuthData(token, user);
+                setOwnerAuthData(token, user);
                 navigate('/owner-dashboard', { state: { signupSuccess: true } });
             } else {
-                navigate('/login', { state: { signupSuccess: true } });
+                const { token, user } = res.data;
+                setCustomerAuthData(token, user);
+                navigate('/', { state: { signupSuccess: true } });
             }
 
         } catch (err) {

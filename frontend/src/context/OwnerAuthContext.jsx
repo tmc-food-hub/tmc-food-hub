@@ -6,9 +6,9 @@ const OwnerAuthContext = createContext(null);
 
 function getStoredOwner() {
     try {
-        const userType = localStorage.getItem('user_type');
+        const userType = localStorage.getItem('owner_user_type');
         if (userType !== 'owner') return null;
-        const raw = localStorage.getItem('auth_user');
+        const raw = localStorage.getItem('owner_auth_user');
         return raw ? JSON.parse(raw) : null;
     } catch {
         return null;
@@ -35,21 +35,21 @@ export function OwnerAuthProvider({ children }) {
 
     // Validate owner on mount via token
     useEffect(() => {
-        const token = localStorage.getItem('auth_token');
-        const userType = localStorage.getItem('user_type');
+        const token = localStorage.getItem('owner_auth_token');
+        const userType = localStorage.getItem('owner_user_type');
 
         if (token && userType === 'owner') {
             api.get('/owner/user')
                 .then(res => {
                     setCurrentOwner(buildOwner(res.data));
-                    localStorage.setItem('auth_user', JSON.stringify(res.data));
+                    localStorage.setItem('owner_auth_user', JSON.stringify(res.data));
                 })
                 .catch((error) => {
                     if (error?.response?.status === 401) {
                         setCurrentOwner(null);
-                        localStorage.removeItem('auth_token');
-                        localStorage.removeItem('auth_user');
-                        localStorage.removeItem('user_type');
+                        localStorage.removeItem('owner_auth_token');
+                        localStorage.removeItem('owner_auth_user');
+                        localStorage.removeItem('owner_user_type');
                     }
                 })
                 .finally(() => setLoading(false));
@@ -75,9 +75,9 @@ export function OwnerAuthProvider({ children }) {
             const res = await api.post('/owner/login', { email, password });
             const { user, token } = res.data;
 
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('auth_user', JSON.stringify(user));
-            localStorage.setItem('user_type', 'owner');
+            localStorage.setItem('owner_auth_token', token);
+            localStorage.setItem('owner_auth_user', JSON.stringify(user));
+            localStorage.setItem('owner_user_type', 'owner');
 
             setCurrentOwner(buildOwner(user));
             return { success: true };
@@ -95,9 +95,9 @@ export function OwnerAuthProvider({ children }) {
             console.error('Logout failed:', e);
         }
         setCurrentOwner(null);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('user_type');
+        localStorage.removeItem('owner_auth_token');
+        localStorage.removeItem('owner_auth_user');
+        localStorage.removeItem('owner_user_type');
     }
 
     // Build a store-shaped object from the owner's DB data
@@ -136,7 +136,7 @@ export function OwnerAuthProvider({ children }) {
         try {
             const res = await api.get('/owner/user');
             setCurrentOwner(buildOwner(res.data));
-            localStorage.setItem('auth_user', JSON.stringify(res.data));
+            localStorage.setItem('owner_auth_user', JSON.stringify(res.data));
         } catch (e) {
             console.error('Failed to refresh owner:', e);
         }
@@ -147,16 +147,16 @@ export function OwnerAuthProvider({ children }) {
         setCurrentOwner(prev => {
             if (!prev) return prev;
             const next = { ...prev, ...updatedData };
-            localStorage.setItem('auth_user', JSON.stringify(next));
+            localStorage.setItem('owner_auth_user', JSON.stringify(next));
             return next;
         });
     }
 
     // Set auth data directly after registration
     function setAuthData(token, user) {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_user', JSON.stringify(user));
-        localStorage.setItem('user_type', 'owner');
+        localStorage.setItem('owner_auth_token', token);
+        localStorage.setItem('owner_auth_user', JSON.stringify(user));
+        localStorage.setItem('owner_user_type', 'owner');
         setCurrentOwner(buildOwner(user));
     }
 

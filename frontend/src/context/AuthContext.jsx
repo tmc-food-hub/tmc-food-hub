@@ -61,6 +61,14 @@ export function AuthProvider({ children }) {
         return res.data;
     };
 
+    const setAuthData = (newToken, userData) => {
+        setToken(newToken);
+        setUser(userData);
+        localStorage.setItem('auth_token', newToken);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem('user_type', 'customer');
+    };
+
     const sendOtp = async (email) => {
         const res = await api.post('/send-otp', { email });
         return res.data;
@@ -127,6 +135,7 @@ export function AuthProvider({ children }) {
         changePassword,
         updateProfile,
         logout,
+        setAuthData,
     };
 
     return (
