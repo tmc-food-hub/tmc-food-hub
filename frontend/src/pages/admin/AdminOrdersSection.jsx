@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     ShoppingCart, Clock, CheckCircle2, AlertTriangle, Download,
     Search, Filter, MoreVertical, X, MapPin, Phone, ChevronRight,
-    Package, Truck, CreditCard, ChevronDown
+    Package, Truck, CreditCard, ChevronDown, Loader
 } from 'lucide-react';
 import styles from './AdminOrdersSection.module.css';
 
@@ -162,25 +162,80 @@ export default function AdminOrdersSection() {
     const [dateFilter, setDateFilter] = useState('Today');
     const [valueFilter, setValueFilter] = useState('Any');
     const [searchQuery, setSearchQuery] = useState('');
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [stats, setStats] = useState({
+        total: 0,
+        inProgress: 0,
+        completed: 0,
+        refund: 0,
+    });
+
+    useEffect(() => {
+        fetchOrders();
+    }, [activeTab]);
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            const statusParam = activeTab === 'All' ? '' : `&status=${activeTab}`;
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/admin/orders?per_page=50${statusParam}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders');
+            }
+
+            const data = await response.json();
+            setOrders(data.data || []);
+
+            // Calculate stats
+            const allOrders = data.data || [];
+            setStats({
+                total: allOrders.length,
+                inProgress: allOrders.filter(o => ['Pending', 'Preparing', 'On the way'].includes(o.status)).length,
+                completed: allOrders.filter(o => o.status === 'Completed').length,
+                refund: allOrders.filter(o => o.status === 'Refund Requested').length,
+            });
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError(err.message);
+            // Fallback to mock data for development
+            setOrders(MOCK_ORDERS);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const STATS_DYNAMIC = [
+        { label: 'Total Orders', value: stats.total.toString(), trend: '+12%', icon: <ShoppingCart size={18} />, color: '#FEF2F2', iconColor: '#DC2626' },
+        { label: 'In Progress', value: stats.inProgress.toString(), badge: 'Active', icon: <Clock size={18} />, color: '#FFF7ED', iconColor: '#EA580C' },
+        { label: 'Completed', value: stats.completed.toString(), trend: '+12%', icon: <CheckCircle2 size={18} />, color: '#ECFDF5', iconColor: '#059669' },
+        { label: 'Refund Requests', value: stats.refund.toString(), trend: stats.refund > 0 ? '+2%' : '', icon: <AlertTriangle size={18} />, color: '#FEF2F2', iconColor: '#DC2626' },
+    ];
 
     const filteredOrders = useMemo(() => {
-        let orders = MOCK_ORDERS;
-        if (activeTab !== 'All') {
-            orders = orders.filter(o => {
-                if (activeTab === 'On the way') return o.status.toLowerCase() === 'on the way';
-                return o.status.toLowerCase() === activeTab.toLowerCase();
-            });
-        }
+        let filtered = orders;
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
-            orders = orders.filter(o =>
+            filtered = filtered.filter(o =>
                 o.id.toLowerCase().includes(q) ||
                 o.customer.name.toLowerCase().includes(q) ||
                 o.restaurant.name.toLowerCase().includes(q)
             );
         }
-        return orders;
-    }, [activeTab, searchQuery]);
+        return filtered;
+    }, [orders, searchQuery]);
 
     const clearFilters = () => {
         setRestaurantFilter('All Restaurants');
@@ -195,7 +250,7 @@ export default function AdminOrdersSection() {
         <div className={styles.container}>
             {/* Stats Row */}
             <div className={styles.statsRow}>
-                {STATS.map(stat => (
+                {STATS_DYNAMIC.map(stat => (
                     <div key={stat.label} className={styles.statCard}>
                         <div className={styles.statIcon} style={{ background: stat.color, color: stat.iconColor }}>
                             {stat.icon}
@@ -211,6 +266,19 @@ export default function AdminOrdersSection() {
                     </div>
                 ))}
             </div>
+
+            {error && (
+                <div style={{
+                    padding: '12px 16px',
+                    background: '#FEE2E2',
+                    border: '1px solid #FECACA',
+                    borderRadius: '8px',
+                    color: '#991B1B',
+                    marginBottom: '16px',
+                }}>
+                    {error}
+                </div>
+            )}
 
             {/* Tab Filters & Export */}
             <div className={styles.filtersBar}>
@@ -276,66 +344,82 @@ export default function AdminOrdersSection() {
 
             {/* Orders Table */}
             <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Restaurant</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Payment</th>
-                            <th>Status</th>
-                            <th>Time</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredOrders.map(order => (
-                            <tr key={order.id} className={styles.tableRow} onClick={() => setSelectedOrder(order)}>
-                                <td className={styles.orderId}>#{order.id}</td>
-                                <td>
-                                    <div className={styles.customerCell}>
-                                        <div className={styles.avatarCircle} style={{ background: getInitialColor(order.customer.name) }}>
-                                            {getInitials(order.customer.name)}
-                                        </div>
-                                        <span>{order.customer.name}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.restaurantCell}>
-                                        <div className={styles.restaurantIcon} style={{ background: getInitialColor(order.restaurant.name) }}>
-                                            {order.restaurant.name[0]}
-                                        </div>
-                                        <div>
-                                            <div className={styles.restaurantName}>{order.restaurant.name}</div>
-                                            <div className={styles.restaurantType}>{order.restaurant.type}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className={styles.itemsCell}>{order.items}</td>
-                                <td className={styles.totalCell}>${order.total.toFixed(2)}</td>
-                                <td>{order.payment}</td>
-                                <td>
-                                    <span className={`${styles.statusPill} ${getStatusClass(order.status)}`}>
-                                        {order.status}
-                                    </span>
-                                </td>
-                                <td className={styles.timeCell}>{order.time}</td>
-                                <td>
-                                    <button className={styles.actionDots} onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}>
-                                        <MoreVertical size={16} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {filteredOrders.length === 0 && (
+                {loading ? (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '40px',
+                        gap: '12px',
+                    }}>
+                        <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} />
+                        <span>Loading orders...</span>
+                    </div>
+                ) : filteredOrders.length === 0 ? (
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '40px',
+                        color: '#6B7280',
+                    }}>
+                        No orders found for this filter.
+                    </div>
+                ) : (
+                    <table className={styles.table}>
+                        <thead>
                             <tr>
-                                <td colSpan={9} className={styles.emptyRow}>No orders found for this filter.</td>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Restaurant</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                                <th>Actions</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredOrders.map(order => (
+                                <tr key={order.id} className={styles.tableRow} onClick={() => setSelectedOrder(order)}>
+                                    <td className={styles.orderId}>#{order.id}</td>
+                                    <td>
+                                        <div className={styles.customerCell}>
+                                            <div className={styles.avatarCircle} style={{ background: getInitialColor(order.customer.name) }}>
+                                                {getInitials(order.customer.name)}
+                                            </div>
+                                            <span>{order.customer.name}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.restaurantCell}>
+                                            <div className={styles.restaurantIcon} style={{ background: getInitialColor(order.restaurant.name) }}>
+                                                {order.restaurant.name[0]}
+                                            </div>
+                                            <div>
+                                                <div className={styles.restaurantName}>{order.restaurant.name}</div>
+                                                <div className={styles.restaurantType}>{order.restaurant.type}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className={styles.itemsCell}>{order.items}</td>
+                                    <td className={styles.totalCell}>₱{order.total.toFixed(2)}</td>
+                                    <td>{order.payment}</td>
+                                    <td>
+                                        <span className={`${styles.statusPill} ${getStatusClass(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </td>
+                                    <td className={styles.timeCell}>{order.time}</td>
+                                    <td>
+                                        <button className={styles.actionDots} onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}>
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {/* Order Details Slide-out Panel */}
@@ -420,7 +504,7 @@ export default function AdminOrdersSection() {
                                                 <div className={styles.itemName}>{item.name}</div>
                                                 <div className={styles.itemQty}>Qty: x{item.qty}</div>
                                             </div>
-                                            <div className={styles.itemPrice}>${item.price.toFixed(2)}</div>
+                                            <div className={styles.itemPrice}>₱{item.price.toFixed(2)}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -440,23 +524,23 @@ export default function AdminOrdersSection() {
                             <div className={styles.priceBreakdown}>
                                 <div className={styles.priceLine}>
                                     <span>Subtotal</span>
-                                    <span>${selectedOrder.details.subtotal.toFixed(2)}</span>
+                                    <span>₱{selectedOrder.details.subtotal.toFixed(2)}</span>
                                 </div>
                                 {selectedOrder.details.deliveryFee > 0 && (
                                     <div className={styles.priceLine}>
                                         <span>Delivery Fee</span>
-                                        <span>${selectedOrder.details.deliveryFee.toFixed(2)}</span>
+                                        <span>₱{selectedOrder.details.deliveryFee.toFixed(2)}</span>
                                     </div>
                                 )}
                                 {selectedOrder.details.discount && (
                                     <div className={`${styles.priceLine} ${styles.discountLine}`}>
                                         <span>Discount ({selectedOrder.details.discount.code})</span>
-                                        <span>-${Math.abs(selectedOrder.details.discount.amount).toFixed(2)}</span>
+                                        <span>-₱{Math.abs(selectedOrder.details.discount.amount).toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className={styles.totalLine}>
                                     <span>Total Amount</span>
-                                    <span className={styles.totalAmount}>${selectedOrder.details.totalAmount.toFixed(2)} <small>USD</small></span>
+                                    <span className={styles.totalAmount}>₱{selectedOrder.details.totalAmount.toFixed(2)} <small>PHP</small></span>
                                 </div>
                             </div>
                         </div>

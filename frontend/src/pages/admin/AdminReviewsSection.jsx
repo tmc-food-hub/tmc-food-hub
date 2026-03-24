@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     Star, Flag, Trash2, Download, ChevronDown, Eye, X, CheckCircle2,
     AlertTriangle, Info, Settings, Plus, Minus, MessageSquare, Shield,
-    Check, ExternalLink
+    Check, ExternalLink, Loader
 } from 'lucide-react';
 import styles from './AdminReviewsSection.module.css';
 
-/* ─── Mock Data ─────────────────────────────────────────────────────────────── */
+/* ─── Mock Data (Fallback) ─────────────────────────────────────────────────────────────── */
 const MOCK_REVIEWS = [
     {
         id: 1, reviewer: 'Juan Dela Cruz', reviewCount: 42, restaurant: 'Jollibee BGC', date: 'Mar 16, 2026',
@@ -142,12 +142,56 @@ export default function AdminReviewsSection() {
     const [flagFilter, setFlagFilter] = useState('All');
     const [dateFilter, setDateFilter] = useState('Today');
     const [adminNote, setAdminNote] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchReviews();
+    }, [activeTab]);
+
+    const fetchReviews = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            const statusParam = activeTab === 'All' ? '' : `&status=${activeTab}`;
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/admin/reviews?per_page=50${statusParam}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch reviews');
+            }
+
+            const data = await response.json();
+            setReviews(data.data || []);
+        } catch (err) {
+            console.error('Error fetching reviews:', err);
+            setError(err.message);
+            // Fallback to mock data for development
+            setReviews(MOCK_REVIEWS);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredReviews = useMemo(() => {
-        let r = MOCK_REVIEWS;
-        if (activeTab !== 'All') r = r.filter(x => x.status.toLowerCase() === activeTab.toLowerCase());
+        let r = reviews;
+        if (ratingFilter !== 'All') {
+            r = r.filter(x => x.rating === parseInt(ratingFilter));
+        }
+        if (flagFilter !== 'All') {
+            r = r.filter(x => x.flag.toLowerCase() === flagFilter.toLowerCase());
+        }
         return r;
-    }, [activeTab]);
+    }, [reviews, ratingFilter, flagFilter]);
 
     const handleExport = () => { setShowExport(false); setToast({ msg: 'Export ready - downloading now', sub: 'TMC_Foodhub_Reviews_Export.csv' }); setTimeout(()=>setToast(null),4000); };
     const handleSaveFees = () => { setShowFeeSettings(false); setToast({ msg: 'Success', sub: 'Fee settings updated successfully' }); setTimeout(()=>setToast(null),4000); };
@@ -203,47 +247,61 @@ export default function AdminReviewsSection() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead><tr><th>Reviewer</th><th>Restaurant</th><th>Rating</th><th>Review</th><th>Flag</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        {filteredReviews.map(rev => (
-                            <tr key={rev.id} className={styles.tableRow}>
-                                <td>
-                                    <div className={styles.reviewerCell}>
-                                        <div className={styles.avatarCircle} style={{background:getColor(rev.reviewer)}}>{getInitials(rev.reviewer)}</div>
-                                        <div>
-                                            <div className={styles.reviewerName}>{rev.reviewer}</div>
-                                            <div className={styles.reviewerCount}>{rev.reviewCount} reviews</div>
+                {loading && (
+                    <div style={{display:'flex',justifyContent:'center',alignItems:'center',padding:'40px',gap:'10px',color:'#666'}}>
+                        <Loader size={20} className={styles.spinner} /> Loading reviews...
+                    </div>
+                )}
+                {error && (
+                    <div style={{padding:'20px',background:'#FEE2E2',border:'1px solid #FECACA',borderRadius:'8px',color:'#991B1B'}}>
+                        ⚠️ {error}
+                    </div>
+                )}
+                {!loading && !error && (
+                    <table className={styles.table}>
+                        <thead><tr><th>Reviewer</th><th>Restaurant</th><th>Rating</th><th>Review</th><th>Flag</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {filteredReviews.length > 0 ? filteredReviews.map(rev => (
+                                <tr key={rev.id} className={styles.tableRow}>
+                                    <td>
+                                        <div className={styles.reviewerCell}>
+                                            <div className={styles.avatarCircle} style={{background:getColor(rev.reviewer)}}>{getInitials(rev.reviewer)}</div>
+                                            <div>
+                                                <div className={styles.reviewerName}>{rev.reviewer}</div>
+                                                <div className={styles.reviewerCount}>{rev.reviewCount} reviews</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.restaurantName}>{rev.restaurant}</div>
-                                    <div className={styles.restaurantDate}>{rev.date}</div>
-                                </td>
-                                <td><StarRating rating={rev.rating} /></td>
-                                <td className={styles.reviewText}>{rev.review}</td>
-                                <td>
-                                    {rev.flag !== 'None' ? (
-                                        <span className={`${styles.flagPill} ${getFlagClass(rev.flag)}`}>{rev.flag}</span>
-                                    ) : (
-                                        <span className={styles.flagNone}>None</span>
-                                    )}
-                                </td>
-                                <td><span className={`${styles.statusPill} ${getStatusClass(rev.status)}`}>{rev.status}</span></td>
-                                <td>
-                                    <div className={styles.actionBtns}>
-                                        {(rev.status === 'Pending' || rev.status === 'Flagged') && (
-                                            <button className={styles.actionIcon} title="Approve" onClick={()=>{setToast({msg:'Success',sub:`Review by ${rev.reviewer} approved`});setTimeout(()=>setToast(null),4000);}}><Check size={15}/></button>
+                                    </td>
+                                    <td>
+                                        <div className={styles.restaurantName}>{rev.restaurant}</div>
+                                        <div className={styles.restaurantDate}>{rev.date}</div>
+                                    </td>
+                                    <td><StarRating rating={rev.rating} /></td>
+                                    <td className={styles.reviewText}>{rev.review}</td>
+                                    <td>
+                                        {rev.flag !== 'None' ? (
+                                            <span className={`${styles.flagPill} ${getFlagClass(rev.flag)}`}>{rev.flag}</span>
+                                        ) : (
+                                            <span className={styles.flagNone}>None</span>
                                         )}
-                                        <button className={styles.actionIcon} title="View" onClick={()=>setSelectedReview(rev)}><Eye size={15}/></button>
-                                        <button className={styles.actionIcon} title="Remove" onClick={()=>{setToast({msg:'Removed',sub:`Review by ${rev.reviewer} removed`});setTimeout(()=>setToast(null),4000);}}><X size={15}/></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td><span className={`${styles.statusPill} ${getStatusClass(rev.status)}`}>{rev.status}</span></td>
+                                    <td>
+                                        <div className={styles.actionBtns}>
+                                            {(rev.status === 'Pending' || rev.status === 'Flagged') && (
+                                                <button className={styles.actionIcon} title="Approve" onClick={()=>{setToast({msg:'Success',sub:`Review by ${rev.reviewer} approved`});setTimeout(()=>setToast(null),4000);}}><Check size={15}/></button>
+                                            )}
+                                            <button className={styles.actionIcon} title="View" onClick={()=>setSelectedReview(rev)}><Eye size={15}/></button>
+                                            <button className={styles.actionIcon} title="Remove" onClick={()=>{setToast({msg:'Removed',sub:`Review by ${rev.reviewer} removed`});setTimeout(()=>setToast(null),4000);}}><X size={15}/></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="7" style={{textAlign:'center',padding:'40px',color:'#999'}}>No reviews found</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {/* ── Review Details Panel ── */}

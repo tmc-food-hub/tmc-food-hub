@@ -18,25 +18,32 @@ class GoogleAuthController extends Controller
             // The credential is a JWT: header.payload.signature
             $parts = explode('.', $credential);
             if (count($parts) !== 3) {
-                throw new \Exception('Invalid JWT format');
+                throw new \Exception('Invalid JWT format - expected 3 parts, got ' . count($parts));
             }
 
             // Decode the payload (second part) with proper base64 padding
             $payload = $parts[1];
             $payload .= str_repeat('=', (4 - (strlen($payload) % 4)) % 4);
+            
             $decoded = json_decode(base64_decode(strtr($payload, '-_', '+/')), true);
 
             if (!$decoded) {
                 throw new \Exception('Failed to decode JWT payload');
             }
 
+            // Validate required fields
+            if (empty($decoded['sub']) || empty($decoded['email'])) {
+                throw new \Exception('Missing required JWT fields: sub=' . ($decoded['sub'] ?? 'missing') . ', email=' . ($decoded['email'] ?? 'missing'));
+            }
+
             return (object) [
-                'id' => $decoded['sub'] ?? null,
-                'email' => $decoded['email'] ?? null,
-                'name' => $decoded['name'] ?? null,
+                'id' => $decoded['sub'],
+                'email' => $decoded['email'],
+                'name' => $decoded['name'] ?? 'User',
                 'picture' => $decoded['picture'] ?? null,
             ];
         } catch (\Exception $e) {
+            \Log::error('JWT decode error: ' . $e->getMessage());
             throw new \Exception('Failed to decode Google credential: ' . $e->getMessage());
         }
     }
