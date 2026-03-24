@@ -337,9 +337,240 @@ function AdminManagementTab() {
     </>);
 }
 
-/* ─── Placeholder Tabs ──────────────────────────────────────────────────────── */
-function PlaceholderTab({ name }) {
-    return <div className={styles.card}><h3 className={styles.cardLabel}>{name}</h3><p className={styles.fieldNote}>This section is under development.</p></div>;
+/* ─── Roles & Permissions Tab ───────────────────────────────────────────────── */
+function RolesPermissionsTab() {
+    const PERMS = [
+        { category: 'Platform Management', items: [
+            { label: 'System Configuration', desc: 'Edit core platform settings & integrations', perms: [true, false, false, false] },
+            { label: 'User Role Management', desc: 'User Role Management', perms: [true, true, false, false] },
+        ]},
+        { category: 'Order Operations', items: [
+            { label: 'Cancel & Refund Orders', desc: 'Ability to override active orders and issue credits', perms: [true, true, true, false] },
+            { label: 'View Transaction Data', desc: 'Access to detailed payment and fee breakdown', perms: [true, true, true, true] },
+        ]},
+        { category: 'Marketing & Growth', items: [
+            { label: 'Create Promotions', desc: 'Manage coupon codes and delivery fee waivers', perms: [true, true, false, false] },
+        ]},
+    ];
+    const ROLES = ['SUPER ADMIN', 'ADMIN', 'MODERATOR', 'ANALYST'];
+    const ROLE_CARDS = [
+        { icon: '🎯', name: 'Super Admin', badge: 'Unlimited Power', badgeClass: 'badgeRed', desc: 'Unrestricted access to all modules, financial settings, and API integrations. Primary account owner role.' },
+        { icon: '👤', name: 'Admin', badge: 'Operational Lead', badgeClass: 'badgeGray', desc: 'Full operational control over orders, merchants, and users. Cannot modify global system billing logic.' },
+        { icon: '🛡', name: 'Moderator', badge: 'Support Level', badgeClass: 'badgeGray', desc: 'Focused on order support and merchant menu management. Limited access to financial data.' },
+        { icon: '📊', name: 'Analyst', badge: 'Data Only', badgeClass: 'badgeGray', desc: 'Read-only access to dashboards and transaction logs. Can export data but cannot modify records.' },
+    ];
+
+    const [permState, setPermState] = useState(() => {
+        const s = {};
+        PERMS.forEach(cat => cat.items.forEach(item => { item.perms.forEach((v, i) => { s[`${item.label}_${i}`] = v; }); }));
+        return s;
+    });
+
+    return (<>
+        <h2 className={styles.sectionTitle}>Roles & Permissions</h2>
+        <p className={styles.sectionSub}>Configure platform access levels by defining granular permissions for each user role. Ensure administrative security through the principle of least privilege.</p>
+
+        <div className={styles.card}>
+            <table className={styles.permTable}>
+                <thead><tr><th>Permission Category & Action</th>{ROLES.map(r => <th key={r}>{r}</th>)}</tr></thead>
+                <tbody>
+                    {PERMS.map(cat => (
+                        <React.Fragment key={cat.category}>
+                            <tr><td colSpan={5} className={styles.permCategory}>{cat.category}</td></tr>
+                            {cat.items.map(item => (
+                                <tr key={item.label}>
+                                    <td><div className={styles.permName}>{item.label}</div><div className={styles.permDesc}>{item.desc}</div></td>
+                                    {ROLES.map((_, ri) => (
+                                        <td key={ri} className={styles.permCheckCell}>
+                                            <label className={styles.permCheckbox}>
+                                                <input type="checkbox" checked={permState[`${item.label}_${ri}`] || false} onChange={() => setPermState(p => ({ ...p, [`${item.label}_${ri}`]: !p[`${item.label}_${ri}`] }))} />
+                                                <span className={styles.permCheck}><CheckCircle2 size={14} /></span>
+                                            </label>
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </React.Fragment>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+
+        <div className={styles.roleCardsGrid}>
+            {ROLE_CARDS.map(r => (
+                <div key={r.name} className={styles.roleCard}>
+                    <div className={styles.roleCardHeader}><span className={styles.roleCardIcon}>{r.icon}</span><strong>{r.name}</strong></div>
+                    <span className={`${styles.roleCardBadge} ${styles[r.badgeClass]}`}>{r.badge}</span>
+                    <p className={styles.roleCardDesc}>{r.desc}</p>
+                </div>
+            ))}
+        </div>
+    </>);
+}
+
+/* ─── Activity Logs Tab ─────────────────────────────────────────────────────── */
+function ActivityLogsTab() {
+    const LOGS = [
+        { name: 'Jordan Smith', role: 'Super Admin', action: 'Delete', actionClass: 'actionDelete', desc: "Deleted inactive vendor 'Spicy Hut #42'", page: 'Restaurant Management', ip: '192.168.····.···', device: 'macOS (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
+        { name: 'Alex Martinez', role: 'Analyst', action: 'Update', actionClass: 'actionUpdate', desc: 'Adjusted delivery radius to 15km for zone B2', page: 'Delivery Rules', ip: '172.16.····.···', device: 'Windows 11 (Edge)', time: 'Mar 23, 2026. 3:03:11' },
+        { name: 'Jordan Smith', role: 'Moderator', action: 'Access', actionClass: 'actionAccess', desc: "Downloaded 'Weekly Settlement Report'", page: 'Financials', ip: '10.0.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
+        { name: 'Jordan Smith', role: 'Admin', action: 'Auth', actionClass: 'actionAuth', desc: 'Modified login attempts policy to 5 retries', page: 'Security Settings', ip: '45.72.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
+        { name: 'Jordan Smith', role: 'Super Admin', action: 'Update', actionClass: 'actionUpdate', desc: 'Flagged order #9942 for manual review', page: 'Orders', ip: '24.112.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
+    ];
+
+    return (<>
+        <h2 className={styles.sectionTitle}>Activity Logs</h2>
+        <p className={styles.sectionSub}>Monitor all administrative actions across the platform. This log is read-only for security and compliance purposes.</p>
+
+        <div className={styles.logsFilters}>
+            <div className={styles.logsSearch}><span className={styles.logsSearchIcon}>🔍</span><input placeholder="Search admin..." /></div>
+            <select className={styles.logsSelect}><option>All Roles</option></select>
+            <select className={styles.logsSelect}><option>All Actions</option></select>
+            <button className={styles.logsExportBtn}><span>↓</span> Export</button>
+        </div>
+
+        <div className={styles.card}>
+            <table className={styles.logsTable}>
+                <thead><tr><th>Admin</th><th>Action Description</th><th>Page/Module</th><th>Masked IP</th><th>Device</th><th>Timestamp</th></tr></thead>
+                <tbody>
+                    {LOGS.map((l, i) => (
+                        <tr key={i}>
+                            <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{l.name.split(' ').map(x => x[0]).join('')}</div><div><div className={styles.adminName}>{l.name}</div><div className={styles.adminEmail}>{l.role}</div></div></div></td>
+                            <td><span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span><div className={styles.logActionDesc}>{l.desc}</div></td>
+                            <td className={styles.logModule}>{l.page}</td>
+                            <td className={styles.logIp}>{l.ip}</td>
+                            <td className={styles.logDevice}>{l.device}</td>
+                            <td className={styles.logTime}>{l.time}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+
+        <div className={styles.complianceNote}>
+            <span>ℹ</span>
+            <div>
+                <strong>Compliance & Transparency Policy</strong>
+                <p>In accordance with the FoodHub Platform Integrity standards, all administrative logs are immutable for a period of 24 months. These logs are encrypted at rest and can only be exported by users with "Audit Auditor" privileges. Attempting to bypass or alter these logs is a violation of the system governance protocol.</p>
+            </div>
+        </div>
+    </>);
+}
+
+/* ─── Security Tab ──────────────────────────────────────────────────────────── */
+function SecurityTab() {
+    const [twoFA, setTwoFA] = useState(true);
+    const [emailAlerts, setEmailAlerts] = useState(true);
+    const [smsEmergency, setSmsEmergency] = useState(true);
+
+    return (<>
+        <h2 className={styles.sectionTitle}>Security Settings</h2>
+        <p className={styles.sectionSub}>Configure platform-wide security protocols, authentication policies, and access controls for the TMC Foodhub administrative interface.</p>
+
+        <div className={styles.twoColWide}>
+            <div className={styles.leftCol}>
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>🔒 Authentication & Access</h3>
+                    <div className={styles.securityToggleRow}>
+                        <div className={`${styles.toggle} ${twoFA ? styles.toggleOn : ''}`} onClick={() => setTwoFA(!twoFA)}><div className={styles.toggleDot} /></div>
+                        <div><div className={styles.deliveryName}>Force Two-Factor Authentication</div><div className={styles.deliveryDesc}>Require all admin users to authenticate via mobile app or SMS.</div></div>
+                    </div>
+                    <div className={styles.fieldGrid} style={{ marginTop: '1rem' }}>
+                        <div className={styles.field}><label>Session Timeout</label><select><option>30 minutes</option><option>15 minutes</option><option>1 hour</option></select></div>
+                        <div className={styles.field}><label>Max Login Attempts</label><select><option>5 attempts</option><option>3 attempts</option><option>10 attempts</option></select></div>
+                    </div>
+                </div>
+
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>🔔 Security Notifications</h3>
+                    <div className={styles.secNotifRow}>
+                        <div className={`${styles.toggle} ${emailAlerts ? styles.toggleOn : ''}`} onClick={() => setEmailAlerts(!emailAlerts)}><div className={styles.toggleDot} /></div>
+                        <span className={styles.secNotifLabel}>Email Alerts</span>
+                    </div>
+                    <div className={styles.secNotifRow}>
+                        <div className={`${styles.toggle} ${smsEmergency ? styles.toggleOn : ''}`} onClick={() => setSmsEmergency(!smsEmergency)}><div className={styles.toggleDot} /></div>
+                        <span className={styles.secNotifLabel}>SMS (Emergency)</span>
+                    </div>
+                </div>
+            </div>
+            <div className={styles.rightCol}>
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>🔑 Password Policy</h3>
+                    <div className={styles.pwPolicyItem}><span>Require Uppercase</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
+                    <div className={styles.pwPolicyItem}><span>Require Numbers</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
+                    <div className={styles.pwPolicyItem}><span>Require Special Character</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
+                    <div className={styles.pwExpiry}>
+                        <div className={styles.pwExpiryHeader}><span>PASSWORD EXPIRY</span><span>90 days</span></div>
+                        <div className={styles.pwExpiryBar}><div className={styles.pwExpiryFill} /></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className={styles.secFooterNote}>
+            <span className={styles.secFooterDot} /> System changes will be logged in Activity Logs audit trail.
+        </div>
+    </>);
+}
+
+/* ─── Appearance Tab ────────────────────────────────────────────────────────── */
+function AppearanceTab() {
+    const [theme, setTheme] = useState('light');
+    const [sidebarExpanded, setSidebarExpanded] = useState(true);
+    const [timeFormat, setTimeFormat] = useState('12');
+
+    return (<>
+        <h2 className={styles.sectionTitle}>Appearance</h2>
+        <p className={styles.sectionSub}>Customize the visual identity and interface behavior of your administration dashboard. These settings apply to all administrator accounts.</p>
+
+        <div className={styles.twoColWide}>
+            <div className={styles.leftCol}>
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>🎨 Interface Theme</h3>
+                    <div className={styles.themeGrid}>
+                        {[{ key: 'light', label: 'Light Mode' }, { key: 'dark', label: 'Dark Mode' }, { key: 'system', label: 'System' }].map(t => (
+                            <label key={t.key} className={`${styles.themeOption} ${theme === t.key ? styles.themeActive : ''}`} onClick={() => setTheme(t.key)}>
+                                <div className={`${styles.themePreview} ${styles[`theme_${t.key}`]}`}>
+                                    <div className={styles.themeBar} /><div className={styles.themeLines}><div /><div /><div /></div>
+                                </div>
+                                <div className={styles.themeLabel}>
+                                    <span>{t.label}</span>
+                                    <input type="radio" name="theme" checked={theme === t.key} readOnly />
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>🌐 Region Formats</h3>
+                    <div className={styles.fieldGrid}>
+                        <div className={styles.field}><label>Date Format</label><select><option>mm/dd/yyyy</option><option>dd/mm/yyyy</option><option>yyyy-mm-dd</option></select></div>
+                        <div className={styles.field}><label>Time Format</label>
+                            <div className={styles.statusToggle}>
+                                <button className={`${styles.statusBtn} ${timeFormat === '12' ? styles.statusActive : ''}`} onClick={() => setTimeFormat('12')}>12-hour</button>
+                                <button className={`${styles.statusBtn} ${timeFormat === '24' ? styles.statusActive : ''}`} onClick={() => setTimeFormat('24')}>24-hour</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={styles.rightCol}>
+                <div className={styles.card}>
+                    <h3 className={styles.cardLabel}>📐 Navigation Layout</h3>
+                    <div className={styles.securityToggleRow}>
+                        <div className={`${styles.toggle} ${sidebarExpanded ? styles.toggleOn : ''}`} onClick={() => setSidebarExpanded(!sidebarExpanded)}><div className={styles.toggleDot} /></div>
+                        <div><div className={styles.deliveryName}>Default Sidebar State</div><div className={styles.deliveryDesc}>Expanded by default</div></div>
+                    </div>
+                    <div className={styles.field} style={{ marginTop: '.85rem' }}><label>Default Landing Page</label><select><option>System Overview Dashboard</option></select></div>
+                </div>
+            </div>
+        </div>
+
+        <div className={styles.secFooterNote}>
+            <CheckCircle2 size={14} className={styles.checkGreen} /> All changes are drafted. Click Save to apply.
+        </div>
+    </>);
 }
 
 /* ─── Main Settings Component ───────────────────────────────────────────────── */
@@ -352,6 +583,13 @@ export default function AdminSettingsSection() {
         setTimeout(() => setToast(null), 4000);
     };
 
+    /* Each tab can have a custom footer text & button */
+    const footerConfig = {
+        security: { note: 'System changes will be logged in Activity Logs audit trail.', btnLabel: 'Update Security Policy' },
+        appearance: { note: 'All changes are drafted. Click Save to apply.', btnLabel: 'Save Appearance Settings', discardLabel: 'Reset to Default' },
+    };
+    const fc = footerConfig[activeTab];
+
     const renderTab = () => {
         switch (activeTab) {
             case 'general': return <GeneralTab />;
@@ -359,10 +597,10 @@ export default function AdminSettingsSection() {
             case 'payments': return <PaymentsTab />;
             case 'notifications': return <NotificationsTab />;
             case 'admin': return <AdminManagementTab />;
-            case 'roles': return <PlaceholderTab name="Roles & Permissions" />;
-            case 'logs': return <PlaceholderTab name="Activity Logs" />;
-            case 'security': return <PlaceholderTab name="Security" />;
-            case 'appearance': return <PlaceholderTab name="Appearance" />;
+            case 'roles': return <RolesPermissionsTab />;
+            case 'logs': return <ActivityLogsTab />;
+            case 'security': return <SecurityTab />;
+            case 'appearance': return <AppearanceTab />;
             default: return null;
         }
     };
@@ -398,8 +636,8 @@ export default function AdminSettingsSection() {
             <div className={styles.footer}>
                 <div className={styles.footerInfo}>Last updated by <strong>Admin John Doe</strong><br />March 19, 2026 - 5:18 PM</div>
                 <div className={styles.footerActions}>
-                    <button className={styles.discardBtn}>Discard Changes</button>
-                    <button className={styles.saveBtn} onClick={handleSave}>Save Configuration</button>
+                    <button className={styles.discardBtn}>{fc?.discardLabel || 'Discard Changes'}</button>
+                    <button className={styles.saveBtn} onClick={handleSave}>{fc?.btnLabel || 'Save Configuration'}</button>
                 </div>
             </div>
         </div>

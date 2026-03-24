@@ -173,6 +173,106 @@
 .checkItem:last-child { border-bottom: none; }
 .checkGreen { color: #059669; }
 
+/* ─── Roles & Permissions ───────────────────────────────────────────────────── */
+.permTable { width: 100%; border-collapse: collapse; }
+.permTable th { text-align: left; font-size: .72rem; color: #9CA3AF; font-weight: 700; padding: .55rem .65rem; border-bottom: 1px solid #F3F4F6; }
+.permTable th:not(:first-child) { text-align: center; }
+.permCategory { color: #DC2626; font-weight: 800; font-size: .82rem; padding: .85rem .65rem .35rem !important; border-bottom: none !important; }
+.permName { font-size: .85rem; font-weight: 700; color: #111827; }
+.permDesc { font-size: .72rem; color: #9CA3AF; }
+.permCheckCell { text-align: center !important; vertical-align: middle; padding: .65rem; }
+.permCheckbox { display: inline-flex; cursor: pointer; }
+.permCheckbox input { display: none; }
+.permCheck { width: 22px; height: 22px; border: 2px solid #E5E7EB; border-radius: 6px; display: grid; place-items: center; color: transparent; transition: .15s; }
+.permCheckbox input:checked + .permCheck { background: #DC2626; border-color: #DC2626; color: #fff; }
+.permTable td { padding: .65rem; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+
+.roleCardsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .65rem; }
+.roleCard { background: #fff; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.roleCardHeader { display: flex; align-items: center; gap: .45rem; font-size: .88rem; color: #111827; margin-bottom: .35rem; }
+.roleCardIcon { font-size: 1.1rem; }
+.roleCardBadge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .65rem; font-weight: 700; margin-bottom: .45rem; }
+.badgeRed { background: #FEF2F2; color: #DC2626; }
+.badgeGray { background: #F3F4F6; color: #6B7280; }
+.roleCardDesc { font-size: .72rem; color: #6B7280; line-height: 1.45; margin: 0; }
+
+/* ─── Activity Logs ─────────────────────────────────────────────────────────── */
+.logsFilters { display: flex; gap: .55rem; align-items: center; margin-bottom: .65rem; }
+.logsSearch { display: flex; align-items: center; border: 1px solid #E5E7EB; border-radius: 10px; padding: 0 .65rem; flex: 1; background: #fff; }
+.logsSearchIcon { font-size: .85rem; margin-right: .35rem; }
+.logsSearch input { border: none; outline: none; padding: .55rem 0; font-size: .82rem; font-family: 'Inter',sans-serif; flex: 1; background: transparent; }
+.logsSelect { padding: .55rem .75rem; border: 1px solid #E5E7EB; border-radius: 10px; font-size: .82rem; color: #374151; font-family: 'Inter',sans-serif; background: #fff; cursor: pointer; }
+.logsExportBtn { display: flex; align-items: center; gap: .35rem; padding: .55rem .85rem; border: none; border-radius: 10px; background: #DC2626; color: #fff; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: 'Inter',sans-serif; white-space: nowrap; }
+.logsExportBtn:hover { background: #B91C1C; }
+
+.logsTable { width: 100%; border-collapse: collapse; }
+.logsTable th { text-align: left; font-size: .72rem; color: #9CA3AF; font-weight: 700; padding: .55rem .65rem; border-bottom: 1px solid #F3F4F6; }
+.logsTable td { padding: .75rem .65rem; font-size: .82rem; color: #374151; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+.logsTable tr:last-child td { border-bottom: none; }
+
+.actionBadge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .68rem; font-weight: 700; margin-bottom: 4px; }
+.actionDelete { background: #FEF2F2; color: #DC2626; }
+.actionUpdate { background: #ECFDF5; color: #059669; }
+.actionAccess { background: #EFF6FF; color: #2563EB; }
+.actionAuth { background: #F3F4F6; color: #6B7280; }
+.logActionDesc { font-size: .78rem; color: #374151; }
+.logModule { font-size: .82rem; color: #374151; font-weight: 600; }
+.logIp { font-size: .78rem; color: #6B7280; font-family: monospace; }
+.logDevice { font-size: .78rem; color: #6B7280; }
+.logTime { font-size: .78rem; color: #6B7280; white-space: nowrap; }
+
+.complianceNote { display: flex; gap: .65rem; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1rem 1.15rem; margin-top: .65rem; }
+.complianceNote > span { font-size: 1.1rem; flex-shrink: 0; }
+.complianceNote strong { font-size: .82rem; color: #111827; display: block; margin-bottom: .25rem; }
+.complianceNote p { font-size: .72rem; color: #6B7280; margin: 0; line-height: 1.5; }
+
+/* ─── Security ──────────────────────────────────────────────────────────────── */
+.securityToggleRow { display: flex; align-items: center; gap: .65rem; }
+.secNotifRow { display: flex; align-items: center; gap: .65rem; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; }
+.secNotifRow:last-child { border-bottom: none; }
+.secNotifLabel { font-size: .85rem; font-weight: 600; color: #374151; }
+
+.pwPolicyItem { display: flex; justify-content: space-between; align-items: center; padding: .55rem 0; border-bottom: 1px solid #F3F4F6; font-size: .82rem; color: #374151; font-weight: 600; }
+.pwPolicyItem:last-of-type { border-bottom: none; }
+.pwCheck { color: #DC2626; }
+
+.pwExpiry { background: #991B1B; border-radius: 10px; padding: .75rem .85rem; margin-top: .65rem; }
+.pwExpiryHeader { display: flex; justify-content: space-between; color: #fff; font-size: .72rem; font-weight: 700; margin-bottom: .45rem; }
+.pwExpiryBar { height: 6px; background: rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
+.pwExpiryFill { height: 100%; width: 75%; background: #fff; border-radius: 999px; }
+
+.secFooterNote { display: flex; align-items: center; gap: .45rem; font-size: .78rem; color: #6B7280; margin-top: .35rem; }
+.secFooterDot { width: 8px; height: 8px; border-radius: 50%; background: #2563EB; flex-shrink: 0; }
+
+/* ─── Appearance ────────────────────────────────────────────────────────────── */
+.themeGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
+.themeOption { cursor: pointer; border: 2px solid #E5E7EB; border-radius: 12px; overflow: hidden; transition: .15s; }
+.themeActive { border-color: #DC2626; }
+.themePreview { height: 100px; display: flex; padding: 10px; gap: 8px; }
+.theme_light { background: #F9FAFB; }
+.theme_dark { background: #1F2937; }
+.theme_system { background: linear-gradient(135deg, #F9FAFB 50%, #1F2937 50%); }
+.themeBar { width: 20px; border-radius: 6px; }
+.theme_light .themeBar { background: #E5E7EB; }
+.theme_dark .themeBar { background: #374151; }
+.theme_system .themeBar { background: #9CA3AF; }
+.themeLines { flex: 1; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.themeLines > div { height: 6px; border-radius: 3px; }
+.theme_light .themeLines > div { background: #E5E7EB; }
+.theme_light .themeLines > div:first-child { width: 80%; }
+.theme_light .themeLines > div:nth-child(2) { width: 60%; }
+.theme_light .themeLines > div:last-child { width: 40%; }
+.theme_dark .themeLines > div { background: #374151; }
+.theme_dark .themeLines > div:first-child { width: 80%; }
+.theme_dark .themeLines > div:nth-child(2) { width: 60%; }
+.theme_dark .themeLines > div:last-child { width: 40%; }
+.theme_system .themeLines > div { background: #9CA3AF; }
+.theme_system .themeLines > div:first-child { width: 80%; }
+.theme_system .themeLines > div:nth-child(2) { width: 60%; }
+.theme_system .themeLines > div:last-child { width: 40%; }
+.themeLabel { display: flex; justify-content: space-between; align-items: center; padding: .55rem .65rem; font-size: .78rem; font-weight: 600; color: #374151; border-top: 1px solid #E5E7EB; }
+.themeLabel input[type="radio"] { accent-color: #DC2626; width: 16px; height: 16px; }
+
 /* ─── Footer ────────────────────────────────────────────────────────────────── */
 .footer { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #fff; border: 1px solid #E5E7EB; border-radius: 14px; margin-top: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
 .footerInfo { font-size: .78rem; color: #6B7280; }
@@ -183,5 +283,5 @@
 .saveBtn:hover { background: #B91C1C; }
 
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
-@media (max-width: 1200px) { .twoColWide { flex-direction: column; } .twoCol { grid-template-columns: 1fr; } .fieldGrid3 { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 768px) { .settingsLayout { flex-direction: column; } .tabSidebar { width: 100%; flex-direction: row; overflow-x: auto; } .fieldGrid { grid-template-columns: 1fr; } .footer { flex-direction: column; gap: .65rem; text-align: center; } }
+@media (max-width: 1200px) { .twoColWide { flex-direction: column; } .twoCol { grid-template-columns: 1fr; } .fieldGrid3 { grid-template-columns: 1fr 1fr; } .roleCardsGrid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .settingsLayout { flex-direction: column; } .tabSidebar { width: 100%; flex-direction: row; overflow-x: auto; } .fieldGrid { grid-template-columns: 1fr; } .footer { flex-direction: column; gap: .65rem; text-align: center; } .roleCardsGrid { grid-template-columns: 1fr; } .themeGrid { grid-template-columns: 1fr; } .logsFilters { flex-wrap: wrap; } }
