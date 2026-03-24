@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\InventoryController;
@@ -26,6 +27,7 @@ Route::post('/owner/login', [OwnerAuthController::class, 'login']);
 Route::post('/owner/register', [OwnerAuthController::class, 'register']);
 Route::post('/owner/send-otp', [OwnerAuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+Route::post('/admin/login', [AdminController::class, 'login']);
 
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────
 Route::get('/restaurants', [MenuController::class, 'index']);
@@ -57,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::get('/user', [OwnerAuthController::class, 'user']);
     Route::put('/user', [OwnerAuthController::class, 'updateProfile']);
+    Route::put('/store-operations', [OwnerAuthController::class, 'updateStoreOperations']);
     Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
     Route::post('/logout', [OwnerAuthController::class, 'logout']);
 
@@ -78,4 +81,10 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::patch('/inventory/items/{id}/availability', [InventoryController::class, 'toggleAvailability']);
     Route::get('/reviews', [ReviewController::class, 'ownerIndex']);
     Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply']);
+});
+
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::get('/user', [AdminController::class, 'user']);
+    Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    Route::post('/logout', [AdminController::class, 'logout']);
 });

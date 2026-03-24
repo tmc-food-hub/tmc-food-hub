@@ -245,6 +245,25 @@ class OwnerAuthController extends Controller
     }
 
     /**
+     * Update store operation preferences for the authenticated owner.
+     */
+    public function updateStoreOperations(Request $request)
+    {
+        $owner = $request->user();
+
+        $validated = $request->validate([
+            'operating_status' => ['required', 'string', 'in:open,paused,closed'],
+            'auto_accept_orders' => ['required', 'boolean'],
+            'manual_confirmation' => ['required', 'boolean'],
+            'default_prep_time' => ['required', 'integer', 'in:10,15,20,30'],
+        ]);
+
+        $owner->update($validated);
+
+        return response()->json($owner->fresh());
+    }
+
+    /**
      * Revoke the current token (logout).
      */
     public function logout(Request $request)

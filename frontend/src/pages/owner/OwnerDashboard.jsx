@@ -6,7 +6,8 @@ import {
     Package, DollarSign, ShoppingBag, Truck, Bell,
     AlertCircle, CheckCircle2, Timer, MapPin, FileText, Tag,
     Hash, Layers, ExternalLink, Search, TrendingUp, TrendingDown, Star,
-    Receipt, Wallet, CreditCard
+    Receipt, Wallet, CreditCard,
+    PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { useOwnerAuth } from '../../context/OwnerAuthContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
@@ -77,12 +78,13 @@ const NAV_GROUPS = [
 
 function OwnerDashboard() {
     const { currentOwner, ownerStore, logout, updateStore, refreshOwner, loading } = useOwnerAuth();
-    const { orders, loading: ordersLoading } = useOrders();
+    const { orders } = useOrders();
     const navigate = useNavigate();
     const location = useLocation();
     const [active, setActive] = useState('overview');
     const [profileOpen, setProfileOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [payoutViewData, setPayoutViewData] = useState(null);
     const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
     const [inventoryItems, setInventoryItems] = useState([]);
@@ -180,7 +182,7 @@ function OwnerDashboard() {
     };
 
     return (
-        <div className={styles.shell}>
+        <div className={`${styles.shell} ${sidebarCollapsed ? styles.shellCollapsed : ''}`}>
             {/* Mobile Header (Hidden on Desktop) */}
             <header className={styles.mobileHeader}>
                 <button className={styles.hamburgerBtn} onClick={() => setSidebarOpen(true)}>
@@ -196,7 +198,7 @@ function OwnerDashboard() {
             {sidebarOpen && <div className={styles.mobileOverlay} onClick={() => setSidebarOpen(false)}></div>}
 
             {/* ── Sidebar ── */}
-            <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+            <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
                 {/* Mobile Close Button */}
                 <button className={styles.closeSidebarBtn} onClick={() => setSidebarOpen(false)}>
                     <X size={24} />
@@ -207,14 +209,21 @@ function OwnerDashboard() {
                     <Link to="/" className={styles.tmcLogoLink}>
                         <img src={tmcLogo} alt="TMC Food Hub" className={styles.tmcLogo} />
                     </Link>
-                    <div className={styles.portalLabel}>Restaurant Portal</div>
+                    {!sidebarCollapsed && <div className={styles.portalLabel}>Restaurant Portal</div>}
+                    <button
+                        className={styles.collapseBtn}
+                        onClick={() => setSidebarCollapsed(c => !c)}
+                        title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    >
+                        {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+                    </button>
                 </div>
 
                 {/* Navigation */}
                 <nav className={styles.nav}>
                     {NAV_GROUPS.map(group => (
                         <div key={group.label} className={styles.navGroup}>
-                            <div className={styles.navLabel}>{group.label}</div>
+                            {!sidebarCollapsed && <div className={styles.navLabel}>{group.label}</div>}
                             {group.items.map(n => {
                                 const expanded = isItemExpanded(n);
                                 return (
@@ -225,14 +234,15 @@ function OwnerDashboard() {
                                                 setActive(n.key);
                                                 if (window.innerWidth < 1024) setSidebarOpen(false);
                                             }}
+                                            title={sidebarCollapsed ? n.label : undefined}
                                         >
                                             <span className={styles.navIcon}>{n.icon}</span>
-                                            <span>{n.label}</span>
-                                            {n.key === 'orders' && pendingCount > 0 && <span className={styles.badge}>{pendingCount}</span>}
+                                            {!sidebarCollapsed && <span>{n.label}</span>}
+                                            {!sidebarCollapsed && n.key === 'orders' && pendingCount > 0 && <span className={styles.badge}>{pendingCount}</span>}
                                         </button>
 
                                         {/* Render Sub Items if expanded */}
-                                        {expanded && n.subItems && (
+                                        {!sidebarCollapsed && expanded && n.subItems && (
                                             <div className={styles.navSubItemsGroup}>
                                                 {n.subItems.map(s => (
                                                     <button
@@ -259,7 +269,7 @@ function OwnerDashboard() {
 
                 {/* Footer / Profile Menu */}
                 <div className={styles.sidebarFooter}>
-                    {profileOpen && (
+                    {!sidebarCollapsed && profileOpen && (
                         <div className={styles.profileMenu}>
                             <button className={styles.profileMenuBtn}>View Profile</button>
                             <button className={styles.profileMenuBtn}>Account Settings</button>
@@ -270,16 +280,18 @@ function OwnerDashboard() {
                             </button>
                         </div>
                     )}
-                    <button className={styles.storeProfileBtn} onClick={() => setProfileOpen(!profileOpen)}>
+                    <button className={styles.storeProfileBtn} onClick={() => !sidebarCollapsed && setProfileOpen(!profileOpen)}>
                         {ownerStore.cover ? (
                             <img src={ownerStore.cover} alt={ownerStore.name} className={styles.storeAvatar} style={{ objectFit: 'contain', background: '#fff', border: '1px solid #E5E7EB' }} />
                         ) : (
                             <div className={styles.storeAvatar}>{ownerStore.name.charAt(0)}</div>
                         )}
-                        <div className={styles.storeDetails}>
-                            <div className={styles.storeName}>{ownerStore.branchName}</div>
-                            <div className={styles.branchName}>Store Manager</div>
-                        </div>
+                        {!sidebarCollapsed && (
+                            <div className={styles.storeDetails}>
+                                <div className={styles.storeName}>{ownerStore.branchName}</div>
+                                <div className={styles.branchName}>Store Manager</div>
+                            </div>
+                        )}
                     </button>
                 </div>
             </aside>
@@ -321,7 +333,14 @@ function OwnerDashboard() {
                             </button>
                         </div>
                     )}
-                    {active === 'overview' && <OverviewSection store={ownerStore} orders={orders} />}
+                    {active === 'overview' && (
+                        <OverviewSection
+                            store={ownerStore}
+                            orders={orders}
+                            items={inventoryItems}
+                            onNavigate={setActive}
+                        />
+                    )}
 
                     {active === 'orders' && <OrdersSection store={ownerStore} />}
                     {active === 'inventory' && (
@@ -355,7 +374,16 @@ function OwnerDashboard() {
                     {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
                     {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
-                    {active === 'settings' && <SettingsSection store={ownerStore} onUpdate={updateStore} currentOwner={currentOwner} refreshOwner={refreshOwner} />}
+                    {active === 'settings' && (
+                        <SettingsSection
+                            store={ownerStore}
+                            onUpdate={updateStore}
+                            currentOwner={currentOwner}
+                            refreshOwner={refreshOwner}
+                            items={inventoryItems}
+                            refreshInventory={refreshInventory}
+                        />
+                    )}
                 </div>
             </div>
         </div>

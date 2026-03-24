@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    User, Shield, Bell, Store, CreditCard,
-    Camera, CheckCircle2, AlertCircle, X, Plus, MapPin,
-    Mail, Phone, Save, Check
+    User, Shield, Bell, Store, CreditCard, Search,
+    CheckCircle2, AlertCircle, X, Save, Check,
+    PauseCircle, XCircle
 } from 'lucide-react';
 import styles from './SettingsSection.module.css';
 import api from '../../../api/axios';
@@ -15,14 +15,13 @@ const SETTINGS_TABS = [
     { key: 'payment', label: 'Payment', icon: <CreditCard size={16} /> },
 ];
 
-export default function SettingsSection({ store, onUpdate, currentOwner, refreshOwner }) {
+export default function SettingsSection({ store, refreshOwner, items = [], refreshInventory }) {
     const [activeTab, setActiveTab] = useState('account');
 
     return (
         <div className={styles.settingsLayout}>
-            {/* Sub-tab sidebar */}
             <div className={styles.settingsSidebar}>
-                {SETTINGS_TABS.map(tab => (
+                {SETTINGS_TABS.map((tab) => (
                     <button
                         key={tab.key}
                         className={`${styles.settingsTabBtn} ${activeTab === tab.key ? styles.settingsTabBtnActive : ''}`}
@@ -34,22 +33,18 @@ export default function SettingsSection({ store, onUpdate, currentOwner, refresh
                 ))}
             </div>
 
-            {/* Content */}
             <div className={styles.settingsContent}>
-                {activeTab === 'account' && <AccountTab store={store} onUpdate={onUpdate} refreshOwner={refreshOwner} />}
+                {activeTab === 'account' && <AccountTab store={store} refreshOwner={refreshOwner} />}
                 {activeTab === 'security' && <PlaceholderTab title="Security Settings" description="Manage your password, two-factor authentication, and login sessions." />}
                 {activeTab === 'notifications' && <PlaceholderTab title="Notifications" description="Configure your notification preferences for orders, promotions, and system alerts." />}
-                {activeTab === 'store-operations' && <StoreOperationsTab store={store} onUpdate={onUpdate} refreshOwner={refreshOwner} />}
+                {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} />}
                 {activeTab === 'payment' && <PlaceholderTab title="Payment" description="Manage payment methods and billing information." />}
             </div>
         </div>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  ACCOUNT TAB (Pic 1)                                                      */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-function AccountTab({ store, onUpdate, refreshOwner }) {
+function AccountTab({ store, refreshOwner }) {
     const [editing, setEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -76,7 +71,7 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            if (refreshOwner) await refreshOwner();
+            await refreshOwner?.();
             setSaved(true);
             setEditing(false);
             setTimeout(() => setSaved(false), 2500);
@@ -90,11 +85,12 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         const formData = new FormData();
-        formData.append('first_name', store.firstName);
-        formData.append('last_name', store.lastName);
-        formData.append('restaurant_name', store.branchName);
-        formData.append('business_address', store.location);
+        formData.append('first_name', store.firstName || '');
+        formData.append('last_name', store.lastName || '');
+        formData.append('restaurant_name', store.branchName || '');
+        formData.append('business_address', store.location || '');
         formData.append('business_contact_number', store.phone || '');
         formData.append('logo_file', file);
 
@@ -102,7 +98,7 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
             await api.post('/owner/profile-update', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            if (refreshOwner) await refreshOwner();
+            await refreshOwner?.();
         } catch (err) {
             console.error('Failed to upload avatar:', err);
         }
@@ -110,7 +106,6 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
 
     return (
         <>
-            {/* Profile Header */}
             <div className={styles.card}>
                 <div className={styles.profileHeader}>
                     <div className={styles.avatarUploadWrapper} onClick={() => avatarRef.current?.click()}>
@@ -132,7 +127,6 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                 </div>
             </div>
 
-            {/* Personal Information */}
             <div className={styles.card}>
                 <h3 className={styles.cardTitle}>Personal Information</h3>
                 <div className={styles.formGrid}>
@@ -142,13 +136,12 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                             <input
                                 className={styles.fieldInput}
                                 value={`${form.firstName} ${form.lastName}`}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const parts = e.target.value.split(' ');
-                                    setForm(p => ({
-                                        ...p,
+                                    setForm({
                                         firstName: parts[0] || '',
-                                        lastName: parts.slice(1).join(' ') || ''
-                                    }));
+                                        lastName: parts.slice(1).join(' ') || '',
+                                    });
                                 }}
                             />
                         ) : (
@@ -163,14 +156,22 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                 <div className={styles.formActions}>
                     {editing ? (
                         <>
-                            <button className={styles.btnCancel} onClick={() => { setEditing(false); setForm({ firstName: store.firstName || '', lastName: store.lastName || '' }); }}>Cancel</button>
+                            <button
+                                className={styles.btnCancel}
+                                onClick={() => {
+                                    setEditing(false);
+                                    setForm({ firstName: store.firstName || '', lastName: store.lastName || '' });
+                                }}
+                            >
+                                Cancel
+                            </button>
                             <button className={styles.btnSave} disabled={saving} onClick={handleSave}>
                                 {saving ? 'Saving...' : <><Save size={14} /> Save Changes</>}
                             </button>
                         </>
                     ) : (
                         <>
-                            <button className={styles.btnCancel} onClick={() => setEditing(false)}>Cancel</button>
+                            <button className={styles.btnCancel}>Cancel</button>
                             <button className={styles.btnSave} onClick={() => setEditing(true)}>
                                 <Save size={14} /> Save Changes
                             </button>
@@ -179,7 +180,6 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                 </div>
             </div>
 
-            {/* Contact Information */}
             <div className={styles.card}>
                 <h3 className={styles.cardTitle}>Contact Information</h3>
                 <div className={styles.contactRow}>
@@ -206,53 +206,10 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
                         <span className={styles.contactLabel}>Phone Number</span>
                         <div className={styles.contactValueRow}>
                             <span className={styles.contactValue}>{store.personalPhone || store.phone || 'Not set'}</span>
-                            {store.personalPhone ? (
-                                <span className={`${styles.verifiedBadge} ${styles.verifiedBadgeOrange}`}>
-                                    <AlertCircle size={12} /> Not Verified
-                                </span>
-                            ) : null}
                         </div>
                     </div>
                     <button className={styles.changeLink}>Change Phone</button>
                 </div>
-            </div>
-
-            {/* Linked Accounts */}
-            <div className={styles.card}>
-                <h3 className={styles.cardTitle}>Linked Accounts</h3>
-                <div className={styles.linkedAccountRow}>
-                    <div className={`${styles.linkedIcon} ${styles.linkedIconGoogle}`}>G</div>
-                    <div className={styles.linkedInfo}>
-                        <div className={styles.linkedName}>Google</div>
-                        <div className={styles.linkedStatus}>Not Connected</div>
-                    </div>
-                    <button className={`${styles.btnConnect} ${styles.btnConnectGreen}`}>Connect</button>
-                </div>
-                <div className={styles.linkedAccountRow}>
-                    <div className={`${styles.linkedIcon} ${styles.linkedIconFacebook}`}>f</div>
-                    <div className={styles.linkedInfo}>
-                        <div className={styles.linkedName}>Facebook</div>
-                        <div className={styles.linkedStatus}>Not Connected</div>
-                    </div>
-                    <button className={`${styles.btnConnect} ${styles.btnConnectGreen}`}>Connect</button>
-                </div>
-            </div>
-
-            {/* Deactivate / Delete */}
-            <div className={styles.dangerCard}>
-                <div className={styles.dangerInfo}>
-                    <div className={styles.dangerTitle}>Deactivate account</div>
-                    <div className={styles.dangerDesc}>Temporarily hide your restaurant and profile from the platform.</div>
-                </div>
-                <button className={styles.btnDeactivate}>Deactivate</button>
-            </div>
-
-            <div className={styles.dangerCard}>
-                <div className={styles.dangerInfo}>
-                    <div className={styles.dangerTitle}>Request account deletion</div>
-                    <div className={styles.dangerDesc}>Permanently remove all your data and access. This cannot be undone.</div>
-                </div>
-                <button className={styles.btnDelete}>Delete Account</button>
             </div>
 
             {saved && (
@@ -264,421 +221,372 @@ function AccountTab({ store, onUpdate, refreshOwner }) {
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  STORE OPERATIONS TAB — Restaurant Profile (Pics 2 & 3)                   */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-function StoreOperationsTab({ store, onUpdate, refreshOwner }) {
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [saved, setSaved] = useState(false);
+function StoreOperationsTab({ store, items = [], refreshInventory }) {
+    const [restaurantStatus, setRestaurantStatus] = useState(store.operatingStatus || 'open');
+    const [autoAcceptOrders, setAutoAcceptOrders] = useState(store.autoAcceptOrders ?? true);
+    const [manualConfirmation, setManualConfirmation] = useState(store.manualConfirmation ?? false);
+    const [prepTime, setPrepTime] = useState(store.defaultPrepTime || 15);
+    const [hideModalOpen, setHideModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [categoryBlacklist, setCategoryBlacklist] = useState(true);
+    const [dialog, setDialog] = useState(null);
+    const [lastAction, setLastAction] = useState(null);
+    const [savingControls, setSavingControls] = useState(false);
 
-    const cuisines = store.cuisineType || [];
-    const priceRange = store.priceRange || '';
-    const brn = store.businessRegistrationNumber || '';
+    useEffect(() => {
+        setRestaurantStatus(store.operatingStatus || 'open');
+        setAutoAcceptOrders(store.autoAcceptOrders ?? true);
+        setManualConfirmation(store.manualConfirmation ?? false);
+        setPrepTime(store.defaultPrepTime || 15);
+    }, [store.autoAcceptOrders, store.defaultPrepTime, store.manualConfirmation, store.operatingStatus]);
 
-    const googleMapsUrl = store.location
-        ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(store.location)}&zoom=14&size=400x200&key=DEMO`
-        : null;
+    const groupedItems = items.reduce((acc, item) => {
+        const categoryName = item.category?.name || 'Uncategorized';
+        if (!acc[categoryName]) acc[categoryName] = [];
+        acc[categoryName].push(item);
+        return acc;
+    }, {});
+
+    const filteredGroups = Object.entries(groupedItems)
+        .map(([categoryName, categoryItems]) => [
+            categoryName,
+            categoryItems.filter((item) => item.title.toLowerCase().includes(searchTerm.toLowerCase())),
+        ])
+        .filter(([, categoryItems]) => categoryItems.length > 0);
+
+    const statusOptions = [
+        { key: 'open', label: 'Open', hint: 'Accepting all orders', icon: <CheckCircle2 size={18} /> },
+        { key: 'paused', label: 'Pause Orders', hint: 'Busy? Pause for 30m', icon: <PauseCircle size={18} /> },
+        { key: 'closed', label: 'Closed', hint: 'Stop for the day', icon: <XCircle size={18} /> },
+    ];
+
+    async function persistStoreOperations(nextState) {
+        setSavingControls(true);
+        try {
+            await api.put('/owner/store-operations', nextState);
+        } catch (error) {
+            console.error('Failed to save store operations:', error);
+            setDialog({
+                type: 'error',
+                action: 'settings',
+                itemName: 'store settings',
+                message: error?.response?.data?.message || 'We could not save your store operation settings right now.',
+            });
+            throw error;
+        } finally {
+            setSavingControls(false);
+        }
+    }
+
+    async function handleStatusChange(nextStatus) {
+        const previousStatus = restaurantStatus;
+        setRestaurantStatus(nextStatus);
+
+        try {
+            await persistStoreOperations({
+                operating_status: nextStatus,
+                auto_accept_orders: autoAcceptOrders,
+                manual_confirmation: manualConfirmation,
+                default_prep_time: prepTime,
+            });
+        } catch {
+            setRestaurantStatus(previousStatus);
+        }
+    }
+
+    async function handlePreferenceChange(nextAutoAccept, nextManualConfirmation) {
+        const previousAutoAccept = autoAcceptOrders;
+        const previousManual = manualConfirmation;
+        setAutoAcceptOrders(nextAutoAccept);
+        setManualConfirmation(nextManualConfirmation);
+
+        try {
+            await persistStoreOperations({
+                operating_status: restaurantStatus,
+                auto_accept_orders: nextAutoAccept,
+                manual_confirmation: nextManualConfirmation,
+                default_prep_time: prepTime,
+            });
+        } catch {
+            setAutoAcceptOrders(previousAutoAccept);
+            setManualConfirmation(previousManual);
+        }
+    }
+
+    async function handlePrepTimeChange(minutes) {
+        const previousPrepTime = prepTime;
+        setPrepTime(minutes);
+
+        try {
+            await persistStoreOperations({
+                operating_status: restaurantStatus,
+                auto_accept_orders: autoAcceptOrders,
+                manual_confirmation: manualConfirmation,
+                default_prep_time: minutes,
+            });
+        } catch {
+            setPrepTime(previousPrepTime);
+        }
+    }
+
+    async function runAvailabilityAction(item, nextAvailable) {
+        await api.patch(`/owner/inventory/items/${item.id}/availability`, { available: nextAvailable });
+        await refreshInventory?.();
+    }
+
+    async function handleAvailabilityChange(item, nextAvailable) {
+        setLastAction(() => () => runAvailabilityAction(item, nextAvailable));
+
+        try {
+            await runAvailabilityAction(item, nextAvailable);
+            setDialog({
+                type: 'success',
+                action: nextAvailable ? 'restore' : 'hide',
+                itemName: item.title,
+            });
+        } catch (error) {
+            console.error('Failed to update item availability:', error);
+            setDialog({
+                type: 'error',
+                action: nextAvailable ? 'restore' : 'hide',
+                itemName: item.title,
+                message: error?.response?.data?.message,
+            });
+        }
+    }
 
     return (
         <>
-            {/* Restaurant Header */}
-            <div className={styles.card}>
-                <div className={styles.restaurantHeader}>
-                    <div className={styles.restaurantHeaderLeft}>
-                        {store.logo ? (
-                            <img src={store.logo} alt={store.branchName} className={styles.restaurantLogo} />
-                        ) : (
-                            <div className={styles.restaurantLogoPlaceholder}>
-                                {(store.branchName || 'R').charAt(0)}
-                            </div>
-                        )}
-                        <div className={styles.restaurantMeta}>
-                            {cuisines.length > 0 && (
-                                <span className={styles.restaurantCuisineLabel}>
-                                    {cuisines.join(' • ')}
-                                </span>
-                            )}
-                            <h3 className={styles.restaurantName}>{store.branchName || 'My Restaurant'}</h3>
-                        </div>
-                    </div>
-                    <button className={styles.btnEditProfile} onClick={() => setEditModalOpen(true)}>
-                        Edit Profile
-                    </button>
+            <div className={styles.storeOpsShell}>
+                <div className={styles.storeOpsIntro}>
+                    <h3 className={styles.storeOpsTitle}>Store Settings</h3>
+                    <p className={styles.storeOpsSubtitle}>Configure how your restaurant accepts and processes orders in real-time.</p>
                 </div>
-            </div>
 
-            {/* Info Sections */}
-            <div className={styles.card}>
-                <div className={styles.infoSectionsGrid}>
-                    {/* Restaurant Information */}
-                    <div className={styles.infoSection}>
-                        <div className={styles.infoSectionHeader}>
-                            <span className={styles.infoSectionIcon}><Store size={16} /></span>
-                            Restaurant Information
+                <div className={styles.storeOpsCard}>
+                    <div className={styles.storeOpsSectionHead}>
+                        <h4>Restaurant Status</h4>
+                        <p>Quickly change your availability to customers.</p>
+                    </div>
+                    <div className={styles.statusOptionGrid}>
+                        {statusOptions.map((option) => (
+                            <button
+                                key={option.key}
+                                type="button"
+                                className={`${styles.statusOptionCard} ${restaurantStatus === option.key ? styles.statusOptionCardActive : ''}`}
+                                onClick={() => handleStatusChange(option.key)}
+                                disabled={savingControls}
+                            >
+                                <span className={styles.statusOptionIcon}>{option.icon}</span>
+                                <span className={styles.statusOptionLabel}>{option.label}</span>
+                                <span className={styles.statusOptionHint}>{option.hint}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className={styles.storeOpsCard}>
+                    <div className={styles.storeOpsSectionHead}>
+                        <h4>Order Preferences</h4>
+                        <p>Define how incoming orders are handled by the system.</p>
+                    </div>
+
+                    <div className={styles.preferenceList}>
+                        <div className={styles.preferenceRow}>
+                            <button
+                                type="button"
+                                className={`${styles.switchBtn} ${autoAcceptOrders ? styles.switchBtnActive : ''}`}
+                                onClick={() => handlePreferenceChange(true, false)}
+                                disabled={savingControls}
+                            >
+                                <span className={styles.switchThumb}></span>
+                            </button>
+                            <div>
+                                <div className={styles.preferenceLabel}>Auto-accept orders</div>
+                                <div className={styles.preferenceHint}>Recommended for fast-paced kitchens to reduce order wait times.</div>
+                            </div>
                         </div>
-                        <div className={styles.infoGrid}>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Restaurant Name</span>
-                                <input className={styles.infoValueInput} value={store.branchName || ''} disabled />
-                            </div>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Business Registration Number</span>
-                                <input className={styles.infoValueInput} value={brn || 'Not set'} disabled />
-                            </div>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Cuisine Type</span>
-                                <div className={styles.cuisineTags}>
-                                    {cuisines.length > 0 ? cuisines.map((c, i) => (
-                                        <span key={i} className={styles.cuisineTag}>{c}</span>
-                                    )) : <span style={{ fontSize: '0.82rem', color: '#9CA3AF' }}>Not set</span>}
-                                </div>
-                            </div>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Price Range</span>
-                                <div className={styles.priceRangePills}>
-                                    {['₱', '₱₱', '₱₱₱', '₱₱₱₱'].map(p => (
-                                        <span
-                                            key={p}
-                                            className={`${styles.priceRangePill} ${priceRange === p ? styles.priceRangePillActive : ''}`}
-                                        >
-                                            {p}
-                                        </span>
-                                    ))}
-                                </div>
+
+                        <div className={styles.preferenceRow}>
+                            <button
+                                type="button"
+                                className={`${styles.switchBtn} ${manualConfirmation ? styles.switchBtnActive : ''}`}
+                                onClick={() => handlePreferenceChange(false, true)}
+                                disabled={savingControls}
+                            >
+                                <span className={styles.switchThumb}></span>
+                            </button>
+                            <div>
+                                <div className={styles.preferenceLabel}>Manual confirmation</div>
+                                <div className={styles.preferenceHint}>Best for small staff counts or when stock levels vary frequently.</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className={styles.infoSection}>
-                        <div className={styles.infoSectionHeader}>
-                            <span className={styles.infoSectionIcon}><Mail size={16} /></span>
-                            Contact Information
-                        </div>
-                        <div className={styles.infoGrid}>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Email</span>
-                                <input className={styles.infoValueInput} value={store.email || ''} disabled />
-                            </div>
-                            <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Phone Number</span>
-                                <input className={styles.infoValueInput} value={store.phone || 'Not set'} disabled />
-                            </div>
+                    <div className={styles.prepTimeWrap}>
+                        <div className={styles.preferenceLabel}>Default Preparation Time</div>
+                        <div className={styles.prepTimeOptions}>
+                            {[10, 15, 20, 30].map((minutes) => (
+                                <button
+                                    key={minutes}
+                                    type="button"
+                                    className={`${styles.prepTimeBtn} ${prepTime === minutes ? styles.prepTimeBtnActive : ''}`}
+                                    onClick={() => handlePrepTimeChange(minutes)}
+                                    disabled={savingControls}
+                                >
+                                    {minutes} min
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
+
+                <div className={styles.storeOpsCard}>
+                    <div className={styles.hideItemsRow}>
+                        <div>
+                            <h4>Hide Items</h4>
+                            <p>Temporarily hide items from the menu.</p>
+                        </div>
+                        <button type="button" className={styles.hideItemsBtn} onClick={() => setHideModalOpen(true)}>
+                            Hide Items
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {/* Restaurant Location */}
-            <div className={styles.card}>
-                <div className={styles.locationSection}>
-                    <div className={styles.locationHeader}>
-                        <span className={styles.infoSectionIcon}><MapPin size={16} /></span>
-                        Restaurant Location
-                    </div>
-                    <div className={styles.locationContent}>
-                        <div className={styles.infoItem}>
-                            <span className={styles.infoLabel}>Address</span>
-                            <p className={styles.addressText}>{store.location || 'No address set'}</p>
+            {hideModalOpen && (
+                <div className={styles.modalOverlay} onClick={() => setHideModalOpen(false)}>
+                    <div className={styles.blacklistModal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.blacklistHeader}>
+                            <div>
+                                <h3 className={styles.blacklistTitle}>Hide Items</h3>
+                                <p className={styles.blacklistSubtitle}>Select which items to hide from your customers</p>
+                            </div>
+                            <button type="button" className={styles.blacklistCloseBtn} onClick={() => setHideModalOpen(false)}>
+                                <X size={18} />
+                            </button>
                         </div>
-                        <div className={styles.mapPlaceholder}>
-                            {store.location ? (
-                                <>
-                                    <iframe
-                                        title="Restaurant Location"
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        loading="lazy"
-                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(store.location)}&output=embed`}
-                                    />
-                                    <a
-                                        className={styles.viewOnMap}
-                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.location)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        View on Map
-                                    </a>
-                                </>
+
+                        <div className={styles.blacklistSearch}>
+                            <Search size={15} className={styles.blacklistSearchIcon} />
+                            <input
+                                type="text"
+                                placeholder="Search full menu..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+
+                        <div className={styles.blacklistToggleRow}>
+                            <button
+                                type="button"
+                                className={`${styles.switchBtn} ${categoryBlacklist ? styles.switchBtnActive : ''}`}
+                                onClick={() => setCategoryBlacklist((value) => !value)}
+                            >
+                                <span className={styles.switchThumb}></span>
+                            </button>
+                            <div>
+                                <div className={styles.preferenceLabel}>Category Blacklist</div>
+                                <div className={styles.preferenceHint}>Hide entire menu sections at once</div>
+                            </div>
+                        </div>
+
+                        <div className={styles.blacklistBody}>
+                            {filteredGroups.length === 0 ? (
+                                <div className={styles.blacklistEmpty}>No menu items matched your search.</div>
                             ) : (
-                                <span>No location set</span>
+                                filteredGroups.map(([categoryName, categoryItems]) => (
+                                    <div key={categoryName} className={styles.blacklistCategoryBlock}>
+                                        <div className={styles.blacklistCategoryTitle}>{categoryName}</div>
+                                        <div className={styles.blacklistItems}>
+                                            {categoryItems.map((item) => {
+                                                const isHidden = item.available === false;
+                                                return (
+                                                    <div key={item.id} className={styles.blacklistItemRow}>
+                                                        <div className={styles.blacklistItemInfo}>
+                                                            <img src={item.image} alt={item.title} className={styles.blacklistItemImage} />
+                                                            <span className={styles.blacklistItemName}>{item.title}</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className={`${styles.blacklistActionBtn} ${isHidden ? styles.blacklistRestoreBtn : ''}`}
+                                                            onClick={() => handleAvailabilityChange(item, isHidden)}
+                                                        >
+                                                            {isHidden ? 'Restore' : 'Hide'}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))
                             )}
+                        </div>
+
+                        <div className={styles.blacklistFooter}>
+                            <button type="button" className={styles.btnCancel} onClick={() => setHideModalOpen(false)}>Cancel</button>
+                            <button type="button" className={styles.btnSave} onClick={() => setHideModalOpen(false)}>Save Changes</button>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Edit Modal */}
-            {editModalOpen && (
-                <EditRestaurantModal
-                    store={store}
-                    onClose={() => setEditModalOpen(false)}
-                    onSaved={() => {
-                        setSaved(true);
-                        setTimeout(() => setSaved(false), 2500);
-                    }}
-                    refreshOwner={refreshOwner}
-                />
             )}
 
-            {saved && (
-                <div className={styles.savedToast}>
-                    <Check size={16} /> Restaurant profile updated!
-                </div>
+            {dialog && (
+                <OperationDialog
+                    dialog={dialog}
+                    onClose={() => setDialog(null)}
+                    onRetry={async () => {
+                        if (!lastAction) {
+                            setDialog(null);
+                            return;
+                        }
+
+                        try {
+                            await lastAction();
+                            setDialog((prev) => prev ? { type: 'success', action: prev.action, itemName: prev.itemName } : null);
+                        } catch (error) {
+                            console.error('Retry failed:', error);
+                        }
+                    }}
+                />
             )}
         </>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  EDIT RESTAURANT PROFILE MODAL (Pic 3)                                    */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-function EditRestaurantModal({ store, onClose, onSaved, refreshOwner }) {
-    const [saving, setSaving] = useState(false);
-    const [form, setForm] = useState({
-        restaurantName: store.branchName || '',
-        businessRegistrationNumber: store.businessRegistrationNumber || '',
-        cuisineType: store.cuisineType || [],
-        priceRange: store.priceRange || '',
-        email: store.email || '',
-        phone: store.phone || '',
-        address: store.location || '',
-    });
-    const [newCuisine, setNewCuisine] = useState('');
-    const [showCuisineInput, setShowCuisineInput] = useState(false);
-    const logoRef = useRef(null);
-    const [logoFile, setLogoFile] = useState(null);
-    const [logoPreview, setLogoPreview] = useState(null);
-
-    const handleLogoChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setLogoFile(file);
-        setLogoPreview(URL.createObjectURL(file));
-    };
-
-    const addCuisine = () => {
-        const val = newCuisine.trim();
-        if (val && !form.cuisineType.includes(val)) {
-            setForm(p => ({ ...p, cuisineType: [...p.cuisineType, val] }));
-        }
-        setNewCuisine('');
-        setShowCuisineInput(false);
-    };
-
-    const removeCuisine = (idx) => {
-        setForm(p => ({ ...p, cuisineType: p.cuisineType.filter((_, i) => i !== idx) }));
-    };
-
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const formData = new FormData();
-            formData.append('first_name', store.firstName || 'Store');
-            formData.append('last_name', store.lastName || 'Manager');
-            formData.append('restaurant_name', form.restaurantName);
-            formData.append('business_address', form.address);
-            formData.append('business_contact_number', form.phone);
-            formData.append('business_registration_number', form.businessRegistrationNumber);
-            formData.append('price_range', form.priceRange);
-
-            // Send cuisine_type as array items
-            form.cuisineType.forEach((c, i) => {
-                formData.append(`cuisine_type[${i}]`, c);
-            });
-
-            if (logoFile) {
-                formData.append('logo_file', logoFile);
-            }
-
-            await api.post('/owner/profile-update', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            if (refreshOwner) await refreshOwner();
-            onSaved();
-            onClose();
-        } catch (err) {
-            console.error('Failed to update restaurant profile:', err);
-        } finally {
-            setSaving(false);
-        }
-    };
+function OperationDialog({ dialog, onClose, onRetry }) {
+    const success = dialog.type === 'success';
+    const isRestore = dialog.action === 'restore';
+    const title = success
+        ? isRestore ? 'Item Restored Successfully' : 'Item Hidden Successfully'
+        : isRestore ? 'Restore Failed' : 'Update Failed';
+    const description = success
+        ? isRestore
+            ? `The "${dialog.itemName}" is now visible and available for order on your digital menu.`
+            : `The "${dialog.itemName}" has been hidden from your menu. You can restore it anytime from this list.`
+        : dialog.message || `We couldn't ${isRestore ? 'restore' : 'update the blacklist status for'} "${dialog.itemName}" due to a temporary connection issue.`;
 
     return (
-        <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                <div className={styles.modalHeader}>
-                    <h2 className={styles.modalTitle}>Edit Restaurant Profile</h2>
-                    <button className={styles.modalCloseBtn} onClick={onClose}>
-                        <X size={18} />
-                    </button>
+        <div className={styles.modalOverlay}>
+            <div className={styles.operationDialog}>
+                <div className={`${styles.operationDialogIcon} ${success ? styles.operationDialogSuccess : styles.operationDialogError}`}>
+                    {success ? <CheckCircle2 size={28} /> : <AlertCircle size={28} />}
                 </div>
-
-                <div className={styles.modalBody}>
-                    {/* Restaurant Information */}
-                    <div className={styles.modalSection}>
-                        <h4 className={styles.modalSectionTitle}>Restaurant Information</h4>
-                        <div className={styles.modalLogoRow}>
-                            <div onClick={() => logoRef.current?.click()} style={{ cursor: 'pointer' }}>
-                                {logoPreview || store.logo ? (
-                                    <img src={logoPreview || store.logo} alt="Logo" className={styles.modalLogoPreview} />
-                                ) : (
-                                    <div className={styles.modalLogoPlaceholder}>
-                                        {(form.restaurantName || 'R').charAt(0)}
-                                    </div>
-                                )}
-                                <input ref={logoRef} type="file" hidden accept="image/*" onChange={handleLogoChange} />
-                            </div>
-                            <div className={styles.modalFormGrid} style={{ flex: 1 }}>
-                                <div className={styles.field}>
-                                    <label className={styles.fieldLabel}>Restaurant Name</label>
-                                    <input
-                                        className={styles.fieldInput}
-                                        value={form.restaurantName}
-                                        onChange={e => setForm(p => ({ ...p, restaurantName: e.target.value }))}
-                                    />
-                                </div>
-                                <div className={styles.field}>
-                                    <label className={styles.fieldLabel}>Business Registration Number</label>
-                                    <input
-                                        className={styles.fieldInput}
-                                        value={form.businessRegistrationNumber}
-                                        onChange={e => setForm(p => ({ ...p, businessRegistrationNumber: e.target.value }))}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Cuisine Type */}
-                        <div className={styles.field}>
-                            <label className={styles.fieldLabel}>Cuisine Type</label>
-                            <div className={styles.modalCuisineRow}>
-                                {form.cuisineType.map((c, i) => (
-                                    <span key={i} className={styles.cuisineTagRemovable} onClick={() => removeCuisine(i)}>
-                                        {c} <X size={10} />
-                                    </span>
-                                ))}
-                                {showCuisineInput ? (
-                                    <div className={styles.cuisineInputWrapper}>
-                                        <input
-                                            className={styles.cuisineInput}
-                                            value={newCuisine}
-                                            onChange={e => setNewCuisine(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCuisine(); } }}
-                                            placeholder="e.g. Italian"
-                                            autoFocus
-                                        />
-                                        <button className={styles.addCuisineBtn} onClick={addCuisine} type="button">
-                                            <Check size={10} />
-                                        </button>
-                                        <button className={styles.addCuisineBtn} onClick={() => { setShowCuisineInput(false); setNewCuisine(''); }} type="button">
-                                            <X size={10} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button className={styles.addCuisineBtn} onClick={() => setShowCuisineInput(true)} type="button">
-                                        <Plus size={10} /> Add Cuisine
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Price Range */}
-                        <div className={styles.field}>
-                            <label className={styles.fieldLabel}>Price Range</label>
-                            <div className={styles.priceRangePills}>
-                                {['₱', '₱₱', '₱₱₱', '₱₱₱₱'].map(p => (
-                                    <button
-                                        key={p}
-                                        type="button"
-                                        className={`${styles.priceRangePill} ${form.priceRange === p ? styles.priceRangePillActive : ''}`}
-                                        onClick={() => setForm(prev => ({ ...prev, priceRange: p }))}
-                                    >
-                                        {p}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Contact Information */}
-                    <div className={styles.modalSection}>
-                        <h4 className={styles.modalSectionTitle}>Contact Information</h4>
-                        <div className={styles.contactRow}>
-                            <div className={styles.contactLeft}>
-                                <span className={styles.contactLabel}>Email</span>
-                                <div className={styles.contactValueRow}>
-                                    <span className={styles.contactValue}>{form.email}</span>
-                                    {store.emailVerifiedAt ? (
-                                        <span className={`${styles.verifiedBadge} ${styles.verifiedBadgeGreen}`}>
-                                            <CheckCircle2 size={12} /> Verified
-                                        </span>
-                                    ) : (
-                                        <span className={`${styles.verifiedBadge} ${styles.verifiedBadgeOrange}`}>
-                                            <AlertCircle size={12} /> Not Verified
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            <button className={styles.changeLink}>Change Email</button>
-                        </div>
-                        <div className={styles.cardDivider} />
-                        <div className={styles.contactRow}>
-                            <div className={styles.contactLeft}>
-                                <span className={styles.contactLabel}>Phone Number</span>
-                                <div className={styles.contactValueRow}>
-                                    <span className={styles.contactValue}>{form.phone || 'Not set'}</span>
-                                    <span className={`${styles.verifiedBadge} ${styles.verifiedBadgeOrange}`}>
-                                        <AlertCircle size={12} /> Not Verified
-                                    </span>
-                                </div>
-                            </div>
-                            <button className={styles.changeLink}>Change Phone</button>
-                        </div>
-                    </div>
-
-                    {/* Restaurant Location */}
-                    <div className={styles.modalSection}>
-                        <h4 className={styles.modalSectionTitle}>Restaurant Location</h4>
-                        <div className={styles.field}>
-                            <label className={styles.fieldLabel}>Address</label>
-                            <input
-                                className={styles.fieldInput}
-                                value={form.address}
-                                onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
-                            />
-                        </div>
-                        {form.address && (
-                            <div className={styles.mapPlaceholder}>
-                                <iframe
-                                    title="Location Preview"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0 }}
-                                    loading="lazy"
-                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(form.address)}&output=embed`}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className={styles.modalFooter}>
-                    <button className={styles.btnCancel} onClick={onClose}>Cancel</button>
-                    <button className={styles.btnSave} disabled={saving} onClick={handleSave}>
-                        {saving ? 'Saving...' : <><Save size={14} /> Save Changes</>}
-                    </button>
-                </div>
+                <h3 className={styles.operationDialogTitle}>{title}</h3>
+                <p className={styles.operationDialogText}>{description}</p>
+                {success ? (
+                    <button type="button" className={styles.operationDialogPrimary} onClick={onClose}>Done</button>
+                ) : (
+                    <>
+                        <button type="button" className={styles.operationDialogPrimary} onClick={onRetry}>Try Again</button>
+                        <button type="button" className={styles.operationDialogSecondary} onClick={onClose}>Cancel</button>
+                    </>
+                )}
             </div>
         </div>
     );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  PLACEHOLDER TAB                                                          */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 function PlaceholderTab({ title, description }) {
     return (
         <div className={styles.card}>

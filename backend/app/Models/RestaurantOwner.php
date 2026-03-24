@@ -35,6 +35,10 @@ class RestaurantOwner extends Authenticatable
         'logo',
         'cover_image',
         'google_id',
+        'operating_status',
+        'auto_accept_orders',
+        'manual_confirmation',
+        'default_prep_time',
     ];
 
     /**
@@ -58,6 +62,9 @@ class RestaurantOwner extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'cuisine_type' => 'array',
+            'auto_accept_orders' => 'boolean',
+            'manual_confirmation' => 'boolean',
+            'default_prep_time' => 'integer',
         ];
     }
 

@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
 import { OrderProvider } from './context/OrderContext.jsx';
 import { OwnerAuthProvider } from './context/OwnerAuthContext.jsx';
+import { AdminAuthProvider } from './context/AdminAuthContext.jsx';
 import './assets/css/App.css';
 import './assets/css/about.css';
 import './assets/css/contact.css';
@@ -30,22 +31,24 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <ThemeProvider>
-        <BrowserRouter>
-          <NotificationProvider>
-            <AuthProvider>
-              <CartProvider>
-                <OrderProvider>
-                  <OwnerAuthProvider>
-                    <App />
-                  </OwnerAuthProvider>
-                </OrderProvider>
-              </CartProvider>
-            </AuthProvider>
-          </NotificationProvider>
-        </BrowserRouter>
-      </ThemeProvider>
-    </GoogleOAuthProvider>
-  </StrictMode>,
+   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+  <ThemeProvider>
+    <BrowserRouter>
+      <NotificationProvider>
+        <AuthProvider>
+          <CartProvider>
+            <OrderProvider>
+              <OwnerAuthProvider>
+                <AdminAuthProvider>
+                  <App />
+                </AdminAuthProvider>
+              </OwnerAuthProvider>
+            </OrderProvider>
+          </CartProvider>
+        </AuthProvider>
+      </NotificationProvider>
+    </BrowserRouter>
+  </ThemeProvider>
+</GoogleOAuthProvider>
+</StrictMode>,
 )

@@ -70,8 +70,19 @@ class OrderController extends Controller
         ]);
 
         $userId = $request->user()->id;
+        $owner = RestaurantOwner::findOrFail($validated['restaurantId']);
 
-        return DB::transaction(function () use ($validated, $userId) {
+        if ($owner->operating_status !== 'open') {
+            $message = match ($owner->operating_status) {
+                'paused' => 'This restaurant has temporarily paused orders. Please try again shortly.',
+                'closed' => 'This restaurant is currently closed and not accepting orders.',
+                default => 'This restaurant is not accepting orders right now.',
+            };
+
+            return response()->json(['message' => $message], 422);
+        }
+
+        return DB::transaction(function () use ($validated, $userId, $owner) {
             $order = Order::create([
                 'customer_id'          => $userId,
                 'restaurant_owner_id'  => $validated['restaurantId'],
@@ -87,7 +98,7 @@ class OrderController extends Controller
                 'delivery_type'        => $validated['deliveryType'],
                 'scheduled_date'       => $validated['scheduledDate'] ?? null,
                 'scheduled_time'       => $validated['scheduledTime'] ?? null,
-                'status'               => 'Pending',
+                'status'               => $owner->auto_accept_orders ? 'Order Confirmed' : 'Pending',
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -189,4 +200,3 @@ class OrderController extends Controller
         return response()->json($order->fresh('items'));
     }
 }
-
