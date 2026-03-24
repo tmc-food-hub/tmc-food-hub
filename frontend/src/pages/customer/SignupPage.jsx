@@ -607,7 +607,6 @@ function SignupPage() {
                                             onSuccess={handleGoogleSuccess}
                                             onError={handleGoogleError}
                                             text="signin_with"
-                                            width="100%"
                                         />
                                     </div>
                                     <button type="button" className={styles.socialBtn}>
@@ -624,7 +623,6 @@ function SignupPage() {
                                             onSuccess={handleGoogleSuccess}
                                             onError={handleGoogleError}
                                             text="signin_with"
-                                            width="100%"
                                         />
                                     </div>
                                     <button type="button" className={styles.socialBtn}>

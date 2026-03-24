@@ -179,6 +179,7 @@ class GoogleAuthController extends Controller
                 'message' => 'Google login successful',
             ], 200);
         } catch (\Exception $e) {
+            \Log::error('Google login error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
             return response()->json([
                 'message' => 'Google login failed',
                 'error' => $e->getMessage(),
