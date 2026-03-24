@@ -88,8 +88,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard']);
     Route::get('/orders', [AdminController::class, 'orders']);
     Route::get('/customers', [AdminController::class, 'customers']);
-    Route::get('/customers/stats', [AdminController::class, 'customerStats']);
-    Route::get('/customers/{customerId}', [AdminController::class, 'customerDetail']);
     Route::get('/restaurants', [AdminController::class, 'restaurants']);
     Route::get('/reviews', [AdminController::class, 'reviews']);
     Route::get('/payments', [AdminController::class, 'payments']);

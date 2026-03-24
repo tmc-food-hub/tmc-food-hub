@@ -322,157 +322,6 @@ class AdminController extends Controller
         ]);
     }
 
-    public function customerDetail(Request $request, $customerId)
-    {
-        $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        try {
-            // Extract numeric ID from TMC-XXXXX format
-            $numericId = (int) str_replace('TMC-', '', $customerId);
-            $customer = User::where('role', 'customer')->findOrFail($numericId);
-
-            // Get all orders for this customer
-            $orders = Order::where('customer_id', $customer->id)->latest()->get();
-            $totalSpent = $orders->sum('total');
-            $avgSpent = $orders->count() > 0 ? $totalSpent / $orders->count() : 0;
-
-            // Recent orders (last 5)
-            $recentOrders = $orders->take(5)->map(function ($order) {
-                return [
-                    'id' => "TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
-                    'date' => $order->created_at->format('M d, Y'),
-                    'amount' => (float) $order->total,
-                    'status' => $order->status ?? 'Unknown',
-                ];
-            })->values();
-
-            // Favorite restaurants (top 5 by order count)
-            $favoriteRestaurants = Order::where('customer_id', $customer->id)
-                ->with('restaurantOwner')
-                ->get()
-                ->groupBy('restaurant_owner_id')
-                ->map(function ($group) {
-                    $first = $group->first();
-                    return [
-                        'name' => $first->restaurantOwner?->restaurant_name ?? 'Unknown',
-                        'orders' => $group->count(),
-                    ];
-                })
-                ->sortByDesc('orders')
-                ->take(5)
-                ->values();
-
-            // Activity log
-            $activityLog = [];
-            
-            // Add recent orders as activities
-            foreach ($orders->take(10) as $order) {
-                $activityLog[] = [
-                    'type' => 'order_placed',
-                    'label' => 'Order Placed',
-                    'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT) . " • " . ($order->restaurantOwner?->restaurant_name ?? 'Restaurant'),
-                    'amount' => (float) $order->total,
-                    'time' => $order->created_at->diffForHumans(),
-                    'icon' => 'order',
-                ];
-
-                if ($order->status === 'Completed') {
-                    $activityLog[] = [
-                        'type' => 'order_completed',
-                        'label' => 'Order Completed',
-                        'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
-                        'time' => $order->updated_at?->diffForHumans() ?? $order->created_at->addHours(2)->diffForHumans(),
-                        'icon' => 'complete',
-                    ];
-                } elseif ($order->status === 'Cancelled') {
-                    $activityLog[] = [
-                        'type' => 'refund',
-                        'label' => 'Order Cancelled',
-                        'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
-                        'amount' => (float) $order->total,
-                        'time' => $order->updated_at?->diffForHumans() ?? 'Recently',
-                        'icon' => 'refund',
-                    ];
-                }
-            }
-
-            return response()->json([
-                'id' => "TMC-" . str_pad($customer->id, 5, '0', STR_PAD_LEFT),
-                'name' => $customer->name ?? 'Unknown',
-                'email' => $customer->email,
-                'phone' => $customer->phone ?? 'N/A',
-                'location' => $customer->address ?? 'N/A',
-                'status' => 'Active',
-                'avatar' => null,
-                'details' => [
-                    'accountAge' => $customer->created_at->diffForHumans(),
-                    'orderHistory' => [
-                        'total' => $orders->count(),
-                        'spent' => round($totalSpent, 2),
-                        'average' => round($avgSpent, 2),
-                    ],
-                    'recentOrders' => $recentOrders,
-                    'favoriteRestaurants' => $favoriteRestaurants,
-                    'activityLog' => array_slice($activityLog, 0, 10),
-                ],
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Customer detail error: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error fetching customer details',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function customerStats(Request $request)
-    {
-        $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        try {
-            $totalCustomers = User::where('role', 'customer')->count();
-            $activeThisMonth = User::where('role', 'customer')
-                ->whereHas('orders', function ($q) {
-                    $q->whereMonth('created_at', now()->month)
-                      ->whereYear('created_at', now()->year);
-                })
-                ->count();
-            $newRegistrations = User::where('role', 'customer')
-                ->where('created_at', '>=', now()->subDays(7))
-                ->count();
-            $flaggedAccounts = 0; // Would need a status column or flag
-            
-            // Calculate average orders per customer
-            $totalOrders = Order::count();
-            $avgOrdersPerCustomer = $totalCustomers > 0 ? $totalOrders / $totalCustomers : 0;
-
-            return response()->json([
-                'stats' => [
-                    'total_customers' => $totalCustomers,
-                    'active_this_month' => $activeThisMonth,
-                    'active_percentage' => $totalCustomers > 0 ? round(($activeThisMonth / $totalCustomers) * 100, 1) : 0,
-                    'new_registrations' => $newRegistrations,
-                    'flagged_accounts' => $flaggedAccounts,
-                    'avg_orders_per_customer' => round($avgOrdersPerCustomer, 1),
-                ],
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Customer stats error: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error fetching customer stats',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
     public function restaurants(Request $request)
     {
         $admin = $request->user();
@@ -546,54 +395,123 @@ class AdminController extends Controller
 
     public function reviews(Request $request)
     {
-        $admin = $request->user();
+        try {
+            $admin = $request->user();
 
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            if (!$admin || $admin->role !== 'admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $page = $request->query('page', 1);
+            $perPage = $request->query('per_page', 15);
+            $status = $request->query('status');
+            $restaurant_id = $request->query('restaurant_id');
+            $rating = $request->query('rating');
+
+            $query = Review::with(['customer', 'owner', 'order']);
+
+            // Filter by status
+            if ($status && $status !== 'All') {
+                if ($status === 'Flagged') {
+                    $query->where('flag_status', '!=', 'None');
+                } elseif ($status === 'Approved') {
+                    $query->where('review_status', 'approved');
+                } elseif ($status === 'Pending') {
+                    $query->where('review_status', 'pending');
+                } elseif ($status === 'Removed') {
+                    $query->where('review_status', 'removed');
+                }
+            }
+
+            if ($restaurant_id) {
+                $query->where('restaurant_owner_id', $restaurant_id);
+            }
+
+            if ($rating && $rating !== 'All') {
+                $query->where('rating', (int) $rating);
+            }
+
+            $reviews = $query->latest()->paginate($perPage, ['*'], 'page', $page);
+
+            $formattedReviews = $reviews->getCollection()->map(function ($review) {
+                try {
+                    $customer = $review->customer;
+                    $owner = $review->owner;
+                    $customerName = $customer?->name ?? 'Anonymous User';
+                    $accountAge = $customer?->created_at ? $customer->created_at->diffForHumans() : 'Unknown';
+                    $customerRestaurantOrders = $customer ? Order::where('customer_id', $customer->id)->count() : 0;
+                    $reviewFlag = $review->flag_status ?? 'None';
+                    $reviewStatus = $review->review_status ?? 'pending';
+
+                    return [
+                        'id' => $review->id,
+                        'reviewer' => $customerName,
+                        'reviewCount' => $customer ? Review::where('customer_id', $customer->id)->count() : 0,
+                        'restaurant' => $owner?->restaurant_name ?? 'Unknown Restaurant',
+                        'date' => optional($review->created_at)->format('M d, Y') ?? 'N/A',
+                        'rating' => (int) ($review->rating ?? 0),
+                        'review' => substr($review->review ?? '', 0, 80) . (strlen($review->review ?? '') > 80 ? '...' : ''),
+                        'flag' => ucfirst($reviewFlag),
+                        'status' => ucfirst($reviewStatus),
+                        'avatar' => null,
+                        'details' => [
+                            'fullReview' => $review->review ?? '',
+                            'accountAge' => $accountAge,
+                            'restaurantOrders' => $customerRestaurantOrders,
+                            'joined' => $customer?->created_at?->format('M d, Y') ?? 'N/A',
+                            'restaurantBranch' => $owner?->business_address ?? 'N/A',
+                            'reviewDate' => optional($review->created_at)->format('M d, Y') ?? 'N/A',
+                            'reviewRating' => (float) ($review->rating ?? 0),
+                            'restaurantResponse' => $review->owner_reply ? '"' . $review->owner_reply . '"' : null,
+                            'responseRate' => $owner ? round((Review::where('restaurant_owner_id', $owner->id)->whereNotNull('owner_reply')->count() / Review::where('restaurant_owner_id', $owner->id)->count() * 100), 0) : 0,
+                            'flagInfo' => $reviewFlag !== 'None' ? [
+                                'type' => ucfirst($reviewFlag),
+                                'flaggedBy' => 'System Detection',
+                                'reason' => 'Review flagged for moderation',
+                                'reports' => $review->flag_count ?? 0,
+                                'timestamp' => optional($review->updated_at)->format('M d, Y - h:i A') ?? 'N/A',
+                            ] : null,
+                            'merchantRequest' => null,
+                            'adminNotes' => [],
+                            'photos' => $review->photos ?? [],
+                            'helpfulCount' => $review->helpful_count ?? 0,
+                            'isVerified' => (bool) $review->is_verified,
+                        ],
+                    ];
+                } catch (\Exception $e) {
+                    Log::error('Error formatting review ' . $review->id . ': ' . $e->getMessage());
+                    return [
+                        'id' => $review->id,
+                        'reviewer' => 'Unknown',
+                        'reviewCount' => 0,
+                        'restaurant' => 'Unknown',
+                        'date' => 'N/A',
+                        'rating' => 0,
+                        'review' => 'Error loading review',
+                        'flag' => 'None',
+                        'status' => 'Error',
+                        'avatar' => null,
+                        'details' => [],
+                    ];
+                }
+            });
+
+            return response()->json([
+                'data' => $formattedReviews->all(),
+                'pagination' => [
+                    'total' => $reviews->total(),
+                    'per_page' => $reviews->perPage(),
+                    'current_page' => $reviews->currentPage(),
+                    'last_page' => $reviews->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Reviews endpoint error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching reviews',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $page = $request->query('page', 1);
-        $perPage = $request->query('per_page', 10);
-        $restaurant_id = $request->query('restaurant_id');
-        $rating = $request->query('rating');
-
-        $query = Review::with(['customer', 'owner', 'order']);
-
-        if ($restaurant_id) {
-            $query->where('restaurant_owner_id', $restaurant_id);
-        }
-
-        if ($rating) {
-            $query->where('rating', $rating);
-        }
-
-        $reviews = $query->latest()->paginate($perPage, ['*'], 'page', $page);
-
-        $reviews->getCollection()->transform(function ($review) {
-            return [
-                'id' => $review->id,
-                'customer_name' => optional($review->customer)->name ?? 'Anonymous',
-                'restaurant_name' => optional($review->owner)->restaurant_name ?? 'N/A',
-                'rating' => $review->rating,
-                'review_text' => $review->review,
-                'helpful_count' => $review->helpful_count ?? 0,
-                'photos' => $review->photos ?? [],
-                'is_verified' => $review->is_verified,
-                'owner_reply' => $review->owner_reply,
-                'created_at' => optional($review->created_at)->diffForHumans(),
-                'status' => $review->owner_reply ? 'Replied' : 'Pending',
-            ];
-        });
-
-        return response()->json([
-            'data' => $reviews->items(),
-            'pagination' => [
-                'total' => $reviews->total(),
-                'per_page' => $reviews->perPage(),
-                'current_page' => $reviews->currentPage(),
-                'last_page' => $reviews->lastPage(),
-            ],
-        ]);
     }
 
     public function payments(Request $request)
