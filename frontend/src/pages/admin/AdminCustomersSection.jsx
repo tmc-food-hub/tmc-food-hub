@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Users, UserPlus, AlertTriangle, ShoppingCart, Eye, Flag, X, Mail, Phone,
     MapPin, Clock, Download, ChevronDown, Search, FileText, MoreVertical,
-    CheckCircle2, ShieldAlert, Ban, ExternalLink, Info
+    CheckCircle2, ShieldAlert, Ban, ExternalLink, Info, Loader
 } from 'lucide-react';
+import api from '../../api/axios';
 import styles from './AdminCustomersSection.module.css';
 
 /* ─── Mock Data ─────────────────────────────────────────────────────────────── */
@@ -186,17 +187,77 @@ export default function AdminCustomersSection() {
     const [regionFilter, setRegionFilter] = useState('All Regions');
     const [paymentFilter, setPaymentFilter] = useState('All');
     const [orderCountFilter, setOrderCountFilter] = useState('Any count');
+    
+    // API state
+    const [customers, setCustomers] = useState([]);
+    const [stats, setStats] = useState({
+        total_customers: 0,
+        active_this_month: 0,
+        active_percentage: 0,
+        new_registrations: 0,
+        flagged_accounts: 0,
+        avg_orders_per_customer: 0,
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch customer stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await api.get('/admin/customers/stats');
+                setStats(response.data.stats);
+            } catch (err) {
+                console.error('Error fetching customer stats:', err);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // Fetch customers list
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await api.get('/admin/customers?per_page=50');
+                setCustomers(response.data.data || []);
+            } catch (err) {
+                console.error('Error fetching customers:', err);
+                setError(err.message);
+                setCustomers(MOCK_CUSTOMERS);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCustomers();
+    }, [activeTab]);
 
     const filteredCustomers = useMemo(() => {
-        let custs = MOCK_CUSTOMERS;
+        let custs = customers;
         if (activeTab !== 'All') {
             custs = custs.filter(c => {
                 if (activeTab === 'Pending Verification') return c.status === 'Pending Verification';
-                return c.status.toLowerCase() === activeTab.toLowerCase();
+                return c.status?.toLowerCase() === activeTab.toLowerCase();
             });
         }
         return custs;
-    }, [activeTab]);
+    }, [activeTab, customers]);
+
+    // Fetch customer details when customer is selected
+    useEffect(() => {
+        if (selectedCustomer && !selectedCustomer.details) {
+            const fetchCustomerDetail = async () => {
+                try {
+                    const response = await api.get(`/admin/customers/${selectedCustomer.id}`);
+                    setSelectedCustomer(response.data);
+                } catch (err) {
+                    console.error('Error fetching customer details:', err);
+                }
+            };
+            fetchCustomerDetail();
+        }
+    }, [selectedCustomer?.id]);
 
     const clearFilters = () => {
         setRegionFilter('All Regions');
@@ -240,18 +301,56 @@ export default function AdminCustomersSection() {
 
             {/* Stats */}
             <div className={styles.statsRow}>
-                {STATS.map(stat => (
-                    <div key={stat.label} className={styles.statCard}>
-                        <div className={styles.statIcon} style={{ background: stat.color, color: stat.iconColor }}>
-                            {stat.icon}
-                        </div>
-                        <div className={styles.statBody}>
-                            <div className={styles.statLabel}>{stat.label}</div>
-                            <div className={styles.statValue}>{stat.value}</div>
-                            <div className={styles.statSub}>{stat.sub}</div>
-                        </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>
+                        <Users size={18} />
                     </div>
-                ))}
+                    <div className={styles.statBody}>
+                        <div className={styles.statLabel}>Total Customers</div>
+                        <div className={styles.statValue}>{stats.total_customers?.toLocaleString()}</div>
+                        <div className={styles.statSub}>+12% from last month</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>
+                        <Users size={18} />
+                    </div>
+                    <div className={styles.statBody}>
+                        <div className={styles.statLabel}>Active This Month</div>
+                        <div className={styles.statValue}>{stats.active_this_month?.toLocaleString()}</div>
+                        <div className={styles.statSub}>{stats.active_percentage}% of total</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>
+                        <UserPlus size={18} />
+                    </div>
+                    <div className={styles.statBody}>
+                        <div className={styles.statLabel}>New Registrations</div>
+                        <div className={styles.statValue}>{stats.new_registrations}</div>
+                        <div className={styles.statSub}>Last 7 days</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>
+                        <Flag size={18} />
+                    </div>
+                    <div className={styles.statBody}>
+                        <div className={styles.statLabel}>Flagged Accounts</div>
+                        <div className={styles.statValue}>{stats.flagged_accounts}</div>
+                        <div className={styles.statSub}>Requires review</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>
+                        <ShoppingCart size={18} />
+                    </div>
+                    <div className={styles.statBody}>
+                        <div className={styles.statLabel}>Avg Orders / Cust.</div>
+                        <div className={styles.statValue}>{stats.avg_orders_per_customer?.toFixed(1)}</div>
+                        <div className={styles.statSub}>Per lifetime</div>
+                    </div>
+                </div>
             </div>
 
             {/* Tabs & Export */}

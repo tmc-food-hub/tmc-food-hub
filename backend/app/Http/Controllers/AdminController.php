@@ -322,6 +322,157 @@ class AdminController extends Controller
         ]);
     }
 
+    public function customerDetail(Request $request, $customerId)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            // Extract numeric ID from TMC-XXXXX format
+            $numericId = (int) str_replace('TMC-', '', $customerId);
+            $customer = User::where('role', 'customer')->findOrFail($numericId);
+
+            // Get all orders for this customer
+            $orders = Order::where('customer_id', $customer->id)->latest()->get();
+            $totalSpent = $orders->sum('total');
+            $avgSpent = $orders->count() > 0 ? $totalSpent / $orders->count() : 0;
+
+            // Recent orders (last 5)
+            $recentOrders = $orders->take(5)->map(function ($order) {
+                return [
+                    'id' => "TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                    'date' => $order->created_at->format('M d, Y'),
+                    'amount' => (float) $order->total,
+                    'status' => $order->status ?? 'Unknown',
+                ];
+            })->values();
+
+            // Favorite restaurants (top 5 by order count)
+            $favoriteRestaurants = Order::where('customer_id', $customer->id)
+                ->with('restaurantOwner')
+                ->get()
+                ->groupBy('restaurant_owner_id')
+                ->map(function ($group) {
+                    $first = $group->first();
+                    return [
+                        'name' => $first->restaurantOwner?->restaurant_name ?? 'Unknown',
+                        'orders' => $group->count(),
+                    ];
+                })
+                ->sortByDesc('orders')
+                ->take(5)
+                ->values();
+
+            // Activity log
+            $activityLog = [];
+            
+            // Add recent orders as activities
+            foreach ($orders->take(10) as $order) {
+                $activityLog[] = [
+                    'type' => 'order_placed',
+                    'label' => 'Order Placed',
+                    'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT) . " • " . ($order->restaurantOwner?->restaurant_name ?? 'Restaurant'),
+                    'amount' => (float) $order->total,
+                    'time' => $order->created_at->diffForHumans(),
+                    'icon' => 'order',
+                ];
+
+                if ($order->status === 'Completed') {
+                    $activityLog[] = [
+                        'type' => 'order_completed',
+                        'label' => 'Order Completed',
+                        'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                        'time' => $order->updated_at?->diffForHumans() ?? $order->created_at->addHours(2)->diffForHumans(),
+                        'icon' => 'complete',
+                    ];
+                } elseif ($order->status === 'Cancelled') {
+                    $activityLog[] = [
+                        'type' => 'refund',
+                        'label' => 'Order Cancelled',
+                        'detail' => "#TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                        'amount' => (float) $order->total,
+                        'time' => $order->updated_at?->diffForHumans() ?? 'Recently',
+                        'icon' => 'refund',
+                    ];
+                }
+            }
+
+            return response()->json([
+                'id' => "TMC-" . str_pad($customer->id, 5, '0', STR_PAD_LEFT),
+                'name' => $customer->name ?? 'Unknown',
+                'email' => $customer->email,
+                'phone' => $customer->phone ?? 'N/A',
+                'location' => $customer->address ?? 'N/A',
+                'status' => 'Active',
+                'avatar' => null,
+                'details' => [
+                    'accountAge' => $customer->created_at->diffForHumans(),
+                    'orderHistory' => [
+                        'total' => $orders->count(),
+                        'spent' => round($totalSpent, 2),
+                        'average' => round($avgSpent, 2),
+                    ],
+                    'recentOrders' => $recentOrders,
+                    'favoriteRestaurants' => $favoriteRestaurants,
+                    'activityLog' => array_slice($activityLog, 0, 10),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Customer detail error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching customer details',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function customerStats(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $totalCustomers = User::where('role', 'customer')->count();
+            $activeThisMonth = User::where('role', 'customer')
+                ->whereHas('orders', function ($q) {
+                    $q->whereMonth('created_at', now()->month)
+                      ->whereYear('created_at', now()->year);
+                })
+                ->count();
+            $newRegistrations = User::where('role', 'customer')
+                ->where('created_at', '>=', now()->subDays(7))
+                ->count();
+            $flaggedAccounts = 0; // Would need a status column or flag
+            
+            // Calculate average orders per customer
+            $totalOrders = Order::count();
+            $avgOrdersPerCustomer = $totalCustomers > 0 ? $totalOrders / $totalCustomers : 0;
+
+            return response()->json([
+                'stats' => [
+                    'total_customers' => $totalCustomers,
+                    'active_this_month' => $activeThisMonth,
+                    'active_percentage' => $totalCustomers > 0 ? round(($activeThisMonth / $totalCustomers) * 100, 1) : 0,
+                    'new_registrations' => $newRegistrations,
+                    'flagged_accounts' => $flaggedAccounts,
+                    'avg_orders_per_customer' => round($avgOrdersPerCustomer, 1),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Customer stats error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching customer stats',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function restaurants(Request $request)
     {
         $admin = $request->user();
