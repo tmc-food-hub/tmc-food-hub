@@ -104,6 +104,10 @@ jobs:
             QUEUE_DRIVER=sync
 
             SANCTUM_STATEFUL_DOMAINS=""
+
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             ENVEOF
 
             # Generate app key if not set
