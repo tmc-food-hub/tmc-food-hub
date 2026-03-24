@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext(null);
@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
-    const login = async (email, password) => {
+    const login = useCallback(async (email, password) => {
         const res = await api.post('/login', { email, password });
         const { user: userData, token: newToken } = res.data;
 
@@ -54,60 +54,60 @@ export function AuthProvider({ children }) {
         localStorage.setItem('user_type', 'customer');
 
         return userData;
-    };
+    }, []);
 
-    const register = async (formData) => {
+    const register = useCallback(async (formData) => {
         const res = await api.post('/register', formData);
         return res.data;
-    };
+    }, []);
 
-    const setAuthData = (newToken, userData) => {
+    const setAuthData = useCallback((newToken, userData) => {
         setToken(newToken);
         setUser(userData);
         localStorage.setItem('auth_token', newToken);
         localStorage.setItem('auth_user', JSON.stringify(userData));
         localStorage.setItem('user_type', 'customer');
-    };
+    }, []);
 
-    const sendOtp = async (email) => {
+    const sendOtp = useCallback(async (email) => {
         const res = await api.post('/send-otp', { email });
         return res.data;
-    };
+    }, []);
 
-    const verifyOtp = async (email, otp) => {
+    const verifyOtp = useCallback(async (email, otp) => {
         const res = await api.post('/verify-otp', { email, otp });
         return res.data;
-    };
+    }, []);
 
-    const forgotPassword = async (email) => {
+    const forgotPassword = useCallback(async (email) => {
         const res = await api.post('/forgot-password', { email });
         return res.data;
-    };
+    }, []);
 
-    const verifyResetOtp = async (email, otp) => {
+    const verifyResetOtp = useCallback(async (email, otp) => {
         const res = await api.post('/verify-reset-otp', { email, otp });
         return res.data;
-    };
+    }, []);
 
-    const resetPassword = async (reset_token, password, password_confirmation) => {
+    const resetPassword = useCallback(async (reset_token, password, password_confirmation) => {
         const res = await api.post('/reset-password', { reset_token, password, password_confirmation });
         return res.data;
-    };
+    }, []);
 
-    const changePassword = async (current_password, password, password_confirmation) => {
+    const changePassword = useCallback(async (current_password, password, password_confirmation) => {
         const res = await api.post('/user/password', { current_password, password, password_confirmation });
         return res.data;
-    };
+    }, []);
 
-    const updateProfile = async (data) => {
+    const updateProfile = useCallback(async (data) => {
         const res = await api.put('/user', data);
         const updatedUser = res.data;
         setUser(updatedUser);
         localStorage.setItem('auth_user', JSON.stringify(updatedUser));
         return updatedUser;
-    };
+    }, []);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         try {
             await api.post('/logout');
         } catch {
@@ -118,9 +118,9 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
         localStorage.removeItem('user_type');
-    };
+    }, []);
 
-    const value = {
+    const value = useMemo(() => ({
         user,
         token,
         loading,
@@ -136,7 +136,7 @@ export function AuthProvider({ children }) {
         updateProfile,
         logout,
         setAuthData,
-    };
+    }), [user, token, loading, login, register, sendOtp, verifyOtp, forgotPassword, verifyResetOtp, resetPassword, changePassword, updateProfile, logout, setAuthData]);
 
     return (
         <AuthContext.Provider value={value}>
