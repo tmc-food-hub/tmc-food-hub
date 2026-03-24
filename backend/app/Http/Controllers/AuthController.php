@@ -435,6 +435,26 @@ class AuthController extends Controller
     }
 
     /**
+     * Refresh the current token by revoking it and issuing a new one.
+     * This allows the frontend to silently refresh expired sessions.
+     */
+    public function refreshToken(Request $request)
+    {
+        $user = $request->user();
+
+        // Revoke the current token
+        $user->currentAccessToken()->delete();
+
+        // Issue a new token
+        $newToken = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $newToken,
+        ]);
+    }
+
+    /**
      * Revoke the current token (logout).
      */
     public function logout(Request $request)
