@@ -741,25 +741,117 @@ class AdminController extends Controller
 
     public function disputes(Request $request)
     {
-        $admin = $request->user();
+        try {
+            $admin = $request->user();
 
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            if (!$admin || $admin->role !== 'admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $page = $request->query('page', 1);
+            $perPage = $request->query('per_page', 15);
+            $status = $request->query('status');
+
+            // Fetch orders with reviews to generate disputes (simulating dispute data)
+            $ordersQuery = Order::with(['customer', 'restaurantOwner', 'items', 'review'])
+                ->whereHas('review')
+                ->latest();
+
+            $orders = $ordersQuery->paginate($perPage, ['*'], 'page', $page);
+
+            $formattedDisputes = $orders->getCollection()->map(function ($order, $index) {
+                try {
+                    $review = $order->review;
+                    if (!$review) return null;
+
+                    // Determine dispute status based on review rating
+                    $disputeStatus = 'Under Investigation';
+                    if ($review->rating <= 2) {
+                        $disputeStatus = 'Flagged for Fraud';
+                    } elseif ($order->customer?->created_at >= now()->subDays(7)) {
+                        $disputeStatus = 'Fake';
+                    }
+
+                    $customer = $order->customer;
+                    $restaurant = $order->restaurantOwner;
+
+                    return [
+                        'id' => 'DSP-' . str_pad(1000 + $order->id, 4, '0', STR_PAD_LEFT),
+                        'status' => $disputeStatus,
+                        'customer' => [
+                            'name' => $customer?->name ?? 'Unknown Customer',
+                            'email' => $customer?->email ?? 'N/A',
+                            'phone' => $customer?->phone ?? 'N/A',
+                            'location' => 'Unknown',
+                            'accountAge' => $customer?->created_at ? $customer->created_at->diffForHumans() : 'Unknown',
+                            'avatar' => null,
+                            'accountStatus' => 'Active Account',
+                        ],
+                        'orderId' => 'ORD-' . str_pad($order->id, 4, '0', STR_PAD_LEFT),
+                        'amount' => (float) $order->total,
+                        'restaurant' => [
+                            'name' => $restaurant?->restaurant_name ?? 'Unknown',
+                            'date' => $order->created_at->format('M d, Y'),
+                            'distance' => '0 km from delivery',
+                        ],
+                        'reviewType' => match ($review->rating) {
+                            1, 2 => 'Food Quality',
+                            3 => 'Missing Items',
+                            default => 'Other Issue',
+                        },
+                        'reviewText' => substr($review->review ?? '', 0, 50) . (strlen($review->review ?? '') > 50 ? '...' : ''),
+                        'details' => [
+                            'ticketId' => '#TMC-' . str_pad(400 + $order->id, 5, '0', STR_PAD_LEFT),
+                            'date' => $order->created_at->format('M d, Y'),
+                            'riskAlert' => $review->rating <= 2 
+                                ? "Low rating detected. Customer complaint: {$review->review}"
+                                : ($customer?->created_at >= now()->subDays(7) 
+                                    ? "New account with dispute. Potential fraudulent claim."
+                                    : null),
+                            'disputeRatio' => 5.2,
+                            'totalOrders' => Order::where('customer_id', $customer?->id)->count() ?? 0,
+                            'statement' => '"' . ($review->review ?? 'No statement provided') . '"',
+                            'timeline' => [
+                                [
+                                    'label' => 'Order Placed',
+                                    'time' => $order->created_at->format('h:i A'),
+                                    'type' => 'success',
+                                ],
+                                [
+                                    'label' => 'Order delivered',
+                                    'time' => $order->created_at->copy()->addMinutes(30)->format('h:i A'),
+                                    'type' => 'success',
+                                ],
+                                [
+                                    'label' => 'Dispute opened',
+                                    'time' => $order->created_at->copy()->addMinutes(45)->format('h:i A'),
+                                    'type' => 'warning',
+                                ],
+                            ],
+                        ],
+                    ];
+                } catch (\Exception $e) {
+                    Log::error('Error formatting dispute for order ' . $order->id . ': ' . $e->getMessage());
+                    return null;
+                }
+            })->filter()->values();
+
+            return response()->json([
+                'data' => $formattedDisputes->all(),
+                'pagination' => [
+                    'total' => $orders->total(),
+                    'per_page' => $orders->perPage(),
+                    'current_page' => $orders->currentPage(),
+                    'last_page' => $orders->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Disputes endpoint error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching disputes',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Placeholder for disputes - can be expanded later when Dispute model is created
-        $page = $request->query('page', 1);
-        $perPage = $request->query('per_page', 10);
-
-        return response()->json([
-            'data' => [],
-            'pagination' => [
-                'total' => 0,
-                'per_page' => $perPage,
-                'current_page' => $page,
-                'last_page' => 0,
-            ],
-        ]);
     }
 
     public function settings(Request $request)

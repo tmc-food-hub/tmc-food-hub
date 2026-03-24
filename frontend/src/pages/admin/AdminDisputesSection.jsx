@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     AlertTriangle, Shield, DollarSign, Eye, X, CheckCircle2, ChevronDown,
-    Mail, Phone, MapPin, Clock, TrendingUp, Info, Store
+    Mail, Phone, MapPin, Clock, TrendingUp, Info, Store, Loader
 } from 'lucide-react';
 import styles from './AdminDisputesSection.module.css';
 
@@ -133,11 +133,50 @@ export default function AdminDisputesSection() {
     const [refundType, setRefundType] = useState('full');
     const [rejectReason, setRejectReason] = useState(REJECT_REASONS[0]);
     const [toast, setToast] = useState(null);
+    const [disputes, setDisputes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchDisputes();
+    }, [activeTab]);
+
+    const fetchDisputes = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/admin/disputes?per_page=50`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch disputes');
+            }
+
+            const data = await response.json();
+            setDisputes(data.data || []);
+        } catch (err) {
+            console.error('Error fetching disputes:', err);
+            setError(err.message);
+            // Fallback to mock data for development
+            setDisputes(MOCK_DISPUTES);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredDisputes = useMemo(() => {
-        if (activeTab === 'All') return MOCK_DISPUTES;
-        if (activeTab.startsWith('Needs')) return MOCK_DISPUTES.filter(x => x.status === 'Under Investigation');
-        if (activeTab.startsWith('Fraud')) return MOCK_DISPUTES.filter(x => x.status === 'Flagged for Fraud' || x.status === 'Fake');
+        let d = disputes;
+        if (activeTab === 'All') return d;
+        if (activeTab.startsWith('Needs')) return d.filter(x => x.status === 'Under Investigation');
+        if (activeTab.startsWith('Fraud')) return d.filter(x => x.status === 'Flagged for Fraud' || x.status === 'Fake');
         return MOCK_DISPUTES;
     }, [activeTab]);
 
@@ -207,39 +246,53 @@ export default function AdminDisputesSection() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead><tr><th>Order ID</th><th>Name</th><th>Restaurant</th><th>Review</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        {filteredDisputes.map((d, i) => (
-                            <tr key={i} className={styles.tableRow}>
-                                <td>
-                                    <div className={styles.disputeId}>{d.id}</div>
-                                    <span className={`${styles.statusPill} ${getStatusClass(d.status)}`}>{d.status}</span>
-                                </td>
-                                <td>
-                                    <div className={styles.nameCell}>
-                                        <div className={styles.avatarCircle} style={{ background: getColor(d.customer.name) }}>{getInitials(d.customer.name)}</div>
-                                        <div>
-                                            <div className={styles.customerName}>{d.customer.name}</div>
-                                            <div className={styles.orderInfo}>{d.orderId} • {peso(d.amount)}</div>
+                {loading && (
+                    <div style={{display:'flex',justifyContent:'center',alignItems:'center',padding:'40px',gap:'10px',color:'#666'}}>
+                        <Loader size={20} className={styles.spinner} /> Loading disputes...
+                    </div>
+                )}
+                {error && (
+                    <div style={{padding:'20px',background:'#FEE2E2',border:'1px solid #FECACA',borderRadius:'8px',color:'#991B1B'}}>
+                        ⚠️ {error}
+                    </div>
+                )}
+                {!loading && !error && (
+                    <table className={styles.table}>
+                        <thead><tr><th>Order ID</th><th>Name</th><th>Restaurant</th><th>Review</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {filteredDisputes.length > 0 ? filteredDisputes.map((d, i) => (
+                                <tr key={i} className={styles.tableRow}>
+                                    <td>
+                                        <div className={styles.disputeId}>{d.id}</div>
+                                        <span className={`${styles.statusPill} ${getStatusClass(d.status)}`}>{d.status}</span>
+                                    </td>
+                                    <td>
+                                        <div className={styles.nameCell}>
+                                            <div className={styles.avatarCircle} style={{ background: getColor(d.customer.name) }}>{getInitials(d.customer.name)}</div>
+                                            <div>
+                                                <div className={styles.customerName}>{d.customer.name}</div>
+                                                <div className={styles.orderInfo}>{d.orderId} • {peso(d.amount)}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.restName}>{d.restaurant.name}</div>
-                                    <div className={styles.restDate}>{d.restaurant.date}</div>
-                                </td>
-                                <td>
-                                    <div className={styles.reviewType}>{d.reviewType}</div>
-                                    <div className={styles.reviewPreview}>{d.reviewText}</div>
-                                </td>
-                                <td>
-                                    <button className={styles.viewBtn} onClick={() => setSelectedDispute(d)}><Eye size={16} /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td>
+                                        <div className={styles.restName}>{d.restaurant.name}</div>
+                                        <div className={styles.restDate}>{d.restaurant.date}</div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.reviewType}>{d.reviewType}</div>
+                                        <div className={styles.reviewPreview}>{d.reviewText}</div>
+                                    </td>
+                                    <td>
+                                        <button className={styles.viewBtn} onClick={() => setSelectedDispute(d)}><Eye size={16} /></button>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="5" style={{textAlign:'center',padding:'40px',color:'#999'}}>No disputes found</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {/* ── Dispute Details Panel ── */}
