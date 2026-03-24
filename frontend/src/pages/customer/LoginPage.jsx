@@ -160,12 +160,14 @@ function LoginPage() {
                 )}
 
                 <div className={styles.socialGrid}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                        size="large"
-                        width="100%"
-                    />
+                    <div style={{ flex: 1 }}>
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleError}
+                            text="signin_with"
+                            width="100%"
+                        />
+                    </div>
                     <button type="button" className={styles.socialBtn}>
                         <i className="bi bi-linkedin text-primary"></i>
                         LinkedIn

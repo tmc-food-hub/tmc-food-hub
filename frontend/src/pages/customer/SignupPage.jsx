@@ -17,6 +17,8 @@ function SignupPage() {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [googleError, setGoogleError] = useState('');
+    const [isGoogleSignup, setIsGoogleSignup] = useState(false);
+    const [googleCredential, setGoogleCredential] = useState('');
 
     // OTP state
     const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
@@ -42,10 +44,50 @@ function SignupPage() {
     const handleGoogleSuccess = async (credentialResponse) => {
         setGoogleError('');
         try {
-            await googleSignup(credentialResponse);
-            navigate('/', { state: { signupSuccess: true } });
+            // Decode JWT to extract user info
+            const { credential } = credentialResponse;
+            if (!credential) {
+                throw new Error('No credential from Google');
+            }
+
+            const parts = credential.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Invalid credential format');
+            }
+
+            const decodedToken = JSON.parse(atob(parts[1]));
+            const nameParts = (decodedToken.name || '').split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            // Autofill form with Google data
+            setFormData(prev => ({
+                ...prev,
+                firstName,
+                lastName,
+                email: decodedToken.email || '',
+            }));
+
+            // Store credential for later use after OTP verification
+            setGoogleCredential(credential);
+            setIsGoogleSignup(true);
+
+            // Send OTP to the email
+            setOtpSending(true);
+            try {
+                await sendOtp(decodedToken.email);
+                setResendCooldown(60);
+                setOtpValues(['', '', '', '', '', '']);
+                setStep(2);
+                setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+            } catch (err) {
+                setGoogleError(getFirstApiError(err, 'Failed to send verification code.'));
+                setIsGoogleSignup(false);
+            } finally {
+                setOtpSending(false);
+            }
         } catch (err) {
-            setGoogleError(err.response?.data?.message || 'Google signup failed. Please try again.');
+            setGoogleError(err.message || 'Google signup failed. Please try again.');
             console.error('Google signup error:', err);
         }
     };
@@ -215,7 +257,21 @@ function SignupPage() {
             }
             setEmailVerificationToken(data.email_verification_token);
             setVerifiedEmail(formData.email);
-            setStep(3);
+            
+            // If this was a Google signup, complete it now
+            if (isGoogleSignup && googleCredential) {
+                try {
+                    await googleSignup({ credential: googleCredential });
+                    navigate('/', { state: { signupSuccess: true } });
+                } catch (err) {
+                    setGoogleError(err.response?.data?.message || 'Google signup failed. Please try again.');
+                    setIsGoogleSignup(false);
+                    setGoogleCredential('');
+                    setStep(3); // Continue with normal flow
+                }
+            } else {
+                setStep(3);
+            }
         } catch (err) {
             if (err.response?.data?.errors) {
                 setErrors(normalizeApiErrors(err, apiFieldMap));
@@ -546,12 +602,14 @@ function SignupPage() {
 
                             {role === 'Customer' && (
                                 <div className={styles.socialGrid}>
-                                    <GoogleLogin
-                                        onSuccess={handleGoogleSuccess}
-                                        onError={handleGoogleError}
-                                        size="large"
-                                        width="100%"
-                                    />
+                                    <div style={{ flex: 1 }}>
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleSuccess}
+                                            onError={handleGoogleError}
+                                            text="signin_with"
+                                            width="100%"
+                                        />
+                                    </div>
                                     <button type="button" className={styles.socialBtn}>
                                         <i className="bi bi-linkedin text-primary"></i>
                                         LinkedIn
@@ -561,6 +619,14 @@ function SignupPage() {
 
                             {role === 'Partner' && (
                                 <div className={styles.socialGrid}>
+                                    <div style={{ flex: 1 }}>
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleSuccess}
+                                            onError={handleGoogleError}
+                                            text="signin_with"
+                                            width="100%"
+                                        />
+                                    </div>
                                     <button type="button" className={styles.socialBtn}>
                                         <i className="bi bi-linkedin text-primary"></i>
                                         LinkedIn

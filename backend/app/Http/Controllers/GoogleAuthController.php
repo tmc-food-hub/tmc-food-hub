@@ -21,8 +21,7 @@ class GoogleAuthController extends Controller
                 throw new \Exception('Invalid JWT format');
             }
 
-            // Decode the payload (second part)
-            // Need to add padding for base64 decoding
+            // Decode the payload (second part) with proper base64 padding
             $payload = $parts[1];
             $payload .= str_repeat('=', (4 - (strlen($payload) % 4)) % 4);
             $decoded = json_decode(base64_decode(strtr($payload, '-_', '+/')), true);

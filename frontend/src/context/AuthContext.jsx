@@ -78,17 +78,8 @@ export function AuthProvider({ children }) {
                 throw new Error('No credential received from Google');
             }
             
-            // Decode the JWT to get user info
-            const parts = credential.split('.');
-            if (parts.length !== 3) {
-                throw new Error('Invalid JWT token format');
-            }
-            const decodedToken = JSON.parse(atob(parts[1]));
-            
-            // Send credential to backend for verification and user lookup/creation
-            const res = await api.post('/auth/google-login', {
-                credential: credential,
-            });
+            // Send JWT credential to backend for verification and user lookup
+            const res = await api.post('/auth/google-login', { credential });
             
             const { user: userData, token: newToken } = res.data;
             setAuthData(newToken, userData);
@@ -108,17 +99,8 @@ export function AuthProvider({ children }) {
                 throw new Error('No credential received from Google');
             }
             
-            // Decode the JWT to get user info
-            const parts = credential.split('.');
-            if (parts.length !== 3) {
-                throw new Error('Invalid JWT token format');
-            }
-            const decodedToken = JSON.parse(atob(parts[1]));
-            
-            // Send credential to backend for verification and user creation
-            const res = await api.post('/auth/google-signup', {
-                credential: credential,
-            });
+            // Send JWT credential to backend for verification and user creation
+            const res = await api.post('/auth/google-signup', { credential });
             
             const { user: userData, token: newToken } = res.data;
             setAuthData(newToken, userData);
