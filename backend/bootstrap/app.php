@@ -17,11 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(HandleCors::class);
         
         // Allow Google OAuth popup communication
-        $middleware->use(function ($request, $next) {
-            $response = $next($request);
-            $response->header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-            return $response;
-        });
+        $middleware->append(\App\Http\Middleware\OAuthCorsHeaders::class);
         
         $middleware->validateCsrfTokens(except: [
             'adminer*',
