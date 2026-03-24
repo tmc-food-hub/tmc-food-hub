@@ -719,3 +719,133 @@
 .dark-mode [class*="supportLink"] {
     color: #F87171 !important;
 }
+
+/* ---------- SUPPORT SECTION ---------- */
+.dark-mode .support-center {
+    background-color: #111827 !important;
+}
+
+.dark-mode .support-tag {
+    background-color: rgba(217, 76, 56, 0.15) !important;
+    color: #F87171 !important;
+}
+
+.dark-mode .support-card {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .support-card-title,
+.dark-mode .support-links-title,
+.dark-mode .support-link-label,
+.dark-mode .help-card h4,
+.dark-mode .office-location h4,
+.dark-mode .support-heading h1 {
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .support-heading p,
+.dark-mode .support-form .form-label,
+.dark-mode .help-card p,
+.dark-mode .help-item,
+.dark-mode .office-copy,
+.dark-mode .office-location p {
+    color: #9CA3AF !important;
+}
+
+.dark-mode .support-quick-link {
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .support-quick-link:hover {
+    background-color: #374151 !important;
+    border-color: #F87171 !important;
+}
+
+.dark-mode .support-link-icon {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    color: #F59E0B !important;
+}
+
+.dark-mode .support-quick-link > i {
+    color: #6B7280 !important;
+}
+
+.dark-mode .support-quick-link:hover > i {
+    color: #F87171 !important;
+}
+
+.dark-mode .support-form .form-control,
+.dark-mode .support-form .form-select {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+    color: #F3F4F6 !important;
+}
+
+.dark-mode .support-form .form-control::placeholder {
+    color: #6B7280 !important;
+}
+
+.dark-mode .support-form .form-control:focus,
+.dark-mode .support-form .form-select:focus {
+    border-color: #F87171 !important;
+    box-shadow: 0 0 0 0.25rem rgba(248, 113, 113, 0.25) !important;
+}
+
+.dark-mode .support-dropzone {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+}
+
+.dark-mode .support-dropzone-content > i,
+.dark-mode .support-dropzone-copy {
+    color: #6B7280 !important;
+}
+
+.dark-mode .support-submit-btn {
+    background-color: #991B1B !important;
+    border-color: #991B1B !important;
+    color: white !important;
+}
+
+.dark-mode .support-submit-btn:hover {
+    background-color: #B91C1C !important;
+    border-color: #B91C1C !important;
+}
+
+.dark-mode .office-pin {
+    background-color: rgba(217, 76, 56, 0.15) !important;
+    color: #F87171 !important;
+}
+
+.dark-mode .support-remove-file {
+    background-color: rgba(248, 113, 113, 0.1) !important;
+    border-color: rgba(248, 113, 113, 0.5) !important;
+    color: #F87171 !important;
+}
+
+.dark-mode .support-remove-file:hover {
+    background-color: rgba(248, 113, 113, 0.2) !important;
+}
+
+.dark-mode .support-file-name {
+    color: #34d399 !important;
+}
+
+.dark-mode .support-topic-chip {
+    border-color: #374151 !important;
+    color: #9CA3AF !important;
+}
+
+.dark-mode .support-topic-chip:hover {
+    border-color: rgba(248, 113, 113, 0.45) !important;
+    color: #F87171 !important;
+}
+
+.dark-mode .support-topic-chip.active {
+    background-color: #991B1B !important;
+    border-color: #991B1B !important;
+    color: #F3F4F6 !important;
+}
