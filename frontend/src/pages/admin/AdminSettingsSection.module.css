@@ -1,0 +1,187 @@
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.container { display: flex; flex-direction: column; gap: 0; position: relative; }
+
+/* ─── Toast ─────────────────────────────────────────────────────────────────── */
+.toast { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1100; display: flex; align-items: center; gap: .75rem; background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: .85rem 1.15rem; box-shadow: 0 8px 30px rgba(0,0,0,.12); animation: slideDown .3s ease; }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.toastIcon { color: #059669; flex-shrink: 0; } .toastTitle { font-size: .85rem; font-weight: 700; color: #111827; } .toastSub { font-size: .75rem; color: #6B7280; } .toastClose { background: none; border: none; color: #9CA3AF; cursor: pointer; padding: 2px; }
+
+/* ─── Layout ────────────────────────────────────────────────────────────────── */
+.settingsLayout { display: flex; gap: 1.15rem; min-height: 500px; }
+.tabSidebar { width: 210px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+.tabBtn { display: flex; align-items: center; gap: .55rem; padding: .6rem .85rem; border: none; background: none; font-size: .82rem; font-weight: 600; color: #6B7280; cursor: pointer; border-radius: 10px; text-align: left; transition: .15s; font-family: 'Inter',sans-serif; white-space: nowrap; }
+.tabBtn:hover { background: #F9FAFB; color: #374151; }
+.tabBtnActive { background: #991B1B; color: #fff; }
+.tabBtnActive:hover { background: #991B1B; color: #fff; }
+.tabContent { flex: 1; display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+
+/* ─── Section Titles ────────────────────────────────────────────────────────── */
+.sectionTitle { font-size: 1.15rem; font-weight: 800; color: #111827; margin: 0; }
+.sectionSub { font-size: .78rem; color: #6B7280; margin: .15rem 0 .6rem; }
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.card { background: #fff; border: 1px solid #E5E7EB; border-radius: 14px; padding: 1.15rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.cardLabel { font-size: .88rem; font-weight: 800; color: #111827; margin: 0 0 .65rem; display: flex; align-items: center; gap: .45rem; }
+.cardHint { font-size: .75rem; color: #6B7280; margin: -.4rem 0 .65rem; }
+
+/* ─── Two Column Layouts ────────────────────────────────────────────────────── */
+.twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.twoColWide { display: flex; gap: .85rem; }
+.leftCol { flex: 1.4; display: flex; flex-direction: column; gap: .85rem; }
+.rightCol { flex: .6; display: flex; flex-direction: column; gap: .85rem; }
+
+/* ─── Fields ────────────────────────────────────────────────────────────────── */
+.fieldGrid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.fieldGrid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; }
+.field { display: flex; flex-direction: column; gap: .3rem; }
+.field label { font-size: .72rem; font-weight: 700; color: #6B7280; }
+.field input, .field select { padding: .55rem .75rem; border: 1px solid #E5E7EB; border-radius: 10px; font-size: .84rem; color: #374151; outline: none; font-family: 'Inter',sans-serif; background: #fff; }
+.field input:focus, .field select:focus { border-color: #991B1B; }
+.fieldNote { font-size: .72rem; color: #9CA3AF; }
+.inputSuffix { display: flex; align-items: center; border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+.inputSuffix input { border: none; flex: 1; padding: .55rem .75rem; }
+.inputSuffix span { padding: 0 .6rem; color: #9CA3AF; font-size: .82rem; font-weight: 600; }
+
+/* ─── Platform Status ───────────────────────────────────────────────────────── */
+.statusToggle { display: flex; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid #E5E7EB; }
+.statusBtn { flex: 1; padding: .65rem; border: none; background: #fff; font-size: .85rem; font-weight: 700; color: #6B7280; cursor: pointer; font-family: 'Inter',sans-serif; transition: .15s; }
+.statusActive { background: #059669; color: #fff; }
+
+/* ─── Branding ──────────────────────────────────────────────────────────────── */
+.brandSection { display: flex; flex-direction: column; gap: 1rem; }
+.brandItem { display: flex; flex-direction: column; gap: .35rem; }
+.brandLabel { font-size: .78rem; font-weight: 700; color: #374151; }
+.logoBox { width: 100px; height: 100px; border: 2px dashed #E5E7EB; border-radius: 12px; display: grid; place-items: center; font-size: 2.5rem; background: #FAFAFA; }
+.logoPlaceholder { font-size: 2.5rem; }
+.faviconRow { display: flex; align-items: center; gap: .65rem; }
+.faviconBox { width: 42px; height: 42px; border: 2px dashed #E5E7EB; border-radius: 8px; display: grid; place-items: center; font-size: 1.2rem; background: #FAFAFA; }
+.replaceBtn { padding: .45rem .85rem; border: 1px solid #E5E7EB; border-radius: 8px; background: #fff; font-size: .78rem; font-weight: 600; color: #374151; cursor: pointer; font-family: 'Inter',sans-serif; }
+.brandHint { font-size: .68rem; color: #9CA3AF; }
+
+/* ─── Commission Type Toggle ────────────────────────────────────────────────── */
+.typeToggle { display: flex; gap: 0; border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+.typeBtn { padding: .45rem .75rem; border: none; background: #fff; font-size: .78rem; font-weight: 600; color: #6B7280; cursor: pointer; font-family: 'Inter',sans-serif; border-right: 1px solid #E5E7EB; }
+.typeBtn:last-child { border-right: none; }
+.typeBtnActive { background: #1D4ED8; color: #fff; }
+
+/* ─── Tier Table ────────────────────────────────────────────────────────────── */
+.tierHeader { display: flex; justify-content: space-between; align-items: center; margin: .85rem 0 .45rem; }
+.addTier { background: none; border: none; color: #2563EB; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: 'Inter',sans-serif; }
+.tierTable { width: 100%; border-collapse: collapse; }
+.tierTable th { text-align: left; font-size: .72rem; color: #9CA3AF; font-weight: 700; padding: .5rem .65rem; border-bottom: 1px solid #F3F4F6; }
+.tierTable td { padding: .65rem; font-size: .82rem; color: #374151; border-bottom: 1px solid #F3F4F6; }
+.tierTable tr:last-child td { border-bottom: none; }
+.greenVal { color: #059669; font-weight: 700; }
+.editIcon { background: none; border: none; color: #6B7280; cursor: pointer; padding: 4px; border-radius: 6px; } .editIcon:hover { background: #F3F4F6; }
+
+/* ─── Delivery Structure ────────────────────────────────────────────────────── */
+.deliveryItem { padding: .65rem 0; }
+.deliveryItem + .deliveryItem { border-top: 1px solid #F3F4F6; }
+.deliveryRow { display: flex; justify-content: space-between; align-items: center; gap: .65rem; }
+.deliveryName { font-size: .85rem; font-weight: 700; color: #111827; }
+.deliveryDesc { font-size: .72rem; color: #6B7280; margin-top: 2px; }
+
+/* ─── Toggle ────────────────────────────────────────────────────────────────── */
+.toggle { width: 38px; height: 20px; border-radius: 999px; background: #D1D5DB; cursor: pointer; position: relative; transition: .2s; flex-shrink: 0; }
+.toggleOn { background: #991B1B; }
+.toggleDot { width: 16px; height: 16px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.toggleOn .toggleDot { left: 20px; }
+
+/* ─── Big Fee ───────────────────────────────────────────────────────────────── */
+.bigFee { font-size: 1.8rem; font-weight: 800; color: #111827; margin: .45rem 0; }
+
+/* ─── Tax ────────────────────────────────────────────────────────────────────── */
+.taxItem { display: flex; justify-content: space-between; align-items: center; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; }
+.taxItem:last-of-type { border-bottom: none; }
+.taxName { font-size: .85rem; font-weight: 700; color: #111827; }
+.taxSub { font-size: .68rem; color: #9CA3AF; }
+.taxVal { font-size: 1.1rem; font-weight: 800; color: #111827; }
+.complianceBar { margin-top: .65rem; }
+.complianceLabel { font-size: .78rem; font-weight: 700; color: #111827; margin-bottom: .35rem; display: block; }
+.complianceFill { height: 6px; background: #2563EB; border-radius: 999px; width: 85%; }
+
+/* ─── Revenue Card ──────────────────────────────────────────────────────────── */
+.revenueCard { background: #991B1B; border-radius: 14px; padding: 1.25rem; color: #fff; }
+.revenueLabel { font-size: .72rem; font-weight: 600; opacity: .85; }
+.revenueValue { font-size: 1.6rem; font-weight: 800; margin: .35rem 0 .25rem; }
+.revenueSub { display: flex; align-items: center; gap: .35rem; font-size: .72rem; opacity: .85; }
+
+/* ─── Payment Gateways ──────────────────────────────────────────────────────── */
+.gatewayActive { border-color: #FCA5A5; }
+.gatewayHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: .65rem; }
+.gatewayInfo { display: flex; align-items: center; gap: .65rem; }
+.gatewayLogo { width: 38px; height: 38px; border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; }
+.gatewayName { font-size: .88rem; font-weight: 700; color: #111827; }
+.gatewayBadgeGreen { font-size: .68rem; color: #059669; font-weight: 700; }
+.gatewayBadgeGray { font-size: .68rem; color: #9CA3AF; font-weight: 700; }
+.keyField { display: flex; align-items: center; justify-content: space-between; padding: .45rem .65rem; border: 1px solid #E5E7EB; border-radius: 8px; background: #F9FAFB; }
+.keyField span { font-size: .78rem; color: #6B7280; letter-spacing: 1px; }
+.keyField button { background: none; border: none; color: #DC2626; cursor: pointer; padding: 2px; }
+.keyDisplay { font-size: .82rem; color: #374151; font-weight: 600; }
+
+/* ─── Payout Settings ───────────────────────────────────────────────────────── */
+.payoutRow { display: flex; align-items: center; gap: .5rem; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; margin-bottom: .65rem; }
+.payoutRow > span:first-child { font-size: .82rem; font-weight: 700; color: #111827; }
+.payoutSub { font-size: .72rem; color: #6B7280; flex: 1; }
+.bankCard { border: 1px solid #E5E7EB; border-radius: 12px; padding: .85rem; display: flex; gap: .65rem; margin: .65rem 0; }
+.bankIcon { font-size: 1.5rem; }
+.bankName { font-size: .85rem; font-weight: 700; color: #111827; }
+.bankDetail { font-size: .75rem; color: #6B7280; margin-top: 2px; }
+.changeBankBtn { background: none; border: none; color: #DC2626; font-size: .78rem; font-weight: 700; cursor: pointer; margin-top: 4px; font-family: 'Inter',sans-serif; padding: 0; }
+.payoutInfo { display: flex; justify-content: space-between; padding: .45rem 0; font-size: .82rem; color: #6B7280; border-top: 1px solid #F3F4F6; }
+
+/* ─── Notifications ─────────────────────────────────────────────────────────── */
+.notifHeader { display: flex; gap: .65rem; align-items: center; margin-bottom: .85rem; }
+.notifIcon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+.notifCols { display: grid; grid-template-columns: 1fr 60px 60px 60px; gap: .5rem; align-items: center; font-size: .72rem; color: #9CA3AF; font-weight: 700; padding: 0 0 .35rem; border-bottom: 1px solid #F3F4F6; text-align: center; }
+.notifCols span:first-child { text-align: left; }
+.notifRow { display: grid; grid-template-columns: 1fr 60px 60px 60px; gap: .5rem; align-items: center; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; }
+.notifRow:last-child { border-bottom: none; }
+.notifRow > div:nth-child(n+2) { justify-self: center; }
+.notifName { font-size: .85rem; font-weight: 700; color: #111827; }
+.notifDesc { font-size: .72rem; color: #6B7280; }
+
+/* ─── Admin Management ──────────────────────────────────────────────────────── */
+.adminTable { width: 100%; border-collapse: collapse; }
+.adminTable th { text-align: left; font-size: .72rem; color: #9CA3AF; font-weight: 700; padding: .6rem .65rem; border-bottom: 1px solid #F3F4F6; }
+.adminTable td { padding: .75rem .65rem; font-size: .82rem; color: #374151; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+.adminTable tr:last-child td { border-bottom: none; }
+.adminCell { display: flex; align-items: center; gap: .55rem; }
+.adminAvatar { width: 36px; height: 36px; border-radius: 50%; background: #E5E7EB; color: #6B7280; font-size: .7rem; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+.adminName { font-weight: 700; color: #111827; }
+.adminEmail { font-size: .72rem; color: #9CA3AF; }
+.dateCol { color: #6B7280; font-size: .82rem; }
+.adminActions { display: flex; gap: .35rem; }
+.deleteIcon { background: none; border: none; color: #9CA3AF; cursor: pointer; padding: 4px; border-radius: 6px; } .deleteIcon:hover { color: #DC2626; background: #FEF2F2; }
+
+.rolePill { display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: .68rem; font-weight: 700; }
+.roleSuperAdmin { background: #FEF2F2; color: #DC2626; }
+.roleAnalyst { background: #FEF3C7; color: #D97706; }
+.roleModerator { background: #DBEAFE; color: #1D4ED8; }
+.roleAdmin { background: #ECFDF5; color: #059669; }
+
+.statusDot { font-size: .78rem; font-weight: 600; }
+.statusActive { color: #059669; } .statusInactive { color: #9CA3AF; } .statusSuspended { color: #DC2626; }
+
+/* Log Items & Security */
+.logItem { display: flex; gap: .55rem; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; }
+.logItem:last-child { border-bottom: none; }
+.logDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.logText { font-size: .82rem; font-weight: 600; color: #111827; }
+.logMeta { font-size: .72rem; color: #9CA3AF; margin-top: 2px; }
+.checkItem { display: flex; justify-content: space-between; align-items: center; padding: .65rem 0; border-bottom: 1px solid #F3F4F6; font-size: .82rem; color: #374151; font-weight: 600; }
+.checkItem:last-child { border-bottom: none; }
+.checkGreen { color: #059669; }
+
+/* ─── Footer ────────────────────────────────────────────────────────────────── */
+.footer { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #fff; border: 1px solid #E5E7EB; border-radius: 14px; margin-top: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.footerInfo { font-size: .78rem; color: #6B7280; }
+.footerActions { display: flex; gap: .55rem; }
+.discardBtn { padding: .6rem 1.1rem; border: 1px solid #E5E7EB; border-radius: 10px; background: #fff; font-size: .82rem; font-weight: 600; color: #374151; cursor: pointer; font-family: 'Inter',sans-serif; }
+.discardBtn:hover { background: #F9FAFB; }
+.saveBtn { padding: .6rem 1.1rem; border: none; border-radius: 10px; background: #DC2626; color: #fff; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: 'Inter',sans-serif; }
+.saveBtn:hover { background: #B91C1C; }
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) { .twoColWide { flex-direction: column; } .twoCol { grid-template-columns: 1fr; } .fieldGrid3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .settingsLayout { flex-direction: column; } .tabSidebar { width: 100%; flex-direction: row; overflow-x: auto; } .fieldGrid { grid-template-columns: 1fr; } .footer { flex-direction: column; gap: .65rem; text-align: center; } }
