@@ -2,12 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, ShoppingCart, Users, Store, Star, AlertTriangle,
-    CreditCard, BarChart3, Tag, Settings, Bell, Search, LogOut, Wallet
+    CreditCard, BarChart3, Tag, Settings, Bell, Search, LogOut, Wallet,
+    PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import api from '../../api/axios';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 import styles from './AdminDashboard.module.css';
+import AdminOrdersSection from './AdminOrdersSection';
+import AdminCustomersSection from './AdminCustomersSection';
+import AdminRestaurantsSection from './AdminRestaurantsSection';
 
 const NAV = [
     { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> }, { key: 'orders', label: 'Orders', icon: <ShoppingCart size={16} />, badge: 5 }, { key: 'customers', label: 'Customers', icon: <Users size={16} /> }] },
@@ -30,6 +34,7 @@ export default function AdminDashboard() {
     const { admin, loading, logout } = useAdminAuth();
     const navigate = useNavigate();
     const [active, setActive] = useState('dashboard');
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [data, setData] = useState({
         stats: {
             total_partners: 0,
@@ -77,16 +82,23 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className={styles.shell}>
-            <aside className={styles.sidebar}>
+        <div className={`${styles.shell} ${sidebarCollapsed ? styles.shellCollapsed : ''}`}>
+            <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
                 <div className={styles.logoWrap}>
                     <img src={tmcLogo} alt="TMC Food Hub" className={styles.logo} />
-                    <div className={styles.portalTag}>Admin Portal</div>
+                    {!sidebarCollapsed && <div className={styles.portalTag}>Admin Portal</div>}
+                    <button
+                        className={styles.collapseBtn}
+                        onClick={() => setSidebarCollapsed(c => !c)}
+                        title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    >
+                        {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+                    </button>
                 </div>
 
                 {NAV.map((group) => (
                     <div key={group.label} className={styles.navGroup}>
-                        <div className={styles.navLabel}>{group.label}</div>
+                        {!sidebarCollapsed && <div className={styles.navLabel}>{group.label}</div>}
                         {group.items.map((item) => (
                             <button
                                 key={item.key}
@@ -94,8 +106,8 @@ export default function AdminDashboard() {
                                 onClick={() => setActive(item.key)}
                             >
                                 {item.icon}
-                                <span>{item.label}</span>
-                                {item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
+                                {!sidebarCollapsed && <span>{item.label}</span>}
+                                {!sidebarCollapsed && item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
                             </button>
                         ))}
                     </div>
@@ -103,21 +115,35 @@ export default function AdminDashboard() {
 
                 <div className={styles.profileCard}>
                     <div className={styles.avatar}>{(admin.first_name?.[0] || admin.name?.[0] || 'A').toUpperCase()}</div>
-                    <div>
-                        <div className={styles.restaurantName}>{admin.name || 'Admin'}</div>
-                        <div className={styles.restaurantMeta}>Platform Administrator</div>
-                    </div>
-                    <button className={styles.viewAll} onClick={async () => { await logout(); navigate('/admin-login'); }}>
-                        <LogOut size={16} />
-                    </button>
+                    {!sidebarCollapsed && (
+                        <div>
+                            <div className={styles.restaurantName}>{admin.name || 'Admin'}</div>
+                            <div className={styles.restaurantMeta}>Platform Administrator</div>
+                        </div>
+                    )}
+                    {!sidebarCollapsed && (
+                        <button className={styles.viewAll} onClick={async () => { await logout(); navigate('/admin-login'); }}>
+                            <LogOut size={16} />
+                        </button>
+                    )}
                 </div>
             </aside>
 
             <main className={styles.main}>
                 <div className={styles.topBar}>
                     <div>
-                        <h1 className={styles.title}>{active === 'dashboard' ? 'Dashboard' : active}</h1>
-                        <p className={styles.subtitle}>Welcome back, {admin.first_name || 'Admin'}!</p>
+                        <h1 className={styles.title}>
+                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active.charAt(0).toUpperCase() + active.slice(1)}
+                        </h1>
+                        <p className={styles.subtitle}>
+                            {active === 'orders'
+                                ? 'Monitor and manage all TMC Foodhub transactions'
+                                : active === 'customers'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : active === 'restaurants'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : `Welcome back, ${admin.first_name || 'Admin'}!`}
+                        </p>
                     </div>
                     <div className={styles.topActions}>
                         <div className={styles.searchBox}>
@@ -128,7 +154,13 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {active !== 'dashboard' ? (
+                {active === 'orders' ? (
+                    <AdminOrdersSection />
+                ) : active === 'customers' ? (
+                    <AdminCustomersSection />
+                ) : active === 'restaurants' ? (
+                    <AdminRestaurantsSection />
+                ) : active !== 'dashboard' ? (
                     <div className={styles.card}>
                         <h3 className={styles.cardTitle}>{active.charAt(0).toUpperCase() + active.slice(1)}</h3>
                         <p className={styles.placeholder}>This admin section is ready for the next management workflow.</p>

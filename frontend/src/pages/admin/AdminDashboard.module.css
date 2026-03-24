@@ -5,6 +5,11 @@
     background: #f5f6f8;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
+    transition: grid-template-columns 0.25s ease;
+}
+
+.shellCollapsed {
+    grid-template-columns: 72px 1fr;
 }
 
 .sidebar {
@@ -15,6 +20,70 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    transition: width 0.25s ease, padding 0.25s ease;
+}
+
+.sidebarCollapsed {
+    padding: 1.25rem 0.5rem;
+    align-items: center;
+}
+
+/* Collapse toggle button */
+.collapseBtn {
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: #6b7280;
+    transition: 0.15s;
+    flex-shrink: 0;
+}
+
+.collapseBtn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.sidebarCollapsed .collapseBtn {
+    margin-left: 0;
+}
+
+/* Collapsed logo wrap */
+.sidebarCollapsed .logoWrap {
+    justify-content: center;
+    gap: 0;
+}
+
+.sidebarCollapsed .logo {
+    width: 36px;
+    height: 36px;
+}
+
+/* Collapsed nav */
+.sidebarCollapsed .navGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebarCollapsed .navBtn {
+    justify-content: center;
+    padding: 0.72rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+}
+
+/* Collapsed profile card */
+.sidebarCollapsed .profileCard {
+    justify-content: center;
+    padding: 0.5rem;
+    border: none;
 }
 
 .logoWrap {
