@@ -33,6 +33,13 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Setup Frontend Environment
+        run: |
+          cat > frontend/.env.local << 'ENVEOF'
+          VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          VITE_API_URL=https://${{ secrets.HOSTINGER_DOMAIN }}/api
+          ENVEOF
+
       - name: Install and Build Frontend
         run: |
           cd frontend
