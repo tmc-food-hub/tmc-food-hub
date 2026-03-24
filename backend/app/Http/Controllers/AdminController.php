@@ -324,73 +324,173 @@ class AdminController extends Controller
 
     public function restaurants(Request $request)
     {
-        $admin = $request->user();
+        try {
+            $admin = $request->user();
 
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $page = $request->query('page', 1);
-        $perPage = $request->query('per_page', 10);
-        $status = $request->query('status');
-        $search = $request->query('search');
-
-        $query = RestaurantOwner::query();
-
-        if ($status && $status !== 'All Parks' && $status !== 'All Partners') {
-            if ($status === 'Active') {
-                $query->where('operating_status', 'open');
-            } elseif ($status === 'Pending Review') {
-                // Add pending logic if you have a status field
-            } elseif ($status === 'Suspended') {
-                $query->where('operating_status', 'closed');
+            if (!$admin || $admin->role !== 'admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
             }
-        }
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('restaurant_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+            $page = $request->query('page', 1);
+            $perPage = $request->query('per_page', 15);
+            $status = $request->query('status');
+            $search = $request->query('search');
+
+            $query = RestaurantOwner::query();
+
+            // Filter by status
+            if ($status && $status !== 'All Partners' && $status !== 'All') {
+                if ($status === 'Active') {
+                    $query->where('operating_status', 'open');
+                } elseif ($status === 'Suspended') {
+                    $query->where('operating_status', 'closed');
+                } elseif ($status === 'Pending Review') {
+                    $query->where('verification_status', 'pending');
+                } elseif ($status === 'Under Review') {
+                    $query->where('verification_status', 'under_review');
+                }
+            }
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('restaurant_name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('business_address', 'like', "%{$search}%");
+                });
+            }
+
+            $restaurants = $query->latest()->paginate($perPage, ['*'], 'page', $page);
+
+            $formattedRestaurants = $restaurants->getCollection()->map(function ($owner) {
+                try {
+                    $totalOrders = Order::where('restaurant_owner_id', $owner->id)->count();
+                    $totalRevenue = (float) Order::where('restaurant_owner_id', $owner->id)->sum('total');
+                    $avgRating = Review::where('restaurant_owner_id', $owner->id)->avg('rating') ?? 0;
+                    $reviewCount = Review::where('restaurant_owner_id', $owner->id)->count();
+                    
+                    // Calculate fulfillment rate
+                    $completedOrders = Order::where('restaurant_owner_id', $owner->id)
+                        ->where('status', 'Delivered')
+                        ->count();
+                    $fulfillmentRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 1) : 0;
+
+                    // Get recent orders
+                    $recentOrders = Order::where('restaurant_owner_id', $owner->id)
+                        ->latest()
+                        ->take(5)
+                        ->get()
+                        ->map(function ($order) {
+                            $itemsSummary = $order->items->count() > 0 
+                                ? $order->items->map(fn($i) => ($i->quantity ?? 1) . 'x ' . ($i->item_name ?? 'Item'))->join(', ')
+                                : 'No items';
+                            return [
+                                'id' => '#' . $order->id,
+                                'items' => $itemsSummary,
+                                'status' => $order->status,
+                                'amount' => (float) $order->total,
+                            ];
+                        })
+                        ->all();
+
+                    // Get recent reviews
+                    $recentReviews = Review::where('restaurant_owner_id', $owner->id)
+                        ->latest()
+                        ->take(2)
+                        ->get()
+                        ->map(function ($review) {
+                            return [
+                                'author' => $review->customer?->name ?? 'Anonymous',
+                                'rating' => (int) $review->rating,
+                                'text' => $review->review ?? '',
+                                'orderId' => '#' . $review->order_id,
+                                'time' => $review->created_at->diffForHumans(),
+                            ];
+                        })
+                        ->all();
+
+                    // Get disputes
+                    $disputes = [];
+
+                    return [
+                        'id' => 'RE-' . str_pad($owner->id, 4, '0', STR_PAD_LEFT),
+                        'name' => $owner->restaurant_name ?? 'Unknown',
+                        'badge' => $owner->created_at >= now()->subMonths(1) ? 'New Branch' : null,
+                        'cuisine' => collect($owner->cuisine_type ?? [])->first() ?? 'General',
+                        'owner' => [
+                            'name' => $owner->name ?? 'Unknown',
+                            'email' => $owner->email ?? 'N/A',
+                            'phone' => $owner->phone ?? 'N/A',
+                            'avatar' => null,
+                        ],
+                        'rating' => round($avgRating, 1),
+                        'reviewCount' => $reviewCount,
+                        'revenue' => round($totalRevenue, 2),
+                        'status' => $owner->operating_status === 'open' ? 'Active' : ($owner->operating_status === 'closed' ? 'Suspended' : 'Under Review'),
+                        'joined' => $owner->created_at->format('M d, Y'),
+                        'logo' => $owner->logo,
+                        'details' => [
+                            'location' => $owner->business_address ?? 'N/A',
+                            'registered' => $owner->created_at->format('M d, Y'),
+                            'totalOrders' => $totalOrders,
+                            'totalRevenue' => round($totalRevenue, 2),
+                            'avgRating' => round($avgRating, 1),
+                            'fulfillmentRate' => $fulfillmentRate,
+                            'ownerBranches' => 1,
+                            'accountCreated' => $owner->created_at->format('M d, Y'),
+                            'documents' => [],
+                            'chartData' => [1000, 1500, 2000, 1800, 2200, 1600, 1400],
+                            'payoutSummary' => [
+                                'pending' => round($totalRevenue * 0.9, 2),
+                                'lastPayout' => round($totalRevenue * 0.3, 2),
+                                'lastPayoutDate' => $owner->updated_at->format('M d'),
+                                'commRate' => 10.0,
+                            ],
+                            'operational' => [
+                                'deliveryRadius' => $owner->delivery_radius ?? '5.0 km',
+                                'prepTime' => $owner->default_prep_time ?? '15-20 mins',
+                                'minOrder' => 150.00,
+                            ],
+                            'recentOrders' => $recentOrders,
+                            'recentReviews' => $recentReviews,
+                            'disputes' => $disputes,
+                            'unresolvedDisputes' => count(array_filter($disputes, fn($d) => $d['status'] === 'Pending')),
+                            'responseRate' => $reviewCount > 0 ? 72 : 0,
+                        ],
+                    ];
+                } catch (\Exception $e) {
+                    Log::error('Error formatting restaurant ' . $owner->id . ': ' . $e->getMessage());
+                    return [
+                        'id' => 'RE-' . str_pad($owner->id, 4, '0', STR_PAD_LEFT),
+                        'name' => $owner->restaurant_name ?? 'Unknown',
+                        'cuisine' => 'General',
+                        'owner' => ['name' => 'Unknown', 'email' => 'N/A', 'phone' => 'N/A', 'avatar' => null],
+                        'rating' => 0,
+                        'reviewCount' => 0,
+                        'revenue' => 0,
+                        'status' => 'Error',
+                        'joined' => 'N/A',
+                        'logo' => null,
+                        'details' => [],
+                    ];
+                }
             });
-        }
 
-        $restaurants = $query->latest()->paginate($perPage, ['*'], 'page', $page);
-
-        $restaurants->getCollection()->transform(function ($owner) {
-            $totalOrders = Order::where('restaurant_owner_id', $owner->id)->count();
-            $totalRevenue = Order::where('restaurant_owner_id', $owner->id)->sum('total');
-            $avgRating = Review::where('restaurant_owner_id', $owner->id)->avg('rating') ?? 0;
-            $reviewCount = Review::where('restaurant_owner_id', $owner->id)->count();
-
-            return [
-                'id' => "RE-" . str_pad($owner->id, 4, '0', STR_PAD_LEFT),
-                'name' => $owner->restaurant_name,
-                'cuisine' => collect($owner->cuisine_type)->first() ?? 'General',
-                'owner' => [
-                    'name' => $owner->name,
-                    'email' => $owner->email,
-                    'phone' => $owner->phone,
+            return response()->json([
+                'data' => $formattedRestaurants->all(),
+                'pagination' => [
+                    'total' => $restaurants->total(),
+                    'per_page' => $restaurants->perPage(),
+                    'current_page' => $restaurants->currentPage(),
+                    'last_page' => $restaurants->lastPage(),
                 ],
-                'rating' => round($avgRating, 1),
-                'review_count' => $reviewCount,
-                'revenue' => round($totalRevenue, 2),
-                'status' => $owner->operating_status === 'open' ? 'Active' : 'Suspended',
-                'joined' => optional($owner->created_at)->format('M d, Y'),
-                'logo' => $owner->logo,
-                'location' => $owner->business_address,
-                'total_orders' => $totalOrders,
-            ];
-        });
-
-        return response()->json([
-            'data' => $restaurants->items(),
-            'pagination' => [
-                'total' => $restaurants->total(),
-                'per_page' => $restaurants->perPage(),
-                'current_page' => $restaurants->currentPage(),
-                'last_page' => $restaurants->lastPage(),
-            ],
-        ]);
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Restaurants endpoint error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching restaurants',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function reviews(Request $request)

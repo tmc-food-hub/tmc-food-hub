@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     Store, CheckCircle2, Clock, AlertTriangle, Star, Download, ChevronDown, Eye,
     MoreVertical, X, MapPin, Phone, Mail, Edit, Send, Ban, FileText, Info,
-    ArrowLeft, ExternalLink, TrendingUp, Truck, DollarSign, Shield
+    ArrowLeft, ExternalLink, TrendingUp, Truck, DollarSign, Shield, Loader
 } from 'lucide-react';
 import styles from './AdminRestaurantsSection.module.css';
 
@@ -154,15 +154,67 @@ export default function AdminRestaurantsSection() {
     const [locationFilter, setLocationFilter] = useState('All');
     const [ratingFilter, setRatingFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [restaurants, setRestaurants] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchRestaurants();
+    }, [activeTab]);
+
+    const fetchRestaurants = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            let statusParam = '';
+            
+            if (activeTab === 'Active') {
+                statusParam = '&status=Active';
+            } else if (activeTab === 'Suspended') {
+                statusParam = '&status=Suspended';
+            } else if (activeTab === 'Under Review') {
+                statusParam = '&status=Under Review';
+            } else if (activeTab.startsWith('Pending')) {
+                statusParam = '&status=Pending Review';
+            }
+
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/admin/restaurants?per_page=50${statusParam}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch restaurants');
+            }
+
+            const data = await response.json();
+            setRestaurants(data.data || []);
+        } catch (err) {
+            console.error('Error fetching restaurants:', err);
+            setError(err.message);
+            // Fallback to mock data for development
+            setRestaurants(MOCK_RESTAURANTS);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredRestaurants = useMemo(() => {
-        let r = MOCK_RESTAURANTS;
-        if (activeTab === 'Active') r = r.filter(x => x.status === 'Active');
-        else if (activeTab === 'Suspended') r = r.filter(x => x.status === 'Suspended');
-        else if (activeTab === 'Under Review') r = r.filter(x => x.status === 'Under Review');
-        else if (activeTab.startsWith('Pending')) r = r.filter(x => x.status === 'Pending');
+        let r = restaurants;
+        if (ratingFilter !== 'All') {
+            r = r.filter(x => x.rating >= parseInt(ratingFilter));
+        }
+        if (categoryFilter !== 'All') {
+            r = r.filter(x => x.cuisine === categoryFilter);
+        }
         return r;
-    }, [activeTab]);
+    }, [restaurants, ratingFilter, categoryFilter]);
 
     const clearFilters = () => { setCategoryFilter('All'); setLocationFilter('All'); setRatingFilter('All'); setStatusFilter('All'); setActiveTab('All Partners'); };
     const handleExport = () => { setShowExport(false); setToast({ msg: 'Export ready - downloading now', sub: 'TMC_Foodhub_Partners_Export.csv' }); setTimeout(() => setToast(null), 4000); };
@@ -515,48 +567,62 @@ export default function AdminRestaurantsSection() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead><tr><th>Restaurant</th><th>Owner</th><th>Cuisine</th><th>Rating</th><th>Revenue</th><th>Status</th><th>Date Joined</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        {filteredRestaurants.map(rest => (
-                            <tr key={rest.id} className={styles.tableRow}>
-                                <td>
-                                    <div className={styles.restaurantCell}>
-                                        <div className={styles.restaurantLogo} style={{ background: getColor(rest.name) }}>{rest.name[0]}</div>
-                                        <div>
-                                            <div className={styles.restaurantName}>{rest.name}</div>
-                                            {rest.badge && <div className={styles.restaurantBadge}>{rest.badge}</div>}
+                {loading && (
+                    <div style={{display:'flex',justifyContent:'center',alignItems:'center',padding:'40px',gap:'10px',color:'#666'}}>
+                        <Loader size={20} className={styles.spinner} /> Loading restaurants...
+                    </div>
+                )}
+                {error && (
+                    <div style={{padding:'20px',background:'#FEE2E2',border:'1px solid #FECACA',borderRadius:'8px',color:'#991B1B'}}>
+                        ⚠️ {error}
+                    </div>
+                )}
+                {!loading && !error && (
+                    <table className={styles.table}>
+                        <thead><tr><th>Restaurant</th><th>Owner</th><th>Cuisine</th><th>Rating</th><th>Revenue</th><th>Status</th><th>Date Joined</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {filteredRestaurants.length > 0 ? filteredRestaurants.map(rest => (
+                                <tr key={rest.id} className={styles.tableRow}>
+                                    <td>
+                                        <div className={styles.restaurantCell}>
+                                            <div className={styles.restaurantLogo} style={{ background: getColor(rest.name) }}>{rest.name[0]}</div>
+                                            <div>
+                                                <div className={styles.restaurantName}>{rest.name}</div>
+                                                {rest.badge && <div className={styles.restaurantBadge}>{rest.badge}</div>}
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.ownerCell}>
-                                        <div className={styles.avatarCircle} style={{ background: getColor(rest.owner.name) }}>{getInitials(rest.owner.name)}</div>
-                                        <span>{rest.owner.name}</span>
-                                    </div>
-                                </td>
-                                <td>{rest.cuisine}</td>
-                                <td>
-                                    {rest.rating > 0 ? (
-                                        <span className={styles.ratingCell}><Star size={13} className={styles.starFilled} /> {rest.rating} <span className={styles.ratingCount}>({rest.reviewCount})</span></span>
-                                    ) : (
-                                        <span className={styles.noReviews}>No reviews</span>
-                                    )}
-                                </td>
-                                <td className={styles.revenueCell}>{rest.revenue > 0 ? pesoShort(rest.revenue) : '0'}</td>
-                                <td><span className={`${styles.statusPill} ${getStatusClass(rest.status)}`}>{rest.status}</span></td>
-                                <td className={styles.dateCell}>{rest.joined}</td>
-                                <td>
-                                    <div className={styles.actionBtns}>
-                                        {rest.status === 'Under Review' && <button className={styles.actionTextBtn}>Review</button>}
-                                        <button className={styles.actionIcon} onClick={() => setSelectedRestaurant(rest)}><Eye size={15} /></button>
-                                        <button className={styles.actionIcon} onClick={() => setShowSuspend(rest)}><MoreVertical size={15} /></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td>
+                                        <div className={styles.ownerCell}>
+                                            <div className={styles.avatarCircle} style={{ background: getColor(rest.owner.name) }}>{getInitials(rest.owner.name)}</div>
+                                            <span>{rest.owner.name}</span>
+                                        </div>
+                                    </td>
+                                    <td>{rest.cuisine}</td>
+                                    <td>
+                                        {rest.rating > 0 ? (
+                                            <span className={styles.ratingCell}><Star size={13} className={styles.starFilled} /> {rest.rating} <span className={styles.ratingCount}>({rest.reviewCount})</span></span>
+                                        ) : (
+                                            <span className={styles.noReviews}>No reviews</span>
+                                        )}
+                                    </td>
+                                    <td className={styles.revenueCell}>{rest.revenue > 0 ? pesoShort(rest.revenue) : '0'}</td>
+                                    <td><span className={`${styles.statusPill} ${getStatusClass(rest.status)}`}>{rest.status}</span></td>
+                                    <td className={styles.dateCell}>{rest.joined}</td>
+                                    <td>
+                                        <div className={styles.actionBtns}>
+                                            {rest.status === 'Under Review' && <button className={styles.actionTextBtn}>Review</button>}
+                                            <button className={styles.actionIcon} onClick={() => setSelectedRestaurant(rest)}><Eye size={15} /></button>
+                                            <button className={styles.actionIcon} onClick={() => setShowSuspend(rest)}><MoreVertical size={15} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan="8" style={{textAlign:'center',padding:'40px',color:'#999'}}>No restaurants found</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {/* Export Modal */}
