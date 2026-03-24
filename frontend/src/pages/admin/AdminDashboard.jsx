@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, ShoppingCart, Users, Store, Star, AlertTriangle,
-    CreditCard, BarChart3, Tag, Settings, Bell, Search, LogOut, Wallet
+    CreditCard, BarChart3, Tag, Settings, Bell, Search, LogOut, Wallet,
+    PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import api from '../../api/axios';
 import { useAdminAuth } from '../../context/AdminAuthContext';
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
     const { admin, loading, logout } = useAdminAuth();
     const navigate = useNavigate();
     const [active, setActive] = useState('dashboard');
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [data, setData] = useState({
         stats: {
             total_partners: 0,
@@ -77,16 +79,23 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className={styles.shell}>
-            <aside className={styles.sidebar}>
+        <div className={`${styles.shell} ${sidebarCollapsed ? styles.shellCollapsed : ''}`}>
+            <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
                 <div className={styles.logoWrap}>
                     <img src={tmcLogo} alt="TMC Food Hub" className={styles.logo} />
-                    <div className={styles.portalTag}>Admin Portal</div>
+                    {!sidebarCollapsed && <div className={styles.portalTag}>Admin Portal</div>}
+                    <button
+                        className={styles.collapseBtn}
+                        onClick={() => setSidebarCollapsed(c => !c)}
+                        title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    >
+                        {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+                    </button>
                 </div>
 
                 {NAV.map((group) => (
                     <div key={group.label} className={styles.navGroup}>
-                        <div className={styles.navLabel}>{group.label}</div>
+                        {!sidebarCollapsed && <div className={styles.navLabel}>{group.label}</div>}
                         {group.items.map((item) => (
                             <button
                                 key={item.key}
@@ -94,8 +103,8 @@ export default function AdminDashboard() {
                                 onClick={() => setActive(item.key)}
                             >
                                 {item.icon}
-                                <span>{item.label}</span>
-                                {item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
+                                {!sidebarCollapsed && <span>{item.label}</span>}
+                                {!sidebarCollapsed && item.badge ? <span className={styles.navBadge}>{item.badge}</span> : null}
                             </button>
                         ))}
                     </div>
@@ -103,13 +112,17 @@ export default function AdminDashboard() {
 
                 <div className={styles.profileCard}>
                     <div className={styles.avatar}>{(admin.first_name?.[0] || admin.name?.[0] || 'A').toUpperCase()}</div>
-                    <div>
-                        <div className={styles.restaurantName}>{admin.name || 'Admin'}</div>
-                        <div className={styles.restaurantMeta}>Platform Administrator</div>
-                    </div>
-                    <button className={styles.viewAll} onClick={async () => { await logout(); navigate('/admin-login'); }}>
-                        <LogOut size={16} />
-                    </button>
+                    {!sidebarCollapsed && (
+                        <div>
+                            <div className={styles.restaurantName}>{admin.name || 'Admin'}</div>
+                            <div className={styles.restaurantMeta}>Platform Administrator</div>
+                        </div>
+                    )}
+                    {!sidebarCollapsed && (
+                        <button className={styles.viewAll} onClick={async () => { await logout(); navigate('/admin-login'); }}>
+                            <LogOut size={16} />
+                        </button>
+                    )}
                 </div>
             </aside>
 
