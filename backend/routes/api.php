@@ -86,5 +86,13 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AdminController::class, 'user']);
     Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    Route::get('/orders', [AdminController::class, 'orders']);
+    Route::get('/customers', [AdminController::class, 'customers']);
+    Route::get('/restaurants', [AdminController::class, 'restaurants']);
+    Route::get('/reviews', [AdminController::class, 'reviews']);
+    Route::get('/payments', [AdminController::class, 'payments']);
+    Route::get('/analytics', [AdminController::class, 'analytics']);
+    Route::get('/disputes', [AdminController::class, 'disputes']);
+    Route::get('/settings', [AdminController::class, 'settings']);
     Route::post('/logout', [AdminController::class, 'logout']);
 });
