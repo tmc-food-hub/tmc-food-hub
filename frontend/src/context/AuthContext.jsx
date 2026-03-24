@@ -69,6 +69,48 @@ export function AuthProvider({ children }) {
         localStorage.setItem('user_type', 'customer');
     };
 
+    const googleLogin = async (credentialResponse) => {
+        try {
+            // GoogleLogin component returns { credential: JWT }
+            const { credential } = credentialResponse;
+            
+            if (!credential) {
+                throw new Error('No credential received from Google');
+            }
+            
+            // Send JWT credential to backend for verification and user lookup
+            const res = await api.post('/auth/google-login', { credential });
+            
+            const { user: userData, token: newToken } = res.data;
+            setAuthData(newToken, userData);
+            return userData;
+        } catch (error) {
+            console.error('Google login failed:', error);
+            throw error;
+        }
+    };
+
+    const googleSignup = async (credentialResponse) => {
+        try {
+            // GoogleLogin component returns { credential: JWT }
+            const { credential } = credentialResponse;
+            
+            if (!credential) {
+                throw new Error('No credential received from Google');
+            }
+            
+            // Send JWT credential to backend for verification and user creation
+            const res = await api.post('/auth/google-signup', { credential });
+            
+            const { user: userData, token: newToken } = res.data;
+            setAuthData(newToken, userData);
+            return userData;
+        } catch (error) {
+            console.error('Google signup failed:', error);
+            throw error;
+        }
+    };
+
     const sendOtp = async (email) => {
         const res = await api.post('/send-otp', { email });
         return res.data;
@@ -136,6 +178,8 @@ export function AuthProvider({ children }) {
         updateProfile,
         logout,
         setAuthData,
+        googleLogin,
+        googleSignup,
     };
 
     return (
