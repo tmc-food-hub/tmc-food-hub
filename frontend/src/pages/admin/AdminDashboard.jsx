@@ -9,6 +9,7 @@ import api from '../../api/axios';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 import styles from './AdminDashboard.module.css';
+import AdminOrdersSection from './AdminOrdersSection';
 
 const NAV = [
     { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> }, { key: 'orders', label: 'Orders', icon: <ShoppingCart size={16} />, badge: 5 }, { key: 'customers', label: 'Customers', icon: <Users size={16} /> }] },
@@ -129,8 +130,14 @@ export default function AdminDashboard() {
             <main className={styles.main}>
                 <div className={styles.topBar}>
                     <div>
-                        <h1 className={styles.title}>{active === 'dashboard' ? 'Dashboard' : active}</h1>
-                        <p className={styles.subtitle}>Welcome back, {admin.first_name || 'Admin'}!</p>
+                        <h1 className={styles.title}>
+                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active.charAt(0).toUpperCase() + active.slice(1)}
+                        </h1>
+                        <p className={styles.subtitle}>
+                            {active === 'orders'
+                                ? 'Monitor and manage all TMC Foodhub transactions'
+                                : `Welcome back, ${admin.first_name || 'Admin'}!`}
+                        </p>
                     </div>
                     <div className={styles.topActions}>
                         <div className={styles.searchBox}>
@@ -141,7 +148,9 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {active !== 'dashboard' ? (
+                {active === 'orders' ? (
+                    <AdminOrdersSection />
+                ) : active !== 'dashboard' ? (
                     <div className={styles.card}>
                         <h3 className={styles.cardTitle}>{active.charAt(0).toUpperCase() + active.slice(1)}</h3>
                         <p className={styles.placeholder}>This admin section is ready for the next management workflow.</p>
