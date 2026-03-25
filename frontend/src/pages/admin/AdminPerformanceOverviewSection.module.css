@@ -1,0 +1,545 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Time Range Selector */
+.timeRangeSelector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.rangeBtn {
+    padding: 8px 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rangeBtn:hover {
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+.rangeBtn.active {
+    background: #DC2626;
+    border-color: #DC2626;
+    color: white;
+}
+
+/* Health Score Card */
+.healthScoreCard {
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+}
+
+.healthHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.healthHeader h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.healthBadge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.healthBar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.healthFill {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.healthStatus {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* KPI Grid */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.kpiCard {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+}
+
+.kpiCard:hover {
+    border-color: #DC2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+}
+
+.kpiHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.kpiIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #FEF2F2;
+    border-radius: 8px;
+    color: #DC2626;
+}
+
+.kpiLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpiValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 8px;
+}
+
+.kpiTrend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #10B981;
+}
+
+.kpiTrend.negative {
+    color: #EF4444;
+}
+
+/* Charts Grid */
+.chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+}
+
+.chartCard {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.chartCard h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 20px 0;
+}
+
+/* Weekly Chart */
+.chartMetrics {
+    margin-bottom: 16px;
+}
+
+.metricLegend {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.gmvDot {
+    background: #DC2626;
+}
+
+.ordersDot {
+    background: #EF9A9A;
+}
+
+.customersDot {
+    background: #FFCCCC;
+}
+
+.weeklyChart {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 200px;
+    padding: 16px 0;
+}
+
+.dayColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.bars {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.barStack {
+    width: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: flex-end;
+}
+
+.bar {
+    width: 100%;
+    border-radius: 2px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.bar:hover {
+    opacity: 0.8;
+}
+
+.gmvBar {
+    background: #DC2626;
+}
+
+.ordersBar {
+    background: #EF9A9A;
+}
+
+.customersBar {
+    background: #FFCCCC;
+}
+
+.dayLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    width: 100%;
+    text-align: center;
+}
+
+/* Segment Performance */
+.segmentList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.segmentRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px;
+    background: #F9FAFB;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.segmentRow:hover {
+    background: #F3F4F6;
+}
+
+.segmentInfo {
+    flex: 0 0 120px;
+}
+
+.segmentInfo h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 4px 0;
+}
+
+.segmentStats {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.segmentMetrics {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.segmentBar {
+    flex: 1;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.segmentFill {
+    height: 100%;
+    background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+    border-radius: 3px;
+}
+
+.segmentGrowth {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6B7280;
+    min-width: 50px;
+    text-align: right;
+}
+
+.segmentGrowth.highGrowth {
+    color: #10B981;
+}
+
+/* Alerts Card */
+.alertsCard {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.alertsCard h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 16px 0;
+}
+
+.alertsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alertItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #FCD34D;
+    background: #FFFBEB;
+}
+
+.alertItem.warning {
+    border-left-color: #FCD34D;
+    background: #FFFBEB;
+}
+
+.alertItem.warning .alertIcon {
+    color: #D97706;
+}
+
+.alertItem.info {
+    border-left-color: #60A5FA;
+    background: #EFF6FF;
+}
+
+.alertItem.info .alertIcon {
+    color: #2563EB;
+}
+
+.alertItem.error {
+    border-left-color: #EF4444;
+    background: #FEF2F2;
+}
+
+.alertItem.error .alertIcon {
+    color: #DC2626;
+}
+
+.alertIcon {
+    flex-shrink: 0;
+}
+
+.alertContent {
+    flex: 1;
+}
+
+.alertContent p {
+    margin: 0;
+    font-size: 13px;
+    color: #1F2937;
+    font-weight: 500;
+}
+
+.alertAction {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: #DC2626;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.alertAction:hover {
+    background: rgba(220, 38, 38, 0.1);
+}
+
+/* Metrics Card */
+.metricsCard {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.metricsCard h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 20px 0;
+}
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.metricBox {
+    padding: 16px;
+    background: #F9FAFB;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metricBox label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metricValue {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+/* Loading State */
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 60px 24px;
+    color: #6B7280;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    color: #DC2626;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .chartsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpiGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .timeRangeSelector {
+        flex-wrap: wrap;
+    }
+
+    .kpiGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .weeklyChart {
+        gap: 8px;
+    }
+
+    .barStack {
+        width: 16px;
+    }
+
+    .metricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .segmentRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .segmentMetrics {
+        width: 100%;
+    }
+
+    .segmentGrowth {
+        text-align: left;
+    }
+}

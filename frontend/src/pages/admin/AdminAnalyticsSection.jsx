@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ShoppingCart, DollarSign, Users, Store, TrendingUp, ChevronDown, Download,
-    X, CheckCircle2, Info, Star, Clock, AlertTriangle
+    X, CheckCircle2, Info, Star, Clock, AlertTriangle, Loader
 } from 'lucide-react';
 import styles from './AdminAnalyticsSection.module.css';
 
@@ -74,6 +74,36 @@ export default function AdminAnalyticsSection() {
     const [exportFormat, setExportFormat] = useState('csv');
     const [exportCols, setExportCols] = useState(EXPORT_COLS.reduce((a, c) => ({ ...a, [c]: true }), {}));
     const [toast, setToast] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, []);
+
+    const fetchAnalytics = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const response = await fetch(`${apiUrl}/admin/analytics`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            setAnalytics(data);
+        } catch (err) {
+            console.error('Error fetching analytics:', err);
+            setError(err.message || 'Failed to load analytics');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleExport = () => {
         setShowExport(false);
@@ -106,18 +136,76 @@ export default function AdminAnalyticsSection() {
 
             {/* Stats */}
             <div className={styles.statsRow}>
-                {STATS.map(s => (
-                    <div key={s.label} className={styles.statCard}>
-                        <div className={styles.statIcon} style={{ background: s.color, color: s.iconColor }}>{s.icon}</div>
-                        <div className={styles.statBody}>
-                            <div className={styles.statLabel}>{s.label}</div>
-                            <div className={styles.statValRow}>
-                                <span className={styles.statValue}>{s.value}</span>
-                                <span className={`${styles.statBadge} ${s.down ? styles.badgeDown : styles.badgeUp}`}>{s.badge}</span>
+                {loading ? (
+                    <div style={{display:'flex',justifyContent:'center',alignItems:'center',padding:'40px',gap:'10px',color:'#666',gridColumn:'1/-1'}}>
+                        <Loader size={20} className={styles.spinner} /> Loading analytics...
+                    </div>
+                ) : error ? (
+                    <div style={{padding:'20px',background:'#FEE2E2',border:'1px solid #FECACA',borderRadius:'8px',color:'#991B1B',gridColumn:'1/-1'}}>
+                        ⚠️ {error}
+                    </div>
+                ) : analytics ? (
+                    <>
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}><ShoppingCart size={18} /></div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>Total Orders</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>{analytics.stats.total_orders?.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}><DollarSign size={18} /></div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>Total Revenue</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>₱{(analytics.stats.total_revenue / 1000).toFixed(0)}k</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: '#FEF9C3', color: '#CA8A04' }}><Users size={18} /></div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>Active Customers</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>{analytics.stats.active_customers?.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}><Store size={18} /></div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>Active Restaurants</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>{analytics.stats.active_restaurants?.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}><TrendingUp size={18} /></div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>Avg Order Value</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>₱{analytics.stats.avg_order_value?.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    STATS.map(s => (
+                        <div key={s.label} className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: s.color, color: s.iconColor }}>{s.icon}</div>
+                            <div className={styles.statBody}>
+                                <div className={styles.statLabel}>{s.label}</div>
+                                <div className={styles.statValRow}>
+                                    <span className={styles.statValue}>{s.value}</span>
+                                    <span className={`${styles.statBadge} ${s.down ? styles.badgeDown : styles.badgeUp}`}>{s.badge}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Charts Row */}
@@ -133,11 +221,11 @@ export default function AdminAnalyticsSection() {
                             {[3500,3000,2500,2000,1500,1000,500,0].map(v => <span key={v}>{v >= 1000 ? `${(v/1000).toFixed(v%1000?1:0)}k` : v == 0 ? '0' : v}</span>)}
                         </div>
                         <div className={styles.barArea}>
-                            {ORDERS_CHART.map(d => (
+                            {(analytics?.orders_chart || ORDERS_CHART).map(d => (
                                 <div key={d.day} className={styles.barGroup}>
                                     <div className={styles.barStack} style={{ height: '100%' }}>
-                                        <div className={styles.barCancelled} style={{ height: `${(d.cancelled / ORDERS_MAX) * 100}%` }} title={`Cancelled: ${d.cancelled}`} />
-                                        <div className={styles.barCompleted} style={{ height: `${(d.completed / ORDERS_MAX) * 100}%` }} title={`Completed: ${d.completed}`} />
+                                        <div className={styles.barCancelled} style={{ height: `${(d.cancelled / 3500) * 100}%` }} title={`Cancelled: ${d.cancelled}`} />
+                                        <div className={styles.barCompleted} style={{ height: `${(d.completed / 3500) * 100}%` }} title={`Completed: ${d.completed}`} />
                                     </div>
                                     <span className={styles.barLabel}>{d.day}</span>
                                 </div>
@@ -154,24 +242,43 @@ export default function AdminAnalyticsSection() {
                 <div className={styles.chartCard}>
                     <div className={styles.chartHeader}>
                         <div><h3 className={styles.chartTitle}>Revenue Growth</h3><span className={styles.chartSub}>Gross vs Net Revenue trend</span></div>
-                        <span className={styles.peakBadge}>Peak: ₱1.2m (Mar 24)</span>
+                        {analytics?.revenue_chart ? (
+                            <span className={styles.peakBadge}>Peak: ₱{Math.max(...analytics.revenue_chart.map(d => d.gross)).toLocaleString()} ({analytics.revenue_chart[analytics.revenue_chart.length - 1]?.label})</span>
+                        ) : (
+                            <span className={styles.peakBadge}>Peak: ₱1.2m (Mar 24)</span>
+                        )}
                     </div>
                     <div className={styles.lineChart}>
                         <div className={styles.lineYAxis}>
-                            {['₱1.4m','₱1.2m','₱1m','₱800k','₱600k','₱400k','₱200k'].map(v => <span key={v}>{v}</span>)}
+                            {(() => {
+                                const maxVal = analytics?.revenue_chart ? Math.max(...analytics.revenue_chart.map(d => d.gross)) : 1400000;
+                                const step = Math.ceil(maxVal / 7);
+                                return Array.from({length: 7}, (_, i) => {
+                                    const val = step * (6 - i);
+                                    return val >= 1000000 ? `₱${(val/1000000).toFixed(1)}m` : val >= 1000 ? `₱${(val/1000).toFixed(0)}k` : `₱${val}`;
+                                }).map(v => <span key={v}>{v}</span>);
+                            })()}
                         </div>
                         <div className={styles.lineArea}>
                             <svg viewBox="0 0 300 200" className={styles.lineSvg} preserveAspectRatio="none">
                                 {/* Grid lines */}
                                 {[0,1,2,3,4,5,6].map(i => <line key={i} x1="0" y1={i*200/6} x2="300" y2={i*200/6} stroke="#F3F4F6" strokeWidth="0.5" />)}
-                                {/* Gross Revenue line */}
-                                <polyline fill="none" stroke="#DC2626" strokeWidth="2.5" points={REVENUE_CHART.map((d,i) => `${i*(300/(REVENUE_CHART.length-1))},${200 - (d.gross/REV_MAX)*200}`).join(' ')} />
-                                {/* Net Revenue line */}
-                                <polyline fill="none" stroke="#FECACA" strokeWidth="2.5" strokeDasharray="6,4" points={REVENUE_CHART.map((d,i) => `${i*(300/(REVENUE_CHART.length-1))},${200 - (d.net/REV_MAX)*200}`).join(' ')} />
-                                {/* Dots for gross */}
-                                {REVENUE_CHART.map((d,i) => <circle key={i} cx={i*(300/(REVENUE_CHART.length-1))} cy={200 - (d.gross/REV_MAX)*200} r="4" fill="#DC2626" />)}
+                                {(() => {
+                                    const chartData = analytics?.revenue_chart || REVENUE_CHART;
+                                    const maxVal = Math.max(...chartData.map(d => d.gross));
+                                    return (
+                                        <>
+                                            {/* Gross Revenue line */}
+                                            <polyline fill="none" stroke="#DC2626" strokeWidth="2.5" points={chartData.map((d,i) => `${i*(300/(chartData.length-1))},${200 - (d.gross/maxVal)*200}`).join(' ')} />
+                                            {/* Net Revenue line */}
+                                            <polyline fill="none" stroke="#FECACA" strokeWidth="2.5" strokeDasharray="6,4" points={chartData.map((d,i) => `${i*(300/(chartData.length-1))},${200 - (d.net/maxVal)*200}`).join(' ')} />
+                                            {/* Dots for gross */}
+                                            {chartData.map((d,i) => <circle key={i} cx={i*(300/(chartData.length-1))} cy={200 - (d.gross/maxVal)*200} r="4" fill="#DC2626" />)}
+                                        </>
+                                    );
+                                })()}
                             </svg>
-                            <div className={styles.lineXLabels}>{REVENUE_CHART.map(d => <span key={d.label}>{d.label}</span>)}</div>
+                            <div className={styles.lineXLabels}>{(analytics?.revenue_chart || REVENUE_CHART).map(d => <span key={d.label}>{d.label}</span>)}</div>
                         </div>
                     </div>
                     <div className={styles.chartLegend}>
@@ -191,22 +298,22 @@ export default function AdminAnalyticsSection() {
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Avg Delivery Time</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>32 mins</span>
+                                <span className={styles.healthValue}>{analytics?.health?.avg_delivery_time || 32} mins</span>
                                 <span className={styles.healthBadgeGreen}>Fast</span>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Completion Rate</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>91.2%</span>
-                                <div className={styles.healthBar}><div className={styles.healthBarFill} style={{ width: '91.2%' }} /></div>
+                                <span className={styles.healthValue}>{analytics?.health?.completion_rate || 91.2}%</span>
+                                <div className={styles.healthBar}><div className={styles.healthBarFill} style={{ width: `${analytics?.health?.completion_rate || 91.2}%` }} /></div>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Dispute Rate</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>1.4%</span>
-                                <span className={styles.healthBadgeRed}>Alert &gt; 1%</span>
+                                <span className={styles.healthValue}>{analytics?.health?.dispute_rate || 1.4}%</span>
+                                <span className={`${styles.healthBadgeRed} ${(analytics?.health?.dispute_rate || 1.4) > 1 ? '' : styles.healthBadgeGreen}`}>{(analytics?.health?.dispute_rate || 1.4) > 1 ? 'Alert > 1%' : 'Good'}</span>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
@@ -215,13 +322,13 @@ export default function AdminAnalyticsSection() {
                                 <div className={styles.donutWrap}>
                                     <svg viewBox="0 0 36 36" className={styles.donut}>
                                         <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#F3F4F6" strokeWidth="3" />
-                                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#991B1B" strokeWidth="3" strokeDasharray="65 35" strokeDashoffset="25" strokeLinecap="round" />
+                                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#991B1B" strokeWidth="3" strokeDasharray={`${analytics?.health?.customer_retention || 65} ${100 - (analytics?.health?.customer_retention || 65)}`} strokeDashoffset="25" strokeLinecap="round" />
                                     </svg>
-                                    <span className={styles.donutLabel}>65%</span>
+                                    <span className={styles.donutLabel}>{analytics?.health?.customer_retention || 65}%</span>
                                 </div>
                                 <div className={styles.retentionLegend}>
-                                    <span><span className={styles.legendDot} style={{ background: '#991B1B' }} /> Returning (65%)</span>
-                                    <span><span className={styles.legendDot} style={{ background: '#F3F4F6' }} /> New (35%)</span>
+                                    <span><span className={styles.legendDot} style={{ background: '#991B1B' }} /> Returning ({analytics?.health?.customer_retention || 65}%)</span>
+                                    <span><span className={styles.legendDot} style={{ background: '#F3F4F6' }} /> New ({100 - (analytics?.health?.customer_retention || 65)}%)</span>
                                 </div>
                             </div>
                         </div>
@@ -238,7 +345,7 @@ export default function AdminAnalyticsSection() {
                         {HEATMAP_DAYS.map((day, di) => (
                             <div key={day} className={styles.heatRow}>
                                 <span className={styles.heatDay}>{day}</span>
-                                {HEATMAP_DATA[di].map((v, hi) => (
+                                {(analytics?.heatmap ? analytics.heatmap[di] : HEATMAP_DATA[di]).map((v, hi) => (
                                     <div key={hi} className={styles.heatCell} style={{ background: `rgba(153, 27, 27, ${Math.min(v / 10, 1)})` }} />
                                 ))}
                             </div>
@@ -256,21 +363,29 @@ export default function AdminAnalyticsSection() {
                     <table className={styles.topTable}>
                         <thead><tr><th>Rank & Restaurant Name</th><th>Orders</th><th>Rating</th><th>Commission</th><th>Status</th></tr></thead>
                         <tbody>
-                            {TOP_RESTAURANTS.map(r => (
-                                <tr key={r.rank}>
-                                    <td>
-                                        <div className={styles.rankCell}>
-                                            <span className={styles.rankNum}>{r.rank}</span>
-                                            <div className={styles.restLogo} style={{ background: getLogoColor(r.name) }}>{r.name[0]}</div>
-                                            <div><div className={styles.restName}>{r.name}</div><div className={styles.restSub}>{r.sub}</div></div>
-                                        </div>
-                                    </td>
-                                    <td className={styles.orderCount}>{r.orders}</td>
-                                    <td><span className={styles.ratingCell}><Star size={12} fill="#F59E0B" stroke="#F59E0B" /> {r.rating}</span></td>
-                                    <td className={styles.commVal}>{r.commission}</td>
-                                    <td><span className={`${styles.statusPill} ${styles[r.statusClass]}`}>{r.status}</span></td>
-                                </tr>
-                            ))}
+                            {(analytics?.top_restaurants || TOP_RESTAURANTS).map((r, idx) => {
+                                const statusMap = {
+                                    'Top Performer': 'topPerf',
+                                    'High Demand': 'highDemand',
+                                    'Rising': 'rising',
+                                    'Stable': 'stable'
+                                };
+                                return (
+                                    <tr key={r.name || idx}>
+                                        <td>
+                                            <div className={styles.rankCell}>
+                                                <span className={styles.rankNum}>{idx + 1}</span>
+                                                <div className={styles.restLogo} style={{ background: getLogoColor(r.name) }}>{r.name?.[0]}</div>
+                                                <div><div className={styles.restName}>{r.name}</div><div className={styles.restSub}>{r.status}</div></div>
+                                            </div>
+                                        </td>
+                                        <td className={styles.orderCount}>{r.orders?.toLocaleString() || r.orders}</td>
+                                        <td><span className={styles.ratingCell}><Star size={12} fill="#F59E0B" stroke="#F59E0B" /> {r.rating}</span></td>
+                                        <td className={styles.commVal}>₱{r.commission?.toLocaleString() || r.commission}</td>
+                                        <td><span className={`${styles.statusPill} ${styles[statusMap[r.status] || 'stable']}`}>{r.status}</span></td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -279,7 +394,7 @@ export default function AdminAnalyticsSection() {
                 <div className={styles.chartCard} style={{ flex: .7 }}>
                     <h3 className={styles.chartTitle}>Distribution by City</h3>
                     <div className={styles.cityList}>
-                        {CITY_DATA.map(c => (
+                        {(analytics?.city_distribution || CITY_DATA).map(c => (
                             <div key={c.city} className={styles.cityItem}>
                                 <div className={styles.cityHeader}><span>{c.city}</span><span className={styles.cityPct}>{c.pct}%</span></div>
                                 <div className={styles.cityBar}><div className={styles.cityBarFill} style={{ width: `${c.pct}%` }} /></div>

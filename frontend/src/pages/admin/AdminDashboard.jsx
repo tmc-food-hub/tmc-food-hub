@@ -16,10 +16,12 @@ import AdminReviewsSection from './AdminReviewsSection';
 import AdminDisputesSection from './AdminDisputesSection';
 import AdminPaymentsSection from './AdminPaymentsSection';
 import AdminAnalyticsSection from './AdminAnalyticsSection';
+import AdminPromotionsSection from './AdminPromotionsSection';
+import AdminPerformanceOverviewSection from './AdminPerformanceOverviewSection';
 import AdminSettingsSection from './AdminSettingsSection';
 
 const NAV = [
-    { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> }, { key: 'orders', label: 'Orders', icon: <ShoppingCart size={16} />, badge: 5 }, { key: 'customers', label: 'Customers', icon: <Users size={16} /> }] },
+    { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> }, { key: 'performance', label: 'Performance', icon: <BarChart3 size={16} /> }, { key: 'orders', label: 'Orders', icon: <ShoppingCart size={16} />, badge: 5 }, { key: 'customers', label: 'Customers', icon: <Users size={16} /> }] },
     { label: 'Operations', items: [{ key: 'restaurants', label: 'Restaurants', icon: <Store size={16} /> }, { key: 'reviews', label: 'Reviews', icon: <Star size={16} /> }, { key: 'disputes', label: 'Disputes', icon: <AlertTriangle size={16} /> }] },
     { label: 'Finance', items: [{ key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> }, { key: 'analytics', label: 'Analytics', icon: <BarChart3 size={16} /> }, { key: 'promotions', label: 'Promotions', icon: <Tag size={16} /> }] },
     { label: 'System', items: [{ key: 'settings', label: 'Settings', icon: <Settings size={16} /> }] },
@@ -138,11 +140,13 @@ export default function AdminDashboard() {
                 <div className={styles.topBar}>
                     <div>
                         <h1 className={styles.title}>
-                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active === 'reviews' ? 'Reviews Moderation' : active === 'disputes' ? 'Disputes' : active === 'payments' ? 'Payments & Payouts' : active === 'analytics' ? 'Analytics' : active === 'settings' ? 'Settings' : active.charAt(0).toUpperCase() + active.slice(1)}
+                            {active === 'dashboard' ? 'Dashboard' : active === 'performance' ? 'Performance Overview' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active === 'reviews' ? 'Reviews Moderation' : active === 'disputes' ? 'Disputes' : active === 'payments' ? 'Payments & Payouts' : active === 'analytics' ? 'Analytics' : active === 'promotions' ? 'Promotions' : active === 'settings' ? 'Settings' : active.charAt(0).toUpperCase() + active.slice(1)}
                         </h1>
                         <p className={styles.subtitle}>
                             {active === 'orders'
                                 ? 'Monitor and manage all TMC Foodhub transactions'
+                                : active === 'performance'
+                                ? 'Comprehensive business metrics and KPI dashboard.'
                                 : active === 'customers'
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : active === 'restaurants'
@@ -155,6 +159,8 @@ export default function AdminDashboard() {
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : active === 'analytics'
                                 ? 'Real-time performance metrics for TMC Foodhub ecosystem.'
+                                : active === 'promotions'
+                                ? 'Create and manage promotional campaigns and discount codes.'
                                 : active === 'settings'
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : `Welcome back, ${admin.first_name || 'Admin'}!`}
@@ -171,6 +177,8 @@ export default function AdminDashboard() {
 
                 {active === 'orders' ? (
                     <AdminOrdersSection />
+                ) : active === 'performance' ? (
+                    <AdminPerformanceOverviewSection />
                 ) : active === 'customers' ? (
                     <AdminCustomersSection />
                 ) : active === 'restaurants' ? (
@@ -183,6 +191,8 @@ export default function AdminDashboard() {
                     <AdminPaymentsSection />
                 ) : active === 'analytics' ? (
                     <AdminAnalyticsSection />
+                ) : active === 'promotions' ? (
+                    <AdminPromotionsSection />
                 ) : active === 'settings' ? (
                     <AdminSettingsSection />
                 ) : active !== 'dashboard' ? (
