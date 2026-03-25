@@ -858,8 +858,35 @@ class AdminController extends Controller
 
             // Platform health metrics
             $completionRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 1) : 0;
-            $avgDeliveryTime = 32; // Placeholder - would come from detailed order tracking
-            $returningCustomers = (int) round($totalCustomers * 0.65); // Estimate 65% retention
+            
+            // Calculate actual average delivery time from completed orders
+            $completedOrdersData = Order::where('status', 'Completed')->get();
+            $avgDeliveryTime = 32; // Default fallback
+            if ($completedOrdersData->count() > 0) {
+                $totalDeliveryTime = 0;
+                foreach ($completedOrdersData as $order) {
+                    if ($order->updated_at && $order->created_at) {
+                        $totalDeliveryTime += $order->updated_at->diffInMinutes($order->created_at);
+                    }
+                }
+                $avgDeliveryTime = $completedOrdersData->count() > 0 
+                    ? round($totalDeliveryTime / $completedOrdersData->count()) 
+                    : 32;
+            }
+            
+            // Calculate real customer retention (customers with repeat orders)
+            $allOrders = Order::where('status', 'Completed')->get();
+            $customerOrderCounts = $allOrders->groupBy('customer_id')->map(function ($orders) {
+                return $orders->count();
+            });
+            
+            $returningCustomers = $customerOrderCounts->filter(function ($count) {
+                return $count > 1;
+            })->count();
+            
+            $customerRetention = $totalCustomers > 0 && $customerOrderCounts->count() > 0
+                ? round(($returningCustomers / $customerOrderCounts->count()) * 100, 1) 
+                : 0;
             
             return response()->json([
                 'stats' => [
@@ -881,7 +908,7 @@ class AdminController extends Controller
                     'avg_delivery_time' => $avgDeliveryTime,
                     'completion_rate' => $completionRate,
                     'dispute_rate' => $disputeRate,
-                    'customer_retention' => round(($returningCustomers / max($totalCustomers, 1)) * 100, 1),
+                    'customer_retention' => $customerRetention,
                 ],
             ]);
         } catch (\Exception $e) {
