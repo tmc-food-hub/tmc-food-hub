@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../api/axios';
 import {
     Plus, Trash2, Edit2, Eye, EyeOff, TrendingUp, Users, Clock, Loader, AlertCircle, X, Check
 } from 'lucide-react';
@@ -12,8 +13,9 @@ const MOCK_PROMOTIONS = [
 ];
 
 export default function AdminPromotionsSection() {
-    const [promotions, setPromotions] = useState(MOCK_PROMOTIONS);
-    const [loading, setLoading] = useState(false);
+    const [promotions, setPromotions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [selectedPromo, setSelectedPromo] = useState(null);
@@ -22,6 +24,7 @@ export default function AdminPromotionsSection() {
     const [dateRange, setDateRange] = useState('Feb 20 - Mar 20, 2026');
     const [showExportModal, setShowExportModal] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     const [exportOptions, setExportOptions] = useState({
         dateRange: 'Last 30 Days',
         fileFormat: 'csv',
@@ -40,64 +43,135 @@ export default function AdminPromotionsSection() {
     const [applicabilityType, setApplicabilityType] = useState('all');
     const [formData, setFormData] = useState({
         name: '',
-        type: 'percentage',
-        discountValue: '',
-        minimumOrderValue: '',
-        startDate: '',
-        endDate: '',
+        code: '',
+        discount_type: 'percentage',
+        discount_value: '',
+        minimum_order_value: '',
+        start_date: '',
+        end_date: '',
+        description: '',
     });
+    const [savingForm, setSavingForm] = useState(false);
+
+    // Fetch promotions on component mount
+    useEffect(() => {
+        fetchPromotions();
+    }, []);
+
+    const fetchPromotions = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/promotions');
+            setPromotions(response.data.data || []);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching promotions:', err);
+            setError(err.response?.data?.message || 'Failed to load promotions');
+            setPromotions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showSuccess = (message) => {
+        setSuccessMessage(message);
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+    };
 
     const handleAddPromotion = () => {
         setShowForm(true);
         setEditingId(null);
         setFormData({
+            name: '',
             code: '',
-            discount: '',
-            type: 'percentage',
-            maxUses: '',
-            restaurants: 'All',
-            startDate: '',
-            endDate: '',
+            discount_type: 'percentage',
+            discount_value: '',
+            minimum_order_value: '',
+            start_date: '',
+            end_date: '',
+            description: '',
         });
     };
 
-    const handleSavePromotion = () => {
-        if (!formData.code || !formData.discount || !formData.maxUses) {
+    const handleSavePromotion = async () => {
+        if (!formData.name || !formData.code || !formData.discount_value || !formData.start_date || !formData.end_date) {
             alert('Please fill in all required fields');
             return;
         }
 
-        if (editingId) {
-            setPromotions(promotions.map(p => p.id === editingId ? { ...p, ...formData } : p));
-        } else {
-            const newPromotion = {
-                id: Math.max(...promotions.map(p => p.id), 0) + 1,
-                ...formData,
-                usedCount: 0,
-                status: 'Active',
-                roi: 0,
+        try {
+            setSavingForm(true);
+            const payload = {
+                name: formData.name,
+                code: formData.code,
+                discount_type: formData.discount_type,
+                discount_value: parseFloat(formData.discount_value),
+                minimum_order_value: formData.minimum_order_value ? parseFloat(formData.minimum_order_value) : 0,
+                applicability_type: applicabilityType === 'all' ? 'all_items' : 'specific_items',
+                applicable_categories: applicabilityType === 'specific' ? selectedItems : [],
+                start_date: formData.start_date,
+                end_date: formData.end_date,
+                description: formData.description,
+                status: 'active',
             };
-            setPromotions([...promotions, newPromotion]);
+
+            if (editingId) {
+                await api.put(`/admin/promotions/${editingId}`, payload);
+                showSuccess('Promotion updated successfully');
+            } else {
+                await api.post('/admin/promotions', payload);
+                showSuccess('Promotion created successfully');
+            }
+            
+            setShowForm(false);
+            fetchPromotions();
+        } catch (err) {
+            console.error('Error saving promotion:', err);
+            alert(err.response?.data?.message || 'Error saving promotion');
+        } finally {
+            setSavingForm(false);
         }
-        setShowForm(false);
     };
 
-    const handleDeletePromotion = (id) => {
+    const handleDeletePromotion = async (id) => {
         if (confirm('Are you sure you want to delete this promotion?')) {
-            setPromotions(promotions.filter(p => p.id !== id));
+            try {
+                await api.delete(`/admin/promotions/${id}`);
+                showSuccess('Promotion deleted successfully');
+                fetchPromotions();
+            } catch (err) {
+                console.error('Error deleting promotion:', err);
+                alert(err.response?.data?.message || 'Error deleting promotion');
+            }
         }
     };
 
-    const handleEditPromotion = (promotion) => {
-        setFormData(promotion);
-        setEditingId(promotion.id);
-        setShowForm(true);
+    const handleEditPromotion = async (promotion) => {
+        try {
+            const response = await api.get(`/admin/promotions/${promotion.id}`);
+            const data = response.data.data;
+            setFormData({
+                name: data.name,
+                code: data.code,
+                discount_type: data.discount_type,
+                discount_value: data.discount_value,
+                minimum_order_value: data.minimum_order_value,
+                start_date: data.start_date,
+                end_date: data.end_date,
+                description: data.description,
+            });
+            setEditingId(promotion.id);
+            setShowForm(true);
+        } catch (err) {
+            console.error('Error loading promotion:', err);
+            alert('Error loading promotion details');
+        }
     };
 
     const handleExport = () => {
-        setShowSuccessMessage(true);
+        showSuccess('Export started. File will download shortly.');
         setShowExportModal(false);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
     };
 
     const toggleColumn = (column) => {
@@ -227,16 +301,36 @@ export default function AdminPromotionsSection() {
                                             />
                                         </div>
                                         <div className={styles.formGroup}>
+                                            <label>Promotion Code</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. SUMMER20"
+                                                value={formData.code}
+                                                onChange={(e) => setFormData({...formData, code: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
                                             <label>Promotion Type</label>
                                             <select 
-                                                value={formData.type}
-                                                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                                value={formData.discount_type}
+                                                onChange={(e) => setFormData({...formData, discount_type: e.target.value})}
                                             >
                                                 <option value="percentage">Percentage Off (%)</option>
                                                 <option value="fixed">Fixed Amount (₱)</option>
                                                 <option value="bogo">Buy 1 Get 1</option>
                                                 <option value="free">Free Delivery</option>
                                             </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Description (Optional)</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Add promotion details"
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -252,8 +346,8 @@ export default function AdminPromotionsSection() {
                                                 <input 
                                                     type="number" 
                                                     placeholder="0.00"
-                                                    value={formData.discountValue}
-                                                    onChange={(e) => setFormData({...formData, discountValue: e.target.value})}
+                                                    value={formData.discount_value}
+                                                    onChange={(e) => setFormData({...formData, discount_value: e.target.value})}
                                                 />
                                             </div>
                                         </div>
@@ -264,8 +358,8 @@ export default function AdminPromotionsSection() {
                                                 <input 
                                                     type="number" 
                                                     placeholder="250.00"
-                                                    value={formData.minimumOrderValue}
-                                                    onChange={(e) => setFormData({...formData, minimumOrderValue: e.target.value})}
+                                                    value={formData.minimum_order_value}
+                                                    onChange={(e) => setFormData({...formData, minimum_order_value: e.target.value})}
                                                 />
                                             </div>
                                         </div>
@@ -327,16 +421,16 @@ export default function AdminPromotionsSection() {
                                             <label>Start Date</label>
                                             <input 
                                                 type="date"
-                                                value={formData.startDate}
-                                                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                                                value={formData.start_date}
+                                                onChange={(e) => setFormData({...formData, start_date: e.target.value})}
                                             />
                                         </div>
                                         <div className={styles.formGroup}>
                                             <label>End Date</label>
                                             <input 
                                                 type="date"
-                                                value={formData.endDate}
-                                                onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                                                value={formData.end_date}
+                                                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
                                             />
                                         </div>
                                     </div>
@@ -345,58 +439,91 @@ export default function AdminPromotionsSection() {
                                 {/* Actions */}
                                 <div className={styles.formActions}>
                                     <button className={styles.formCancelBtn} onClick={() => setShowForm(false)}>Cancel</button>
-                                    <button className={styles.formSaveBtn} onClick={() => setShowForm(false)}>Save Promotion</button>
+                                    <button 
+                                        className={styles.formSaveBtn} 
+                                        onClick={handleSavePromotion}
+                                        disabled={savingForm}
+                                    >
+                                        {savingForm ? 'Saving...' : 'Save Promotion'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Table */}
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>Promotion Name</th>
-                                <th>Discount Type</th>
-                                <th>Valid Dates</th>
-                                <th>Usage</th>
-                                <th>Conversion</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {promotions.map(promo => (
-                                <tr key={promo.id} className={styles.tableRow} onClick={() => handlePromotionClick(promo)}>
-                                    <td>
-                                        <div className={styles.promoName}>{promo.name}</div>
-                                        <div className={styles.promoCode}>{promo.code}</div>
-                                    </td>
-                                    <td><span className={styles.discountBadge}>{promo.discount}</span></td>
-                                    <td className={styles.datesCell}>{promo.validDates}</td>
-                                    <td className={styles.usageCell}>
-                                        <div className={styles.usageBar}>
-                                            <div className={styles.usageFill} style={{width: `${promo.usagePercent}%`}} />
-                                        </div>
-                                        <span className={styles.usageText}>{promo.usage}</span>
-                                    </td>
-                                    <td className={styles.conversionCell}>{promo.conversion}</td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${styles[promo.status.toLowerCase()]}`}>
-                                            {promo.status}
-                                        </span>
-                                    </td>
-                                    <td className={styles.actionCell} onClick={(e) => e.stopPropagation()}>
-                                        <button className={styles.iconBtn} title="Toggle visibility">
-                                            {promo.visible ? <Eye size={16} /> : <EyeOff size={16} />}
-                                        </button>
-                                        <button className={styles.iconBtn} title="Edit">
-                                            <Edit2 size={16} />
-                                        </button>
-                                    </td>
+                    {loading ? (
+                        <div className={styles.loadingContainer}>
+                            <Loader size={24} className={styles.spinner} />
+                            <p>Loading promotions...</p>
+                        </div>
+                    ) : error ? (
+                        <div className={styles.errorContainer}>
+                            <AlertCircle size={24} />
+                            <p>{error}</p>
+                            <button onClick={fetchPromotions} className={styles.retryBtn}>Retry</button>
+                        </div>
+                    ) : promotions.length === 0 ? (
+                        <div className={styles.emptyContainer}>
+                            <p>No promotions found. Create one to get started!</p>
+                        </div>
+                    ) : (
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Promotion Name</th>
+                                    <th>Discount Type</th>
+                                    <th>Valid Dates</th>
+                                    <th>Usage</th>
+                                    <th>Conversion</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {promotions.map(promo => (
+                                    <tr key={promo.id} className={styles.tableRow} onClick={() => handlePromotionClick(promo)}>
+                                        <td>
+                                            <div className={styles.promoName}>{promo.name}</div>
+                                            <div className={styles.promoCode}>{promo.code}</div>
+                                        </td>
+                                        <td><span className={styles.discountBadge}>{promo.discount_type}</span></td>
+                                        <td className={styles.datesCell}>
+                                            {new Date(promo.start_date).toLocaleDateString()} - {new Date(promo.end_date).toLocaleDateString()}
+                                        </td>
+                                        <td className={styles.usageCell}>
+                                            <div className={styles.usageBar}>
+                                                <div className={styles.usageFill} style={{width: `${Math.min((promo.redemptions_count / (promo.max_redemptions || 1)) * 100, 100)}%`}} />
+                                            </div>
+                                            <span className={styles.usageText}>{promo.redemptions_count} / {promo.max_redemptions || '∞'}</span>
+                                        </td>
+                                        <td className={styles.conversionCell}>{(promo.conversion_rate * 100).toFixed(1)}%</td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${styles[promo.status.toLowerCase()]}`}>
+                                                {promo.status}
+                                            </span>
+                                        </td>
+                                        <td className={styles.actionCell} onClick={(e) => e.stopPropagation()}>
+                                            <button 
+                                                className={styles.iconBtn} 
+                                                title="Edit"
+                                                onClick={() => handleEditPromotion(promo)}
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button 
+                                                className={styles.iconBtn} 
+                                                title="Delete"
+                                                onClick={() => handleDeletePromotion(promo.id)}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 {/* Performance Overview Sidebar */}
@@ -773,7 +900,7 @@ export default function AdminPromotionsSection() {
                         <Check size={20} />
                         <div>
                             <strong>Success</strong>
-                            <p>Your promotions data report has been successfully.</p>
+                            <p>{successMessage}</p>
                         </div>
                     </div>
                     <button onClick={() => setShowSuccessMessage(false)}>
