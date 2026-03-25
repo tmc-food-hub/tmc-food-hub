@@ -90,11 +90,14 @@ class AdminController extends Controller
             ->take(5)
             ->get()
             ->map(function (RestaurantOwner $owner) {
+                $cuisine = is_array($owner->cuisine_type) 
+                    ? implode(', ', $owner->cuisine_type) 
+                    : ($owner->cuisine_type ?? 'General');
                 return [
                     'id' => $owner->id,
                     'restaurant_name' => $owner->restaurant_name,
                     'location' => $owner->business_address,
-                    'category' => collect($owner->cuisine_type)->join(', ') ?: 'General',
+                    'category' => $cuisine,
                     'applied' => optional($owner->created_at)->diffForHumans(),
                     'status' => 'Pending',
                     'logo' => $owner->logo,
@@ -622,45 +625,109 @@ class AdminController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $page = $request->query('page', 1);
-        $perPage = $request->query('per_page', 10);
-        $status = $request->query('status');
+        try {
+            $page = $request->query('page', 1);
+            $perPage = $request->query('per_page', 15);
+            $statusFilter = $request->query('status', 'All');
 
-        $query = RestaurantOwner::query();
+            $query = RestaurantOwner::query();
 
-        $restaurants = $query->latest()->paginate($perPage, ['*'], 'page', $page);
+            $restaurants = $query->with('orders.review')->latest()->paginate($perPage, ['*'], 'page', $page);
 
-        $restaurants->getCollection()->transform(function ($owner) {
-            $totalOrders = Order::where('restaurant_owner_id', $owner->id)->count();
-            $totalRevenue = Order::where('restaurant_owner_id', $owner->id)->sum('total');
-            $commission = $totalRevenue * 0.10; // 10% commission
-            $netPayout = $totalRevenue - $commission;
+            $restaurants->getCollection()->transform(function ($owner) {
+                $orders = $owner->orders ?? collect();
+                $totalRevenue = (float) $orders->sum('total');
+                $commission = $totalRevenue * 0.10;
+                $netPayout = $totalRevenue - $commission;
 
-            return [
-                'id' => $owner->id,
-                'restaurant' => $owner->restaurant_name,
-                'owner' => $owner->name,
-                'total_sales' => round($totalRevenue, 2),
-                'commission' => round($commission, 2),
-                'net_payout' => round($netPayout, 2),
-                'status' => 'Unpaid',
-                'category' => collect($owner->cuisine_type)->first() ?? 'General',
-                'logo' => $owner->logo,
-                'location' => $owner->business_address,
-                'branches' => 1,
-                'last_updated' => optional(Order::where('restaurant_owner_id', $owner->id)->latest()->first())->created_at?->diffForHumans() ?? 'Never',
-            ];
-        });
+                // Count low-rating reviews
+                $lowRatingCount = 0;
+                foreach ($orders as $order) {
+                    if ($order->review && $order->review->rating <= 2) {
+                        $lowRatingCount++;
+                    }
+                }
 
-        return response()->json([
-            'data' => $restaurants->items(),
-            'pagination' => [
-                'total' => $restaurants->total(),
-                'per_page' => $restaurants->perPage(),
-                'current_page' => $restaurants->currentPage(),
-                'last_page' => $restaurants->lastPage(),
-            ],
-        ]);
+                $hasRecentOrders = $orders->filter(function ($order) {
+                    return $order->created_at >= now()->subDays(30);
+                })->count() > 0;
+
+                $status = $lowRatingCount > 0 ? 'Pending' : ($hasRecentOrders ? 'Unpaid' : 'Paid');
+                
+                // Calculate dispute amount
+                $disputeAmount = 0;
+                foreach ($orders as $order) {
+                    if ($order->review && $order->review->rating <= 2) {
+                        $disputeAmount += $order->total;
+                    }
+                }
+
+                // Extract location  
+                $location = 'Unknown';
+                if ($owner->business_address) {
+                    $addressParts = explode(',', $owner->business_address);
+                    $location = trim(array_pop($addressParts) ?? 'Unknown');
+                }
+
+                $lastUpdated = optional($orders->max('updated_at'))?->diffForHumans() ?? 'Never';
+                $payoutId = '#RE-' . str_pad($owner->id, 4, '0', STR_PAD_LEFT);
+                $categoryText = is_array($owner->cuisine_type) 
+                    ? implode(', ', $owner->cuisine_type) 
+                    : ($owner->cuisine_type ?? 'Multi-Cuisine');
+                $accountCreated = $owner->created_at->format('M d, Y');
+
+                return [
+                    'id' => $owner->id,
+                    'restaurant' => $owner->restaurant_name ?? 'Restaurant',
+                    'category' => $categoryText,
+                    'owner' => trim($owner->name ?? ($owner->first_name . ' ' . $owner->last_name)),
+                    'totalSales' => (int) round($totalRevenue),
+                    'netPayout' => (int) round($netPayout),
+                    'status' => $status,
+                    'lastUpdated' => $lastUpdated,
+                    'logo' => $owner->logo ? asset('storage/' . $owner->logo) : null,
+                    'details' => [
+                        'payoutId' => $payoutId,
+                        'pendingPayout' => round($netPayout, 2),
+                        'commissionRate' => 10.0,
+                        'phone' => $owner->business_contact_number ?? $owner->phone ?? 'N/A',
+                        'accountCreated' => $accountCreated,
+                        'location' => $location,
+                        'branches' => 1,
+                        'grossSales' => (int) round($totalRevenue),
+                        'commission' => round($commission, 2),
+                        'disputes' => round($disputeAmount, 2),
+                        'scheduledDate' => now()->addDays(rand(5, 20))->format('M d, Y'),
+                        'hasUnresolvedDisputes' => $lowRatingCount > 0,
+                        'disputeAmount' => round($disputeAmount, 2),
+                    ],
+                ];
+            });
+
+            // Filter by status if specified
+            if ($statusFilter !== 'All') {
+                $filtered = collect($restaurants->items())->filter(function ($p) use ($statusFilter) {
+                    return $p['status'] === $statusFilter;
+                })->values();
+                $restaurants->setCollection($filtered);
+            }
+
+            return response()->json([
+                'data' => $restaurants->items(),
+                'pagination' => [
+                    'total' => $restaurants->total(),
+                    'per_page' => $restaurants->perPage(),
+                    'current_page' => $restaurants->currentPage(),
+                    'last_page' => $restaurants->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Payments endpoint error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching payments',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function analytics(Request $request)

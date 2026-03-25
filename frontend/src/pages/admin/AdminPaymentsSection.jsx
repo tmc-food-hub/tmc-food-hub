@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     TrendingUp, Percent, Clock, AlertTriangle, Download, ChevronDown, Eye,
     X, CheckCircle2, MoreVertical, Phone, Calendar, MapPin, Store, Tag,
-    DollarSign, Info, Building
+    DollarSign, Info, Building, Loader
 } from 'lucide-react';
 import styles from './AdminPaymentsSection.module.css';
 
@@ -68,13 +68,44 @@ export default function AdminPaymentsSection() {
     const [statusFilter, setStatusFilter] = useState('All');
     const [confirmChecked, setConfirmChecked] = useState(false);
     const [toast, setToast] = useState(null);
+    const [payments, setPayments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchPayments();
+    }, [statusFilter]);
+
+    const fetchPayments = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const token = localStorage.getItem('admin_auth_token');
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const url = `${apiUrl}/admin/payments?per_page=50&status=${statusFilter}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            setPayments(data.data || []);
+        } catch (err) {
+            console.error('Error fetching payments:', err);
+            setError(err.message || 'Failed to load payments');
+            setPayments(MOCK_PAYMENTS);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredPayments = useMemo(() => {
-        let r = MOCK_PAYMENTS;
-        if (statusFilter !== 'All') r = r.filter(x => x.status === statusFilter);
+        let r = payments;
         if (categoryFilter !== 'All') r = r.filter(x => x.category === categoryFilter);
         return r;
-    }, [statusFilter, categoryFilter]);
+    }, [payments, categoryFilter]);
 
     const clearFilters = () => { setCategoryFilter('All'); setLocationFilter('All'); setStatusFilter('All'); };
 
@@ -132,40 +163,54 @@ export default function AdminPaymentsSection() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead><tr><th>Restaurant</th><th>Owner</th><th>Total Sales</th><th>Net Payout</th><th>Payment Status</th><th>Last Updated</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        {filteredPayments.map(p => (
-                            <tr key={p.id} className={styles.tableRow}>
-                                <td>
-                                    <div className={styles.restCell}>
-                                        <div className={styles.restLogo} style={{ background: getLogoColor(p.restaurant) }}>{p.restaurant[0]}</div>
-                                        <div>
-                                            <div className={styles.restName}>{p.restaurant}</div>
-                                            <div className={styles.restCat}>{p.category}</div>
+                {loading && (
+                    <div style={{display:'flex',justifyContent:'center',alignItems:'center',padding:'40px',gap:'10px',color:'#666'}}>
+                        <Loader size={20} className={styles.spinner} /> Loading payments...
+                    </div>
+                )}
+                {error && (
+                    <div style={{padding:'20px',background:'#FEE2E2',border:'1px solid #FECACA',borderRadius:'8px',color:'#991B1B'}}>
+                        ⚠️ {error}
+                    </div>
+                )}
+                {!loading && !error && (
+                    <table className={styles.table}>
+                        <thead><tr><th>Restaurant</th><th>Owner</th><th>Total Sales</th><th>Net Payout</th><th>Payment Status</th><th>Last Updated</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {filteredPayments.length > 0 ? filteredPayments.map(p => (
+                                <tr key={p.id} className={styles.tableRow}>
+                                    <td>
+                                        <div className={styles.restCell}>
+                                            <div className={styles.restLogo} style={{ background: getLogoColor(p.restaurant) }}>{p.restaurant[0]}</div>
+                                            <div>
+                                                <div className={styles.restName}>{p.restaurant}</div>
+                                                <div className={styles.restCat}>{p.category}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={styles.ownerCell}>
-                                        <div className={styles.ownerAvatar} style={{ background: getColor(p.owner) }}>{getInitials(p.owner)}</div>
-                                        <span>{p.owner}</span>
-                                    </div>
-                                </td>
-                                <td className={styles.amount}>{pesoShort(p.totalSales)}</td>
-                                <td className={styles.amount}>{pesoShort(p.netPayout)}</td>
-                                <td><span className={`${styles.statusPill} ${getStatusClass(p.status)}`}>{p.status}</span></td>
-                                <td className={styles.dateCol}>{p.lastUpdated}</td>
-                                <td>
-                                    <div className={styles.actionBtns}>
+                                    </td>
+                                    <td>
+                                        <div className={styles.ownerCell}>
+                                            <div className={styles.ownerAvatar} style={{ background: getColor(p.owner) }}>{getInitials(p.owner)}</div>
+                                            <span>{p.owner}</span>
+                                        </div>
+                                    </td>
+                                    <td className={styles.amount}>{pesoShort(p.totalSales)}</td>
+                                    <td className={styles.amount}>{pesoShort(p.netPayout)}</td>
+                                    <td><span className={`${styles.statusPill} ${getStatusClass(p.status)}`}>{p.status}</span></td>
+                                    <td className={styles.dateCol}>{p.lastUpdated}</td>
+                                    <td>
+                                        <div className={styles.actionBtns}>
                                         <button className={styles.actionIcon} onClick={() => setSelectedPayment(p)}><Eye size={15} /></button>
                                         <button className={styles.actionIcon}><MoreVertical size={15} /></button>
                                     </div>
                                 </td>
                             </tr>
-                        ))}
+                        )) : (
+                            <tr><td colSpan="7" style={{textAlign:'center',padding:'40px',color:'#999'}}>No payments found</td></tr>
+                        )}
                     </tbody>
                 </table>
+                )}
             </div>
 
             {/* ── Payout Details Panel ── */}
