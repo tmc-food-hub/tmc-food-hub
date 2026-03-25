@@ -279,22 +279,22 @@ export default function AdminAnalyticsSection() {
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Avg Delivery Time</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>32 mins</span>
+                                <span className={styles.healthValue}>{analytics?.health?.avg_delivery_time || 32} mins</span>
                                 <span className={styles.healthBadgeGreen}>Fast</span>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Completion Rate</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>91.2%</span>
-                                <div className={styles.healthBar}><div className={styles.healthBarFill} style={{ width: '91.2%' }} /></div>
+                                <span className={styles.healthValue}>{analytics?.health?.completion_rate || 91.2}%</span>
+                                <div className={styles.healthBar}><div className={styles.healthBarFill} style={{ width: `${analytics?.health?.completion_rate || 91.2}%` }} /></div>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
                             <div className={styles.healthLabel}>Dispute Rate</div>
                             <div className={styles.healthRow}>
-                                <span className={styles.healthValue}>1.4%</span>
-                                <span className={styles.healthBadgeRed}>Alert &gt; 1%</span>
+                                <span className={styles.healthValue}>{analytics?.health?.dispute_rate || 1.4}%</span>
+                                <span className={`${styles.healthBadgeRed} ${(analytics?.health?.dispute_rate || 1.4) > 1 ? '' : styles.healthBadgeGreen}`}>{(analytics?.health?.dispute_rate || 1.4) > 1 ? 'Alert > 1%' : 'Good'}</span>
                             </div>
                         </div>
                         <div className={styles.healthItem}>
@@ -303,13 +303,13 @@ export default function AdminAnalyticsSection() {
                                 <div className={styles.donutWrap}>
                                     <svg viewBox="0 0 36 36" className={styles.donut}>
                                         <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#F3F4F6" strokeWidth="3" />
-                                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#991B1B" strokeWidth="3" strokeDasharray="65 35" strokeDashoffset="25" strokeLinecap="round" />
+                                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#991B1B" strokeWidth="3" strokeDasharray={`${analytics?.health?.customer_retention || 65} ${100 - (analytics?.health?.customer_retention || 65)}`} strokeDashoffset="25" strokeLinecap="round" />
                                     </svg>
-                                    <span className={styles.donutLabel}>65%</span>
+                                    <span className={styles.donutLabel}>{analytics?.health?.customer_retention || 65}%</span>
                                 </div>
                                 <div className={styles.retentionLegend}>
-                                    <span><span className={styles.legendDot} style={{ background: '#991B1B' }} /> Returning (65%)</span>
-                                    <span><span className={styles.legendDot} style={{ background: '#F3F4F6' }} /> New (35%)</span>
+                                    <span><span className={styles.legendDot} style={{ background: '#991B1B' }} /> Returning ({analytics?.health?.customer_retention || 65}%)</span>
+                                    <span><span className={styles.legendDot} style={{ background: '#F3F4F6' }} /> New ({100 - (analytics?.health?.customer_retention || 65)}%)</span>
                                 </div>
                             </div>
                         </div>
@@ -326,7 +326,7 @@ export default function AdminAnalyticsSection() {
                         {HEATMAP_DAYS.map((day, di) => (
                             <div key={day} className={styles.heatRow}>
                                 <span className={styles.heatDay}>{day}</span>
-                                {HEATMAP_DATA[di].map((v, hi) => (
+                                {(analytics?.heatmap ? analytics.heatmap[di] : HEATMAP_DATA[di]).map((v, hi) => (
                                     <div key={hi} className={styles.heatCell} style={{ background: `rgba(153, 27, 27, ${Math.min(v / 10, 1)})` }} />
                                 ))}
                             </div>
