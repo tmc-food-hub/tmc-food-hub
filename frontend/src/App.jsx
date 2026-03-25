@@ -1,28 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import Homepage from './pages/customer/Home'
 import Preloader from './components/ui/Preloader';
-import NewsBlogPage from './pages/customer/NewsBlogPage';
-import NewsBlogDetailPage from './pages/customer/NewsBlogDetailPage';
-import CompanyEventsAndAnnouncements from './pages/customer/CompanyEventsAndAnnouncements';
-import SupportPage from './pages/customer/SupportPage';
-import AnnouncementDetail from './components/sections/AnnouncementDetail';
-import FAQPage from './pages/customer/FAQPage';
-import ServicesPage from './pages/customer/ServicesPage';
-import MenuPage from './pages/customer/MenuPage';
-import RestaurantMenuPage from './pages/customer/RestaurantMenuPage';
-import CartPage from './pages/customer/CartPage';
-import CheckoutPage from './pages/customer/CheckoutPage';
-import LoginPage from './pages/customer/LoginPage';
-import SignupPage from './pages/customer/SignupPage';
-import ForgotPasswordPage from './pages/customer/ForgotPasswordPage';
-import OrderTrackingPage from './pages/customer/OrderTrackingPage';
-import MyOrdersPage from './pages/customer/MyOrdersPage';
-import ProfilePage from './pages/customer/ProfilePage';
-import OwnerLoginPage from './pages/owner/OwnerLoginPage';
-import OwnerDashboard from './pages/owner/OwnerDashboard';
-import AdminLoginPage from './pages/admin/AdminLoginPage';
-import AdminDashboard from './pages/admin/AdminDashboard';
+
+// ── Customer Pages (lazy-loaded) ──
+const Homepage = lazy(() => import('./pages/customer/Home'));
+const NewsBlogPage = lazy(() => import('./pages/customer/NewsBlogPage'));
+const NewsBlogDetailPage = lazy(() => import('./pages/customer/NewsBlogDetailPage'));
+const CompanyEventsAndAnnouncements = lazy(() => import('./pages/customer/CompanyEventsAndAnnouncements'));
+const SupportPage = lazy(() => import('./pages/customer/SupportPage'));
+const FAQPage = lazy(() => import('./pages/customer/FAQPage'));
+const ServicesPage = lazy(() => import('./pages/customer/ServicesPage'));
+const MenuPage = lazy(() => import('./pages/customer/MenuPage'));
+const RestaurantMenuPage = lazy(() => import('./pages/customer/RestaurantMenuPage'));
+const CartPage = lazy(() => import('./pages/customer/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/customer/CheckoutPage'));
+const LoginPage = lazy(() => import('./pages/customer/LoginPage'));
+const SignupPage = lazy(() => import('./pages/customer/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/customer/ForgotPasswordPage'));
+const OrderTrackingPage = lazy(() => import('./pages/customer/OrderTrackingPage'));
+const MyOrdersPage = lazy(() => import('./pages/customer/MyOrdersPage'));
+const ProfilePage = lazy(() => import('./pages/customer/ProfilePage'));
+
+// ── Shared Components (lazy-loaded) ──
+const AnnouncementDetail = lazy(() => import('./components/sections/AnnouncementDetail'));
+
+// ── Owner Portal (lazy-loaded) ──
+const OwnerLoginPage = lazy(() => import('./pages/owner/OwnerLoginPage'));
+const OwnerDashboard = lazy(() => import('./pages/owner/OwnerDashboard'));
+
+// ── Admin Portal (lazy-loaded) ──
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 function App() {
   const { pathname } = useLocation();
@@ -42,6 +50,7 @@ function App() {
   return (
     <>
       <Preloader />
+      <Suspense fallback={<Preloader />}>
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/news-and-blogs" element={<NewsBlogPage />} />
@@ -70,6 +79,7 @@ function App() {
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
+      </Suspense>
     </>
   )
 }

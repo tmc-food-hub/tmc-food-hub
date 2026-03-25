@@ -264,6 +264,23 @@ class OwnerAuthController extends Controller
     }
 
     /**
+     * Refresh the current token by revoking it and issuing a new one.
+     */
+    public function refreshToken(Request $request)
+    {
+        $owner = $request->user();
+
+        $owner->currentAccessToken()->delete();
+
+        $newToken = $owner->createToken('owner-auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $owner,
+            'token' => $newToken,
+        ]);
+    }
+
+    /**
      * Revoke the current token (logout).
      */
     public function logout(Request $request)

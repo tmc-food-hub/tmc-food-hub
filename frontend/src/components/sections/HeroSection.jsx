@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 import { Link } from 'react-router-dom';
 
@@ -6,6 +8,8 @@ import { Link } from 'react-router-dom';
  * Main hero banner with headline, description, and call-to-action buttons.
  */
 function HeroSection() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <>
       <style>{`
@@ -61,11 +65,18 @@ function HeroSection() {
                     data-aos="fade-up"
                     data-aos-delay="300"
                   >
-                    <Link className="btn btn-primary px-4 py-2 fw-semibold rounded-3 hero-cta-btn" style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }} to="/menu">
+                    <Link 
+                      to={isAuthenticated ? "/menu" : "/login"} 
+                      className="btn btn-primary px-4 py-2 fw-semibold rounded-3 hero-cta-btn" 
+                      style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }}
+                    >
                       Order Now
                     </Link>
 
-                    <Link className="btn btn-white-outline d-flex align-items-center fw-semibold px-4 py-2 rounded-3 hero-cta-btn" to="/menu">
+                    <Link 
+                      to="/menu" 
+                      className="btn btn-white-outline d-flex align-items-center fw-semibold px-4 py-2 rounded-3 hero-cta-btn"
+                    >
                       <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: 'var(--bs-primary)' }}></i>
                       Explore
                     </Link>

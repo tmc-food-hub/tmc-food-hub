@@ -49,6 +49,27 @@ class AdminController extends Controller
         return response()->json($admin);
     }
 
+    /**
+     * Refresh the current token by revoking it and issuing a new one.
+     */
+    public function refreshToken(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $admin->currentAccessToken()->delete();
+
+        $newToken = $admin->createToken('admin-auth-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $admin,
+            'token' => $newToken,
+        ]);
+    }
+
     public function logout(Request $request)
     {
         $admin = $request->user();
