@@ -16,6 +16,7 @@ import AdminReviewsSection from './AdminReviewsSection';
 import AdminDisputesSection from './AdminDisputesSection';
 import AdminPaymentsSection from './AdminPaymentsSection';
 import AdminAnalyticsSection from './AdminAnalyticsSection';
+import AdminPromotionsSection from './AdminPromotionsSection';
 import AdminSettingsSection from './AdminSettingsSection';
 
 const NAV = [
@@ -138,7 +139,7 @@ export default function AdminDashboard() {
                 <div className={styles.topBar}>
                     <div>
                         <h1 className={styles.title}>
-                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active === 'reviews' ? 'Reviews Moderation' : active === 'disputes' ? 'Disputes' : active === 'payments' ? 'Payments & Payouts' : active === 'analytics' ? 'Analytics' : active === 'settings' ? 'Settings' : active.charAt(0).toUpperCase() + active.slice(1)}
+                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active === 'reviews' ? 'Reviews Moderation' : active === 'disputes' ? 'Disputes' : active === 'payments' ? 'Payments & Payouts' : active === 'analytics' ? 'Analytics' : active === 'promotions' ? 'Promotions' : active === 'settings' ? 'Settings' : active.charAt(0).toUpperCase() + active.slice(1)}
                         </h1>
                         <p className={styles.subtitle}>
                             {active === 'orders'
@@ -155,6 +156,8 @@ export default function AdminDashboard() {
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : active === 'analytics'
                                 ? 'Real-time performance metrics for TMC Foodhub ecosystem.'
+                                : active === 'promotions'
+                                ? 'Create and manage promotional campaigns and discount codes.'
                                 : active === 'settings'
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : `Welcome back, ${admin.first_name || 'Admin'}!`}
@@ -183,6 +186,8 @@ export default function AdminDashboard() {
                     <AdminPaymentsSection />
                 ) : active === 'analytics' ? (
                     <AdminAnalyticsSection />
+                ) : active === 'promotions' ? (
+                    <AdminPromotionsSection />
                 ) : active === 'settings' ? (
                     <AdminSettingsSection />
                 ) : active !== 'dashboard' ? (
