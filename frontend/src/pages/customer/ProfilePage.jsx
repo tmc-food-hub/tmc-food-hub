@@ -7,7 +7,7 @@ import Footer from '../../components/sections/Footer';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
-    const { user, isAuthenticated, loading, logout, updateProfile, changePassword } = useAuth();
+    const { user, isAuthenticated, loading, logout, updateProfile, changePassword, setShowLoginPrompt } = useAuth();
     const { isDarkMode } = useContext(ThemeContext);
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -26,9 +26,10 @@ function ProfilePage() {
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
-            navigate('/login');
+            navigate('/');
+            setShowLoginPrompt(true);
         }
-    }, [isAuthenticated, loading, navigate]);
+    }, [isAuthenticated, loading, navigate, setShowLoginPrompt]);
 
     if (loading || !isAuthenticated) {
         return (

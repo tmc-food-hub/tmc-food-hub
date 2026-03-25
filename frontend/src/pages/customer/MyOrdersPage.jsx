@@ -122,7 +122,7 @@ function OrderCard({ order, navigate, isDarkMode }) {
 }
 
 function MyOrdersPage() {
-    const { isAuthenticated, loading } = useAuth();
+    const { isAuthenticated, loading, setShowLoginPrompt } = useAuth();
     const { activeOrders, completedOrders, cancelledOrders } = useOrders();
     const { reorder } = useContext(CartContext);
     const { isDarkMode } = useContext(ThemeContext);
@@ -137,9 +137,10 @@ function MyOrdersPage() {
     useEffect(() => {
         window.scrollTo(0, 0);
         if (!loading && !isAuthenticated) {
-            navigate('/login');
+            navigate('/');
+            setShowLoginPrompt(true);
         }
-    }, [isAuthenticated, loading, navigate]);
+    }, [isAuthenticated, loading, navigate, setShowLoginPrompt]);
 
     if (loading || !isAuthenticated) return null;
 

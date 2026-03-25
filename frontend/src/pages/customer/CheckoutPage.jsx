@@ -15,7 +15,7 @@ import styles from './CheckoutPage.module.css';
 
 function CheckoutPage() {
     const { cartItems, cartSubtotal, clearCart } = useContext(CartContext);
-    const { user, isAuthenticated, loading } = useAuth();
+    const { user, isAuthenticated, loading, setShowLoginPrompt } = useAuth();
     const { showNotification } = useNotification();
     const { placeOrder } = useOrders();
     const navigate = useNavigate();
@@ -41,7 +41,9 @@ function CheckoutPage() {
         }
         if (!loading) {
             if (!isAuthenticated) {
-                navigate('/login', { state: { from: '/checkout' } });
+                navigate('/');
+                setShowLoginPrompt(true);
+                return;
             } else if (user) {
                 setContactNumber(user.phone || '');
                 setDeliveryAddress(user.address || '');
@@ -50,7 +52,7 @@ function CheckoutPage() {
                 }
             }
         }
-    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user]);
+    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
 
     const deliveryFee = 3.00;
     const discount = 5.00;
