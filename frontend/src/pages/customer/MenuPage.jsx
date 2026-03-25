@@ -27,11 +27,17 @@ function MenuPage() {
     const [activeCuisines, setActiveCuisines] = useState([]);
     const [activeDietary, setActiveDietary] = useState([]);
     const [sortBy, setSortBy] = useState('Relevance');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 9;
 
     useEffect(() => {
         fetchStores();
         window.scrollTo(0, 0);
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, activeCuisines, activeDietary, sortBy]);
 
     const fetchStores = async () => {
         setLoading(true);
@@ -107,6 +113,9 @@ function MenuPage() {
         }
         return 0; // standard order
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedStores = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <>
@@ -227,7 +236,7 @@ function MenuPage() {
 
                                 {/* Restaurant Grid */}
                                 <div className={styles.menuGrid}>
-                                    {filtered.map(store => (
+                                    {paginatedStores.map(store => (
                                         <Link to={`/menu/${store.id}`} className={styles.productCard} key={store.id}>
                                             <div className={styles.cardImageWrapper}>
                                                 <img src={store.cover} alt={store.name} className={styles.cardImage} loading="lazy" />
@@ -256,13 +265,46 @@ function MenuPage() {
                                     ))}
                                 </div>
 
-                                <div className={styles.pagination}>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.pageIconBtn}`}><ChevronLeft size={18} /></Link>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.active}`}>1</Link>
-                                    <Link to="#" className={styles.pageBtn}>2</Link>
-                                    <Link to="#" className={styles.pageBtn}>3</Link>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.pageIconBtn}`}><ChevronRight size={18} /></Link>
-                                </div>
+                                {totalPages > 1 && (
+                                    <div className={styles.pagination}>
+                                        <button 
+                                            className={`${styles.pageBtn} ${styles.pageIconBtn}`} 
+                                            onClick={() => {
+                                                setCurrentPage(p => Math.max(1, p - 1));
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            disabled={currentPage === 1}
+                                            style={currentPage === 1 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                        >
+                                            <ChevronLeft size={18} />
+                                        </button>
+                                        
+                                        {Array.from({ length: totalPages }).map((_, i) => (
+                                            <button 
+                                                key={i} 
+                                                className={`${styles.pageBtn} ${currentPage === i + 1 ? styles.active : ''}`}
+                                                onClick={() => {
+                                                    setCurrentPage(i + 1);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                        
+                                        <button 
+                                            className={`${styles.pageBtn} ${styles.pageIconBtn}`}
+                                            onClick={() => {
+                                                setCurrentPage(p => Math.min(totalPages, p + 1));
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            disabled={currentPage === totalPages}
+                                            style={currentPage === totalPages ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                        >
+                                            <ChevronRight size={18} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                         </div>
