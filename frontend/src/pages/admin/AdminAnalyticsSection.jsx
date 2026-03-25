@@ -242,22 +242,41 @@ export default function AdminAnalyticsSection() {
                 <div className={styles.chartCard}>
                     <div className={styles.chartHeader}>
                         <div><h3 className={styles.chartTitle}>Revenue Growth</h3><span className={styles.chartSub}>Gross vs Net Revenue trend</span></div>
-                        <span className={styles.peakBadge}>Peak: ₱1.2m (Mar 24)</span>
+                        {analytics?.revenue_chart ? (
+                            <span className={styles.peakBadge}>Peak: ₱{Math.max(...analytics.revenue_chart.map(d => d.gross)).toLocaleString()} ({analytics.revenue_chart[analytics.revenue_chart.length - 1]?.label})</span>
+                        ) : (
+                            <span className={styles.peakBadge}>Peak: ₱1.2m (Mar 24)</span>
+                        )}
                     </div>
                     <div className={styles.lineChart}>
                         <div className={styles.lineYAxis}>
-                            {['₱1.4m','₱1.2m','₱1m','₱800k','₱600k','₱400k','₱200k'].map(v => <span key={v}>{v}</span>)}
+                            {(() => {
+                                const maxVal = analytics?.revenue_chart ? Math.max(...analytics.revenue_chart.map(d => d.gross)) : 1400000;
+                                const step = Math.ceil(maxVal / 7);
+                                return Array.from({length: 7}, (_, i) => {
+                                    const val = step * (6 - i);
+                                    return val >= 1000000 ? `₱${(val/1000000).toFixed(1)}m` : val >= 1000 ? `₱${(val/1000).toFixed(0)}k` : `₱${val}`;
+                                }).map(v => <span key={v}>{v}</span>);
+                            })()}
                         </div>
                         <div className={styles.lineArea}>
                             <svg viewBox="0 0 300 200" className={styles.lineSvg} preserveAspectRatio="none">
                                 {/* Grid lines */}
                                 {[0,1,2,3,4,5,6].map(i => <line key={i} x1="0" y1={i*200/6} x2="300" y2={i*200/6} stroke="#F3F4F6" strokeWidth="0.5" />)}
-                                {/* Gross Revenue line */}
-                                <polyline fill="none" stroke="#DC2626" strokeWidth="2.5" points={REVENUE_CHART.map((d,i) => `${i*(300/(REVENUE_CHART.length-1))},${200 - (d.gross/REV_MAX)*200}`).join(' ')} />
-                                {/* Net Revenue line */}
-                                <polyline fill="none" stroke="#FECACA" strokeWidth="2.5" strokeDasharray="6,4" points={REVENUE_CHART.map((d,i) => `${i*(300/(REVENUE_CHART.length-1))},${200 - (d.net/REV_MAX)*200}`).join(' ')} />
-                                {/* Dots for gross */}
-                                {REVENUE_CHART.map((d,i) => <circle key={i} cx={i*(300/(REVENUE_CHART.length-1))} cy={200 - (d.gross/REV_MAX)*200} r="4" fill="#DC2626" />)}
+                                {(() => {
+                                    const chartData = analytics?.revenue_chart || REVENUE_CHART;
+                                    const maxVal = Math.max(...chartData.map(d => d.gross));
+                                    return (
+                                        <>
+                                            {/* Gross Revenue line */}
+                                            <polyline fill="none" stroke="#DC2626" strokeWidth="2.5" points={chartData.map((d,i) => `${i*(300/(chartData.length-1))},${200 - (d.gross/maxVal)*200}`).join(' ')} />
+                                            {/* Net Revenue line */}
+                                            <polyline fill="none" stroke="#FECACA" strokeWidth="2.5" strokeDasharray="6,4" points={chartData.map((d,i) => `${i*(300/(chartData.length-1))},${200 - (d.net/maxVal)*200}`).join(' ')} />
+                                            {/* Dots for gross */}
+                                            {chartData.map((d,i) => <circle key={i} cx={i*(300/(chartData.length-1))} cy={200 - (d.gross/maxVal)*200} r="4" fill="#DC2626" />)}
+                                        </>
+                                    );
+                                })()}
                             </svg>
                             <div className={styles.lineXLabels}>{(analytics?.revenue_chart || REVENUE_CHART).map(d => <span key={d.label}>{d.label}</span>)}</div>
                         </div>
