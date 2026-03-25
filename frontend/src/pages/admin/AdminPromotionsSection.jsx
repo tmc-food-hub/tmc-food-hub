@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Plus, Trash2, Edit2, Eye, EyeOff, TrendingUp, Users, Clock, Loader, AlertCircle, TrendingUpIcon
+    Plus, Trash2, Edit2, Eye, EyeOff, TrendingUp, Users, Clock, Loader, AlertCircle, X, Check
 } from 'lucide-react';
 import styles from './AdminPromotionsSection.module.css';
 
@@ -18,6 +18,20 @@ export default function AdminPromotionsSection() {
     const [editingId, setEditingId] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [dateRange, setDateRange] = useState('Feb 20 - Mar 20, 2026');
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [exportOptions, setExportOptions] = useState({
+        dateRange: 'Last 30 Days',
+        fileFormat: 'csv',
+        columns: {
+            name: true,
+            discountType: true,
+            validDates: true,
+            usage: true,
+            conversion: true,
+            status: true,
+        }
+    });
     const [formData, setFormData] = useState({
         code: '',
         discount: '',
@@ -75,10 +89,21 @@ export default function AdminPromotionsSection() {
         setShowForm(true);
     };
 
-    const totalPromos = promotions.length;
-    const activePromos = promotions.filter(p => p.status === 'Active').length;
-    const totalRedemptions = promotions.reduce((sum, p) => sum + p.usedCount, 0);
-    const avgROI = (promotions.reduce((sum, p) => sum + p.roi, 0) / promotions.length).toFixed(2);
+    const handleExport = () => {
+        setShowSuccessMessage(true);
+        setShowExportModal(false);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+    };
+
+    const toggleColumn = (column) => {
+        setExportOptions({
+            ...exportOptions,
+            columns: {
+                ...exportOptions.columns,
+                [column]: !exportOptions.columns[column]
+            }
+        });
+    };
 
     return (
         <div className={styles.container}>
@@ -153,7 +178,7 @@ export default function AdminPromotionsSection() {
                                 <option>Scheduled</option>
                                 <option>Expired</option>
                             </select>
-                            <button className={styles.exportBtn}>↓ Export</button>
+                            <button className={styles.exportBtn} onClick={() => setShowExportModal(true)}>↓ Export</button>
                             <button className={styles.createBtn} onClick={() => setShowForm(!showForm)}>
                                 <Plus size={16} /> Create Promotion
                             </button>
@@ -308,6 +333,152 @@ export default function AdminPromotionsSection() {
                     </div>
                 </aside>
             </div>
+
+            {/* Export Modal */}
+            {showExportModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowExportModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3 className={styles.modalTitle}>Export Promotions Data</h3>
+                            <button className={styles.modalClose} onClick={() => setShowExportModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <p className={styles.modalSubtitle}>
+                            Download a snapshot of your promotions data including usage metrics and conversion performance.
+                        </p>
+
+                        {/* Date Range */}
+                        <div className={styles.exportGroup}>
+                            <label>Date Range</label>
+                            <select 
+                                className={styles.exportSelect}
+                                value={exportOptions.dateRange}
+                                onChange={(e) => setExportOptions({...exportOptions, dateRange: e.target.value})}
+                            >
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                                <option>Last 90 Days</option>
+                                <option>Last Year</option>
+                            </select>
+                        </div>
+
+                        {/* File Format */}
+                        <div className={styles.exportGroup}>
+                            <label>File Format</label>
+                            <div className={styles.formatOptions}>
+                                <label className={styles.formatOption}>
+                                    <input
+                                        type="radio"
+                                        name="format"
+                                        value="csv"
+                                        checked={exportOptions.fileFormat === 'csv'}
+                                        onChange={(e) => setExportOptions({...exportOptions, fileFormat: e.target.value})}
+                                    />
+                                    <span className={styles.formatLabel}>
+                                        <strong>CSV</strong>
+                                        <span>Spreadsheet data</span>
+                                    </span>
+                                </label>
+                                <label className={styles.formatOption}>
+                                    <input
+                                        type="radio"
+                                        name="format"
+                                        value="pdf"
+                                        checked={exportOptions.fileFormat === 'pdf'}
+                                        onChange={(e) => setExportOptions({...exportOptions, fileFormat: e.target.value})}
+                                    />
+                                    <span className={styles.formatLabel}>
+                                        <strong>PDF</strong>
+                                        <span>Visual report</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Columns Selection */}
+                        <div className={styles.exportGroup}>
+                            <label>Select columns to include</label>
+                            <div className={styles.columnGrid}>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.name}
+                                        onChange={() => toggleColumn('name')}
+                                    />
+                                    Promotion Name
+                                </label>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.discountType}
+                                        onChange={() => toggleColumn('discountType')}
+                                    />
+                                    Discount Type
+                                </label>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.validDates}
+                                        onChange={() => toggleColumn('validDates')}
+                                    />
+                                    Valid Dates
+                                </label>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.usage}
+                                        onChange={() => toggleColumn('usage')}
+                                    />
+                                    Usage
+                                </label>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.conversion}
+                                        onChange={() => toggleColumn('conversion')}
+                                    />
+                                    Conversion
+                                </label>
+                                <label className={styles.columnOption}>
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.columns.status}
+                                        onChange={() => toggleColumn('status')}
+                                    />
+                                    Status
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className={styles.modalActions}>
+                            <button className={styles.modalCancel} onClick={() => setShowExportModal(false)}>
+                                Cancel
+                            </button>
+                            <button className={styles.modalDownload} onClick={handleExport}>
+                                Download Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Message */}
+            {showSuccessMessage && (
+                <div className={styles.successMessage}>
+                    <div className={styles.successContent}>
+                        <Check size={20} />
+                        <div>
+                            <strong>Success</strong>
+                            <p>Your promotions data report has been successfully.</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setShowSuccessMessage(false)}>
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
