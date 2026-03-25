@@ -170,7 +170,7 @@ function CheckoutPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className={styles.changeBtn}>Change</button>
+                                        <button className={styles.changeBtn} onClick={() => navigate('/profile')}>Change</button>
                                     </div>
 
                                     {/* Contact & Delivery Type */}
@@ -183,7 +183,7 @@ function CheckoutPage() {
                                                 placeholder="+63 000 000 0000"
                                                 value={contactNumber}
                                                 onChange={(e) => {
-                                                    setContactNumber(e.target.value);
+                                                    setContactNumber(e.target.value.replace(/\D/g, ''));
                                                     if (error) setError('');
                                                 }}
                                             />
