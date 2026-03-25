@@ -5549,6 +5549,10 @@
         display: flex;
     }
 
+    .collapseBtn {
+        display: none !important;
+    }
+
     .main {
         margin-top: 60px;
         padding-bottom: 2rem;

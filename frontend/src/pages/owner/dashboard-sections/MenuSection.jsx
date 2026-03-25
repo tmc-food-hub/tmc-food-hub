@@ -321,7 +321,7 @@ export default function MenuSection({
                     return (
                         <div key={item.id} className={`${styles.newMenuCard} ${(!item.available || stock === 0) ? styles.newMenuCardDim : ''}`}>
                             <div className={styles.newMenuCardImgWrap}>
-                                <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.newMenuCardImg} />
+                                <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.newMenuCardImg} loading="lazy" decoding="async" />
                                 {item.title.toLowerCase().includes('burger') && <span className={styles.bestSellerBadge}>Best Seller</span>}
                                 <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 5 }}>
                                     <button className={`${styles.rowBtn} ${styles.rowBtnBlue}`} onClick={() => startEdit(item)}><Pencil size={12} /></button>

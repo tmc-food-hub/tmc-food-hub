@@ -717,7 +717,10 @@ function SignupPage() {
                                     placeholder="09XX XXX XXXX"
                                     maxLength={11}
                                     value={formData.contactNumber}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        handleChange({ target: { name: 'contactNumber', value: val } });
+                                    }}
                                     required
                                 />
                                 {errors.contactNumber && <span className={styles.errorText}>{errors.contactNumber[0]}</span>}
@@ -784,7 +787,10 @@ function SignupPage() {
                                     placeholder="09XX XXX XXXX"
                                     maxLength={11}
                                     value={formData.businessContactNumber}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        handleChange({ target: { name: 'businessContactNumber', value: val } });
+                                    }}
                                     required
                                 />
                                 {errors.businessContactNumber && <span className={styles.errorText}>{errors.businessContactNumber[0]}</span>}

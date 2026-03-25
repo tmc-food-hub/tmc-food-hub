@@ -388,7 +388,7 @@ function ProfilePage() {
                                     <input
                                         className={styles.editInput}
                                         value={editForm.phone || ''}
-                                        onChange={e => handleEditChange('phone', e.target.value)}
+                                        onChange={e => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
                                     />
                                     {editErrors.phone && <span className={styles.editError}>{editErrors.phone}</span>}
                                 </div>

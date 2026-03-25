@@ -1,5 +1,7 @@
 
 
+import { Link } from 'react-router-dom';
+
 /**
  * Main hero banner with headline, description, and call-to-action buttons.
  */
@@ -59,14 +61,14 @@ function HeroSection() {
                     data-aos="fade-up"
                     data-aos-delay="300"
                   >
-                    <a className="btn btn-primary px-4 py-2 fw-semibold rounded-3 hero-cta-btn" style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }} href="#">
+                    <Link className="btn btn-primary px-4 py-2 fw-semibold rounded-3 hero-cta-btn" style={{ backgroundColor: 'var(--bs-primary)', borderColor: 'var(--bs-primary)' }} to="/menu">
                       Order Now
-                    </a>
+                    </Link>
 
-                    <a className="btn btn-white-outline d-flex align-items-center fw-semibold px-4 py-2 rounded-3 hero-cta-btn" href="#">
+                    <Link className="btn btn-white-outline d-flex align-items-center fw-semibold px-4 py-2 rounded-3 hero-cta-btn" to="/menu">
                       <i className="bi bi-play-circle-fill me-2 text-danger" style={{ fontSize: '1.5rem', color: 'var(--bs-primary)' }}></i>
                       Explore
-                    </a>
+                    </Link>
                   </div>
 
                 </div>
