@@ -104,4 +104,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/promotions/{id}', [AdminController::class, 'showPromotion']);
     Route::get('/promotions/expiring/soon', [AdminController::class, 'expiringPromotions']);
     Route::post('/promotions/{id}/extend', [AdminController::class, 'extendPromotion']);
+
+    // Performance Overview
+    Route::get('/performance', [AdminController::class, 'performance']);
 });
