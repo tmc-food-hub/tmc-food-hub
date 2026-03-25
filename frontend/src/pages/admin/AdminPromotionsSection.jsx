@@ -15,6 +15,8 @@ export default function AdminPromotionsSection() {
     const [promotions, setPromotions] = useState(MOCK_PROMOTIONS);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
+    const [selectedPromo, setSelectedPromo] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [dateRange, setDateRange] = useState('Feb 20 - Mar 20, 2026');
@@ -32,6 +34,7 @@ export default function AdminPromotionsSection() {
             status: true,
         }
     });
+    const [adminNotes, setAdminNotes] = useState('');
     const [formData, setFormData] = useState({
         code: '',
         discount: '',
@@ -103,6 +106,17 @@ export default function AdminPromotionsSection() {
                 [column]: !exportOptions.columns[column]
             }
         });
+    };
+
+    const handlePromotionClick = (promo) => {
+        setSelectedPromo(promo);
+        setShowDetails(true);
+        setAdminNotes('');
+    };
+
+    const closeDetails = () => {
+        setShowDetails(false);
+        setSelectedPromo(null);
     };
 
     return (
@@ -242,7 +256,7 @@ export default function AdminPromotionsSection() {
                         </thead>
                         <tbody>
                             {promotions.map(promo => (
-                                <tr key={promo.id}>
+                                <tr key={promo.id} className={styles.tableRow} onClick={() => handlePromotionClick(promo)}>
                                     <td>
                                         <div className={styles.promoName}>{promo.name}</div>
                                         <div className={styles.promoCode}>{promo.code}</div>
@@ -261,7 +275,7 @@ export default function AdminPromotionsSection() {
                                             {promo.status}
                                         </span>
                                     </td>
-                                    <td className={styles.actionCell}>
+                                    <td className={styles.actionCell} onClick={(e) => e.stopPropagation()}>
                                         <button className={styles.iconBtn} title="Toggle visibility">
                                             {promo.visible ? <Eye size={16} /> : <EyeOff size={16} />}
                                         </button>
@@ -334,7 +348,185 @@ export default function AdminPromotionsSection() {
                 </aside>
             </div>
 
-            {/* Export Modal */}
+            {/* Promotion Details Sidebar */}
+            {showDetails && selectedPromo && (
+                <div className={styles.detailsOverlay} onClick={closeDetails}>
+                    <div className={styles.detailsPanel} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.detailsHeader}>
+                            <button className={styles.detailsClose} onClick={closeDetails}>
+                                <X size={20} />
+                            </button>
+                            <div className={styles.detailsTitle}>
+                                <h2>{selectedPromo.name}</h2>
+                                <span className={`${styles.detailsBadge} ${styles[selectedPromo.status.toLowerCase()]}`}>
+                                    {selectedPromo.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className={styles.detailsContent}>
+                            {/* General Information */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>General Information</h3>
+                                <div className={styles.infoGrid}>
+                                    <div className={styles.infoItem}>
+                                        <label>Discount Value</label>
+                                        <div className={styles.infoValue}>{selectedPromo.discount}</div>
+                                    </div>
+                                    <div className={styles.infoItem}>
+                                        <label>Promo Code</label>
+                                        <div className={styles.codeBox}>
+                                            <code>{selectedPromo.code}</code>
+                                            <button className={styles.copyBtn} title="Copy code">📋</button>
+                                        </div>
+                                    </div>
+                                    <div className={styles.infoItem} style={{gridColumn: '1 / -1'}}>
+                                        <label>Description</label>
+                                        <div className={styles.infoValue}>50% discount on orders over $120. Exclusive to weekend...</div>
+                                    </div>
+                                    <div className={styles.infoItem}>
+                                        <label>Start Date</label>
+                                        <div className={styles.infoValue}>Mar 12, 2026</div>
+                                    </div>
+                                    <div className={styles.infoItem}>
+                                        <label>End Date</label>
+                                        <div className={styles.infoValue}>Apr 15, 2026</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Performance Metrics */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>Performance Metrics</h3>
+                                <div className={styles.metricsGrid}>
+                                    <div className={styles.metricItem}>
+                                        <label>Redemptions</label>
+                                        <div className={styles.metricValue}>856 <span className={styles.trend}>+15%</span></div>
+                                    </div>
+                                    <div className={styles.metricItem}>
+                                        <label>Unique Customers</label>
+                                        <div className={styles.metricValue}>742</div>
+                                    </div>
+                                    <div className={styles.metricItem}>
+                                        <label>Avg Order Value</label>
+                                        <div className={styles.metricValue}>₱142.25</div>
+                                    </div>
+                                    <div className={styles.metricItem}>
+                                        <label>Conversion Rate</label>
+                                        <div className={styles.metricValue}>68.4%</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Conversion Funnel */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>Conversion Funnel</h3>
+                                <div className={styles.funnelChart}>
+                                    <div className={styles.funnelRow}>
+                                        <div className={styles.funnelLabel}>Impressions</div>
+                                        <div className={styles.funnelBar} style={{width: '100%', background: '#FEF2F2'}}>
+                                            <div className={styles.funnelValue}>12.5k</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.funnelRow}>
+                                        <div className={styles.funnelLabel}>Clicks</div>
+                                        <div className={styles.funnelBar} style={{width: '36%', background: '#FECACA'}}>
+                                            <div className={styles.funnelValue}>4.5k</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.funnelRow}>
+                                        <div className={styles.funnelLabel}>Redemptions</div>
+                                        <div className={styles.funnelBar} style={{width: '7%', background: '#DC2626'}}>
+                                            <div className={styles.funnelValue}>856</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.funnelRow}>
+                                        <div className={styles.funnelLabel}>Cumulative RTR</div>
+                                        <div className={styles.funnelBar} style={{width: '6.8%', background: '#991B1B'}}>
+                                            <div className={styles.funnelValue}>815</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Top Performing Restaurants */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>Performance Metrics</h3>
+                                <div className={styles.restaurantsList}>
+                                    <div className={styles.restaurantItem}>
+                                        <div className={styles.restaurantLogo}>🍕</div>
+                                        <div className={styles.restaurantInfo}>
+                                            <div className={styles.restaurantName}>Petty Shack</div>
+                                            <div className={styles.restaurantSub}>142 orders redeemed</div>
+                                        </div>
+                                        <div className={styles.restaurantRevenue}>+₱2,630</div>
+                                    </div>
+                                    <div className={styles.restaurantItem}>
+                                        <div className={styles.restaurantLogo}>🍔</div>
+                                        <div className={styles.restaurantInfo}>
+                                            <div className={styles.restaurantName}>Burger King</div>
+                                            <div className={styles.restaurantSub}>105 orders redeemed</div>
+                                        </div>
+                                        <div className={styles.restaurantRevenue}>+₱2,160</div>
+                                    </div>
+                                    <div className={styles.restaurantItem}>
+                                        <div className={styles.restaurantLogo}>🍟</div>
+                                        <div className={styles.restaurantInfo}>
+                                            <div className={styles.restaurantName}>Mcdonalds</div>
+                                            <div className={styles.restaurantSub}>94 orders redeemed</div>
+                                        </div>
+                                        <div className={styles.restaurantRevenue}>+₱1,890</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Customer Acquisition */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>Customer Acquisition</h3>
+                                <div className={styles.acquisitionChart}>
+                                    <div className={styles.acqusitionBar}>
+                                        <div className={styles.acqLabel}>New Users (35%)</div>
+                                        <div className={styles.acqBar}>
+                                            <div className={styles.acqFill} style={{width: '35%', background: '#DC2626'}} />
+                                        </div>
+                                    </div>
+                                    <div className={styles.acqusitionBar}>
+                                        <div className={styles.acqLabel}>Returning (86%)</div>
+                                        <div className={styles.acqBar}>
+                                            <div className={styles.acqFill} style={{width: '86%', background: '#10B981'}} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Admin Notes */}
+                            <section className={styles.detailsSection}>
+                                <h3 className={styles.sectionTitle}>Admin Notes</h3>
+                                <textarea 
+                                    className={styles.notesInput}
+                                    placeholder="Add a note..."
+                                    value={adminNotes}
+                                    onChange={(e) => setAdminNotes(e.target.value)}
+                                />
+                            </section>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className={styles.detailsActions}>
+                            <button className={styles.editPromoBg}>✎ Edit Promotion</button>
+                            <div className={styles.actionButtonsRow}>
+                                <button className={styles.actionBtnSecondary}>⏸ Pause</button>
+                                <button className={styles.actionBtnSecondary}>⎘ Duplicate</button>
+                            </div>
+                            <div className={styles.actionButtonsRow}>
+                                <button className={styles.actionBtnSecondary}>⏭ End Early</button>
+                                <button className={styles.actionBtnDanger}>🗑 Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showExportModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowExportModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
