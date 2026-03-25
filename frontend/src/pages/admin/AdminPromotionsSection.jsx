@@ -25,6 +25,11 @@ export default function AdminPromotionsSection() {
     const [showExportModal, setShowExportModal] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [expiringPromotions, setExpiringPromotions] = useState([]);
+    const [showExtendModal, setShowExtendModal] = useState(false);
+    const [extendingPromoId, setExtendingPromoId] = useState(null);
+    const [extendDays, setExtendDays] = useState(7);
+    const [extendingLoading, setExtendingLoading] = useState(false);
     const [exportOptions, setExportOptions] = useState({
         dateRange: 'Last 30 Days',
         fileFormat: 'csv',
@@ -56,6 +61,7 @@ export default function AdminPromotionsSection() {
     // Fetch promotions on component mount
     useEffect(() => {
         fetchPromotions();
+        fetchExpiringPromotions();
     }, []);
 
     const fetchPromotions = async () => {
@@ -70,6 +76,47 @@ export default function AdminPromotionsSection() {
             setPromotions([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchExpiringPromotions = async () => {
+        try {
+            const response = await api.get('/admin/promotions/expiring/soon');
+            setExpiringPromotions(response.data.data || []);
+        } catch (err) {
+            console.error('Error fetching expiring promotions:', err);
+        }
+    };
+
+    const handleExtendPromotion = async () => {
+        if (!extendingPromoId || !extendDays) {
+            alert('Please select a promotion and enter days to extend');
+            return;
+        }
+
+        try {
+            setExtendingLoading(true);
+            const newEndDate = new Date();
+            newEndDate.setDate(newEndDate.getDate() + parseInt(extendDays));
+            
+            await api.post(`/admin/promotions/${extendingPromoId}/extend`, {
+                extend_by_days: parseInt(extendDays),
+                new_end_date: newEndDate.toISOString().split('T')[0],
+            });
+
+            showSuccess('Promotion extended successfully!');
+            setShowExtendModal(false);
+            setExtendingPromoId(null);
+            setExtendDays(7);
+            
+            // Refresh both promotions and expiring list
+            await fetchPromotions();
+            await fetchExpiringPromotions();
+        } catch (err) {
+            console.error('Error extending promotion:', err);
+            alert(err.response?.data?.message || 'Failed to extend promotion');
+        } finally {
+            setExtendingLoading(false);
         }
     };
 
@@ -236,13 +283,21 @@ export default function AdminPromotionsSection() {
             </div>
 
             {/* Alert Banner */}
-            <div className={styles.alertBanner}>
-                <AlertCircle size={18} />
-                <div className={styles.alertText}>
-                    <strong>2 Active promotions are expiring in less than 48 hours.</strong> Review extension options.
+            {expiringPromotions.length > 0 && (
+                <div className={styles.alertBanner}>
+                    <AlertCircle size={18} />
+                    <div className={styles.alertText}>
+                        <strong>{expiringPromotions.length} Active {expiringPromotions.length === 1 ? 'promotion is' : 'promotions are'} expiring in less than 48 hours.</strong> Review extension options.
+                    </div>
+                    <button 
+                        onClick={() => setShowExtendModal(true)}
+                        className={styles.actionLink}
+                        style={{cursor: 'pointer', background: 'none', border: 'none', color: 'inherit', textDecoration: 'underline'}}
+                    >
+                        Action Required
+                    </button>
                 </div>
-                <a href="#" className={styles.actionLink}>Action Required</a>
-            </div>
+            )}
 
             {/* Main Content */}
             <div className={styles.mainLayout}>
@@ -906,6 +961,92 @@ export default function AdminPromotionsSection() {
                     <button onClick={() => setShowSuccessMessage(false)}>
                         <X size={16} />
                     </button>
+                </div>
+            )}
+
+            {/* Extend Promotion Modal */}
+            {showExtendModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowExtendModal(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Extend Promotion</h2>
+                            <button className={styles.modalClose} onClick={() => setShowExtendModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <div className={styles.extendPromotionsList}>
+                                <h3>Promotions Expiring Soon</h3>
+                                {expiringPromotions.length > 0 ? (
+                                    <div className={styles.expiringList}>
+                                        {expiringPromotions.map(promo => (
+                                            <div 
+                                                key={promo.id} 
+                                                className={`${styles.expiringItem} ${extendingPromoId === promo.id ? styles.selected : ''}`}
+                                                onClick={() => setExtendingPromoId(promo.id)}
+                                            >
+                                                <div className={styles.expiringItemInfo}>
+                                                    <h4>{promo.name}</h4>
+                                                    <p className={styles.expiringCode}>{promo.code}</p>
+                                                    <p className={styles.timeLeft}>
+                                                        {promo.hours_left} hours {promo.minutes_left} minutes left
+                                                    </p>
+                                                </div>
+                                                <div className={styles.expiringItemDate}>
+                                                    <Clock size={16} />
+                                                    <span>{new Date(promo.end_date).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className={styles.noExpiring}>No promotions expiring soon</p>
+                                )}
+                            </div>
+
+                            {extendingPromoId && (
+                                <div className={styles.extendOptions}>
+                                    <h3>Extend By</h3>
+                                    <div className={styles.daysSelector}>
+                                        {[7, 14, 30, 60].map(days => (
+                                            <button
+                                                key={days}
+                                                className={`${styles.daysOption} ${extendDays === days ? styles.active : ''}`}
+                                                onClick={() => setExtendDays(days)}
+                                            >
+                                                {days} days
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className={styles.customDays}>
+                                        <label>Or enter custom days:</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="365"
+                                            value={extendDays}
+                                            onChange={(e) => setExtendDays(parseInt(e.target.value) || 7)}
+                                            placeholder="Number of days"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={styles.modalFooter}>
+                            <button className={styles.modalCancel} onClick={() => setShowExtendModal(false)}>
+                                Cancel
+                            </button>
+                            <button 
+                                className={styles.modalSave}
+                                onClick={handleExtendPromotion}
+                                disabled={!extendingPromoId || extendingLoading}
+                            >
+                                {extendingLoading ? <Loader size={16} className={styles.spinner} /> : 'Extend Promotion'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

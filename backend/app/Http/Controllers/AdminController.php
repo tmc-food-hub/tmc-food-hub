@@ -1227,4 +1227,87 @@ class AdminController extends Controller
             return response()->json(['message' => 'Error fetching promotion'], 500);
         }
     }
+
+    public function expiringPromotions(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $now = now();
+            $fortyEightHoursFromNow = $now->copy()->addHours(48);
+
+            $promotions = Promotion::where('status', 'active')
+                ->whereBetween('end_date', [$now, $fortyEightHoursFromNow])
+                ->orderBy('end_date', 'asc')
+                ->get();
+
+            $promotionsWithTimeLeft = $promotions->map(function ($promo) use ($now) {
+                $hoursLeft = $promo->end_date->diffInHours($now);
+                $minutesLeft = $promo->end_date->diffInMinutes($now) % 60;
+                
+                return [
+                    'id' => $promo->id,
+                    'name' => $promo->name,
+                    'code' => $promo->code,
+                    'discount_type' => $promo->discount_type,
+                    'discount_value' => $promo->discount_value,
+                    'end_date' => $promo->end_date,
+                    'hours_left' => $hoursLeft,
+                    'minutes_left' => $minutesLeft,
+                    'status' => $promo->status,
+                ];
+            });
+
+            return response()->json([
+                'data' => $promotionsWithTimeLeft,
+                'count' => count($promotionsWithTimeLeft),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching expiring promotions: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching expiring promotions'], 500);
+        }
+    }
+
+    public function extendPromotion(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $promotion = Promotion::find($id);
+
+            if (!$promotion) {
+                return response()->json(['message' => 'Promotion not found'], 404);
+            }
+
+            $validated = $request->validate([
+                'extend_by_days' => 'required|integer|min:1|max:365',
+                'new_end_date' => 'required|date|after:now',
+            ]);
+
+            $newEndDate = now()->parse($validated['new_end_date']);
+
+            $promotion->update([
+                'end_date' => $newEndDate,
+                'status' => 'active',
+            ]);
+
+            return response()->json([
+                'message' => 'Promotion extended successfully',
+                'data' => $promotion,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error extending promotion: ' . $e->getMessage());
+            return response()->json(['message' => 'Error extending promotion'], 500);
+        }
+    }
 }

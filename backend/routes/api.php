@@ -102,4 +102,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/promotions/{id}', [AdminController::class, 'updatePromotion']);
     Route::delete('/promotions/{id}', [AdminController::class, 'deletePromotion']);
     Route::get('/promotions/{id}', [AdminController::class, 'showPromotion']);
+    Route::get('/promotions/expiring/soon', [AdminController::class, 'expiringPromotions']);
+    Route::post('/promotions/{id}/extend', [AdminController::class, 'extendPromotion']);
 });

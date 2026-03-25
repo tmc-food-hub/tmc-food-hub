@@ -1382,6 +1382,217 @@
     gap: 12px;
 }
 
+/* Extend Promotion Modal */
+.extendPromotionsList {
+    padding: 0 24px;
+    margin-top: 16px;
+}
+
+.extendPromotionsList h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 12px 0;
+}
+
+.expiringList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.expiringItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background: #FAFAFA;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.expiringItem:hover {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+}
+
+.expiringItem.selected {
+    background: #FEF2F2;
+    border-color: #DC2626;
+}
+
+.expiringItemInfo {
+    flex: 1;
+}
+
+.expiringItemInfo h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 2px 0;
+}
+
+.expiringCode {
+    font-size: 11px;
+    color: #6B7280;
+    margin: 0 0 4px 0;
+    font-family: 'Courier New', monospace;
+}
+
+.timeLeft {
+    font-size: 12px;
+    font-weight: 600;
+    color: #EF4444;
+    margin: 0;
+}
+
+.expiringItemDate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6B7280;
+    white-space: nowrap;
+}
+
+.extendOptions {
+    padding: 0 24px;
+    margin-top: 24px;
+}
+
+.extendOptions h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 12px 0;
+}
+
+.daysSelector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.daysOption {
+    padding: 10px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.daysOption:hover {
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+.daysOption.active {
+    background: #FEF2F2;
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+.customDays {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.customDays label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.customDays input {
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.customDays input:focus {
+    outline: none;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid #E5E7EB;
+    background: #F9FAFB;
+}
+
+.modalCancel {
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modalCancel:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+.modalSave {
+    padding: 10px 20px;
+    background: #DC2626;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modalSave:hover:not(:disabled) {
+    background: #B91C1C;
+}
+
+.modalSave:disabled {
+    background: #D1D5DB;
+    cursor: not-allowed;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.noExpiring {
+    padding: 20px;
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 13px;
+}
+
 .funnelRow {
     display: flex;
     align-items: center;
