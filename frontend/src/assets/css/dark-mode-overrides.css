@@ -848,4 +848,218 @@
     background-color: #991B1B !important;
     border-color: #991B1B !important;
     color: #F3F4F6 !important;
+}
+
+/* ---------- RESTAURANT MENU PAGE OVERRIDES ---------- */
+
+/* Page Wrapper */
+.dark-mode [class*="restaurantMenuPage_pageWrapper"] {
+    background-color: #0d1117 !important;
+}
+
+/* Breadcrumbs */
+.dark-mode [class*="restaurantMenuPage_breadcrumbs"] a {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_breadcrumbs"] .current {
+    color: #F87171 !important;
+}
+
+/* Header Info */
+.dark-mode [class*="restaurantMenuPage_restaurantName"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_restaurantCategory"],
+.dark-mode [class*="restaurantMenuPage_restaurantMeta"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_restaurantLogo"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_statusBadgeClosedSmall"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_statusBadgeOpenSmall"] {
+    color: #F87171 !important;
+}
+
+/* Menu Navigation Tabs & Search */
+.dark-mode [class*="restaurantMenuPage_tab"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_tab"]:hover {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_tabActive"] {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_tabActive"]::after {
+    background-color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuNav"] {
+    border-color: #30363d !important;
+}
+
+.dark-mode [class*="restaurantMenuPage_menuSearch"] input {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuSearch"] input:focus {
+    border-color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuSearchIcon"] {
+    color: #6B7280 !important;
+}
+
+/* Sidebar Sidebar Filters */
+.dark-mode [class*="restaurantMenuPage_sidebar"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_filterGroupTitle"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_radioLabel"] {
+    color: #D1D5DB !important;
+}
+.dark-mode [class*="restaurantMenuPage_showMoreBtn"] {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_clearFiltersBtn"] {
+    background-color: rgba(248, 113, 113, 0.15) !important;
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_clearFiltersBtn"]:hover {
+    background-color: rgba(248, 113, 113, 0.25) !important;
+}
+
+/* Menu Grid */
+.dark-mode [class*="restaurantMenuPage_menuSectionTitle"] {
+    color: #F3F4F6 !important;
+}
+
+/* Product Cards */
+.dark-mode [class*="restaurantMenuPage_menuCard"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardImgWrap"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardTitle"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardPrice"] {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardDesc"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardRating"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_menuCardRating"] span {
+    color: #9CA3AF !important;
+}
+
+/* Similar Restaurants Card */
+.dark-mode [class*="restaurantMenuPage_cardImageWrapper"] {
+    background-color: #161b22 !important;
+    border-color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_cardTitle"] {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_price"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_cardDesc"] {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_cardLocation"] {
+    color: #D1D5DB !important;
+}
+
+/* Pagination */
+.dark-mode [class*="restaurantMenuPage_pageBtn"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_pageBtn"]:hover:not([class*="active"]) {
+    background-color: #1F2937 !important;
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_pageBtn"][class*="active"] {
+    background-color: #991B1B !important;
+    color: white !important;
+    border-color: #991B1B !important;
+}
+.dark-mode [class*="restaurantMenuPage_pageIconBtn"] {
+    color: #F87171 !important;
+}
+
+/* Reviews Section */
+.dark-mode [class*="restaurantMenuPage_sectionTitle"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewsSubtitle"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewsSubtitle"] strong {
+    color: #F87171 !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewSummaryCard"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewScoreBig"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewBarBg"] {
+    background-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewBarRow"] {
+    color: #D1D5DB !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewBasedOn"],
+.dark-mode [class*="restaurantMenuPage_reviewBarCount"] {
+    color: #9CA3AF !important;
+}
+
+/* Filter Buttons */
+.dark-mode [class*="restaurantMenuPage_reviewFilterBtn"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    color: #D1D5DB !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewFilterBtn"]:hover {
+    background-color: #1F2937 !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewFilterBtnActive"] {
+    background-color: #991B1B !important;
+    color: white !important;
+    border-color: #991B1B !important;
+}
+
+/* Review Cards */
+.dark-mode [class*="restaurantMenuPage_reviewCardItem"] {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewerName"] {
+    color: #F3F4F6 !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewDate"] {
+    color: #9CA3AF !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewText"] {
+    color: #D1D5DB !important;
+}
+.dark-mode [class*="restaurantMenuPage_reviewerAvatar"] {
+    background-color: rgba(248, 113, 113, 0.1) !important;
+    color: #F87171 !important;
 }

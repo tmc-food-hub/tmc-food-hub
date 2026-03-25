@@ -16,13 +16,13 @@
 }
 
 .darkTheme {
-    --bg-color: #000000;
+    --bg-color: #0d1117;
     --text-primary: #F3F4F6;
     --text-secondary: #9CA3AF;
     --border-color: #1F2937;
-    --input-bg: #FFFFFF;
-    --input-border: #E5E7EB;
-    --input-text: #111827;
+    --input-bg: #161b22;
+    --input-border: #30363d;
+    --input-text: #F3F4F6;
     --btn-social-bg: #111827;
     --btn-social-border: #374151;
     --btn-social-text: #E5E7EB;
