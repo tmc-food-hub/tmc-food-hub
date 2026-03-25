@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight, PenLine, ThumbsUp, X, UploadCloud, CheckCircle2, ShoppingCart } from 'lucide-react';
 import Navbar from '../../components/sections/Navbar';
@@ -34,7 +34,7 @@ function RestaurantMenuPage() {
     const [allStores, setAllStores] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('Popular');
+    const [activeTab, setActiveTab] = useState('All');
     const [activeCategory, setActiveCategory] = useState('All');
     const [activeDietary, setActiveDietary] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -111,14 +111,36 @@ function RestaurantMenuPage() {
 
     // Extract categories
     const allCategories = ['All', ...new Set(menuItems.map(i => i.categoryName))];
-    const tabs = ['Popular', 'Group Meals', 'Drinks', 'Desserts'];
+    const tabs = ['All', 'Popular', 'Group Meals', 'Drinks', 'Desserts'];
 
     // Filter menu items
     const filteredItems = menuItems.filter(item => {
         const matchCat = activeCategory === 'All' || item.categoryName === activeCategory;
         const matchSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchCat && matchSearch;
+            
+        let matchTab = true;
+        if (activeTab === 'Popular') {
+            matchTab = item.isBestSeller || (item.categoryName && item.categoryName.toLowerCase().includes('popular'));
+        } else if (activeTab === 'Group Meals') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('group') || 
+                       item.categoryName.toLowerCase().includes('bucket') || 
+                       item.categoryName.toLowerCase().includes('family') ||
+                       item.categoryName.toLowerCase().includes('platter'));
+        } else if (activeTab === 'Drinks') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('drink') || 
+                       item.categoryName.toLowerCase().includes('beverage'));
+        } else if (activeTab === 'Desserts') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('dessert') || 
+                       item.categoryName.toLowerCase().includes('sweet') ||
+                       item.categoryName.toLowerCase().includes('ice cream'));
+        } else if (activeTab === 'All') {
+            matchTab = true;
+        }
+
+        let matchDiet = activeDietary === 'All' || item.dietary === activeDietary;
+
+        return matchCat && matchSearch && matchTab && matchDiet;
     });
 
     const handleAddToCartClick = (item) => {
@@ -161,7 +183,7 @@ function RestaurantMenuPage() {
                                 <h1 className={styles.restaurantName}>{store.name}</h1>
                                 <div className={styles.restaurantMeta}>
                                     <span className={store.status === 'Operational' ? styles.statusBadgeOpen : styles.statusBadgeClosed}>
-                                        ? {store.status}
+                                        • {store.status}
                                     </span>
                                     <span><MapPin size={14} className="me-1" /> 2.5 km radius</span>
                                     <span><Clock size={14} className="me-1" /> {store.deliveryTime} delivery</span>
@@ -356,4 +378,3 @@ function RestaurantMenuPage() {
 }
 
 export default RestaurantMenuPage;
-
