@@ -738,72 +738,122 @@ class AdminController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $totalOrders = Order::count();
-        $totalRevenue = Order::sum('total');
-        $totalCustomers = User::where('role', 'customer')->count();
-        $activeRestaurants = RestaurantOwner::where('operating_status', 'open')->count();
-        $completedOrders = Order::where('status', 'Completed')->count();
-        $cancelledOrders = Order::where('status', 'Cancelled')->count();
+        try {
+            $totalOrders = Order::count();
+            $totalRevenue = (float) Order::sum('total');
+            $totalCustomers = User::where('role', 'customer')->count();
+            $activeRestaurants = RestaurantOwner::where('operating_status', 'open')->count();
+            $completedOrders = Order::where('status', 'Completed')->count();
+            $cancelledOrders = Order::where('status', 'Cancelled')->count();
 
-        // Weekly orders data
-        $ordersChartData = collect(range(6, 0))->map(function ($daysAgo) {
-            $date = now()->subDays($daysAgo)->startOfDay();
-            $completed = Order::where('status', 'Completed')->whereDate('created_at', $date)->count();
-            $cancelled = Order::where('status', 'Cancelled')->whereDate('created_at', $date)->count();
+            $avgOrderValue = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
+            $disputeRate = $totalOrders > 0 ? round(($cancelledOrders / $totalOrders) * 100, 1) : 0;
 
-            return [
-                'day' => $date->format('D'),
-                'completed' => $completed,
-                'cancelled' => $cancelled,
-            ];
-        })->values();
-
-        // Weekly revenue data
-        $revenueChartData = collect(range(3, 0))->map(function ($weeksAgo) {
-            $startDate = now()->subWeeks($weeksAgo)->startOfWeek();
-            $endDate = $startDate->copy()->endOfWeek();
-            $gross = Order::whereBetween('created_at', [$startDate, $endDate])->sum('total');
-            $net = $gross * 0.9; // 90% after 10% commission
-
-            return [
-                'label' => $startDate->format('M j') . '-' . $endDate->format('j'),
-                'gross' => round($gross, 2),
-                'net' => round($net, 2),
-            ];
-        })->values();
-
-        // Top restaurants
-        $topRestaurants = RestaurantOwner::get()
-            ->map(function ($owner) {
-                $orders = Order::where('restaurant_owner_id', $owner->id)->count();
-                $rating = Review::where('restaurant_owner_id', $owner->id)->avg('rating') ?? 0;
-                $revenue = Order::where('restaurant_owner_id', $owner->id)->sum('total');
-                $commission = $revenue * 0.10;
+            // Weekly orders data
+            $ordersChartData = collect(range(6, 0))->map(function ($daysAgo) {
+                $date = now()->subDays($daysAgo)->startOfDay();
+                $completed = Order::where('status', 'Completed')->whereDate('created_at', $date)->count();
+                $cancelled = Order::where('status', 'Cancelled')->whereDate('created_at', $date)->count();
 
                 return [
-                    'name' => $owner->restaurant_name,
-                    'orders' => $orders,
-                    'rating' => round($rating, 1),
-                    'commission' => round($commission, 2),
-                    'status' => 'Active',
+                    'day' => $date->format('D'),
+                    'completed' => $completed,
+                    'cancelled' => $cancelled,
                 ];
-            })
-            ->sortByDesc('orders')
-            ->take(5)
-            ->values();
+            })->values();
 
-        return response()->json([
-            'stats' => [
-                'total_orders' => $totalOrders,
-                'total_revenue' => round($totalRevenue, 2),
-                'active_customers' => $totalCustomers,
-                'active_restaurants' => $activeRestaurants,
-                'avg_order_value' => $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0,
-            ],
-            'orders_chart' => $ordersChartData,
-            'revenue_chart' => $revenueChartData,
-            'top_restaurants' => $topRestaurants,
-        ]);
+            // Weekly revenue data
+            $revenueChartData = collect(range(3, 0))->map(function ($weeksAgo) {
+                $startDate = now()->subWeeks($weeksAgo)->startOfWeek();
+                $endDate = $startDate->copy()->endOfWeek();
+                $gross = (float) Order::whereBetween('created_at', [$startDate, $endDate])->sum('total');
+                $net = $gross * 0.9; // 90% after 10% commission
+
+                return [
+                    'label' => $startDate->format('M j') . '-' . $endDate->format('j'),
+                    'gross' => round($gross, 2),
+                    'net' => round($net, 2),
+                ];
+            })->values();
+
+            // Top restaurants with enhanced data
+            $topRestaurants = RestaurantOwner::with('orders', 'reviews')
+                ->get()
+                ->map(function ($owner) {
+                    $orders = $owner->orders ?? collect();
+                    $reviews = $owner->reviews ?? collect();
+                    $orderCount = $orders->count();
+                    $rating = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
+                    $revenue = (float) $orders->sum('total');
+                    $commission = $revenue * 0.10;
+
+                    // Determine status
+                    $status = 'Stable';
+                    if ($orderCount > 100) $status = 'Top Performer';
+                    elseif ($orderCount > 50) $status = 'High Demand';
+                    elseif ($orderCount > 20) $status = 'Rising';
+
+                    return [
+                        'name' => $owner->restaurant_name ?? 'Restaurant',
+                        'orders' => $orderCount,
+                        'rating' => $rating,
+                        'commission' => round($commission, 2),
+                        'status' => $status,
+                        'revenue' => round($revenue, 2),
+                    ];
+                })
+                ->sortByDesc('orders')
+                ->take(4)
+                ->values();
+
+            // City distribution
+            $cityData = collect();
+            $orders = Order::with('restaurantOwner')->get();
+            $totalActive = $orders->count();
+
+            if ($totalActive > 0) {
+                $cityStats = $orders->groupBy(function ($order) {
+                    $address = $order->restaurantOwner?->business_address ?? 'Unknown';
+                    $parts = explode(',', $address);
+                    return trim(array_pop($parts) ?? 'Unknown');
+                })->map(function ($group) use ($totalActive) {
+                    return [
+                        'count' => $group->count(),
+                        'percentage' => round(($group->count() / $totalActive) * 100, 1),
+                    ];
+                })->sortByDesc('count')->take(5);
+
+                $cityData = $cityStats->map(function ($stats, $city) {
+                    return [
+                        'city' => $city,
+                        'pct' => $stats['percentage'],
+                    ];
+                })->values();
+            }
+
+            return response()->json([
+                'stats' => [
+                    'total_orders' => $totalOrders,
+                    'total_revenue' => round($totalRevenue, 2),
+                    'active_customers' => $totalCustomers,
+                    'active_restaurants' => $activeRestaurants,
+                    'avg_order_value' => $avgOrderValue,
+                    'completion_rate' => $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 1) : 0,
+                    'dispute_rate' => $disputeRate,
+                    'cancelled_orders' => $cancelledOrders,
+                ],
+                'orders_chart' => $ordersChartData,
+                'revenue_chart' => $revenueChartData,
+                'top_restaurants' => $topRestaurants,
+                'city_distribution' => $cityData,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Analytics endpoint error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching analytics',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function disputes(Request $request)
