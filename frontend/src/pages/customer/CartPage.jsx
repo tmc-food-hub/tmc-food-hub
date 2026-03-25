@@ -10,7 +10,7 @@ import styles from './CartPage.module.css';
 
 function CartPage() {
     const { cartItems, cartCount, cartSubtotal, increment, decrement, removeFromCart } = useContext(CartContext);
-    const { isAuthenticated, loading } = useAuth();
+    const { isAuthenticated, loading, setShowLoginPrompt } = useAuth();
     const navigate = useNavigate();
     const [promoCode, setPromoCode] = useState('');
     const [appliedPromo, setAppliedPromo] = useState(null);
@@ -18,9 +18,10 @@ function CartPage() {
     useEffect(() => {
         window.scrollTo(0, 0);
         if (!loading && !isAuthenticated) {
-            navigate('/login', { state: { from: '/cart' } });
+            navigate('/');
+            setShowLoginPrompt(true);
         }
-    }, [isAuthenticated, loading, navigate]);
+    }, [isAuthenticated, loading, navigate, setShowLoginPrompt]);
 
     if (loading || !isAuthenticated) return null;
 

@@ -1,3 +1,6 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UserPlus, X } from 'lucide-react';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../api/axios';
 
@@ -18,6 +21,8 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(getStoredCustomer);
     const [token, setToken] = useState(localStorage.getItem('auth_token'));
     const [loading, setLoading] = useState(true);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const navigate = useNavigate();
 
     // On mount, if we have a stored token, validate it by fetching the user
     useEffect(() => {
@@ -163,6 +168,8 @@ export function AuthProvider({ children }) {
         token,
         loading,
         isAuthenticated: !!user,
+        showLoginPrompt,
+        setShowLoginPrompt,
         login,
         register,
         sendOtp,
@@ -185,6 +192,56 @@ export function AuthProvider({ children }) {
     return (
         <AuthContext.Provider value={value}>
             {children}
+            
+            {/* Global Login Required Modal (Modern Design) */}
+            {showLoginPrompt && (
+                <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1060, backdropFilter: 'blur(4px)' }} tabIndex="-1" role="dialog">
+                    <div className="modal-dialog modal-dialog-centered" role="document" style={{ maxWidth: '400px' }}>
+                        <div className="modal-content text-center p-4" style={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowLoginPrompt(false)}
+                                style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: '#6B7280', padding: '8px', cursor: 'pointer', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background-color 0.2s' }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                                <X size={20} />
+                            </button>
+
+                            <div style={{ width: '64px', height: '64px', backgroundColor: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: '#DC2626' }}>
+                                <UserPlus size={32} />
+                            </div>
+
+                            <h4 className="fw-bold mb-2" style={{ color: '#111827', fontSize: '1.25rem' }}>Login to Continue</h4>
+                            <p style={{ color: '#6B7280', fontSize: '0.95rem', marginBottom: '1.75rem', padding: '0 10px' }}>
+                                Create an account or log in to track your orders and checkout deliciously.
+                            </p>
+
+                            <div className="d-flex flex-column gap-2">
+                                <button
+                                    className="btn w-100 fw-bold d-flex align-items-center justify-content-center border-0"
+                                    onClick={() => { setShowLoginPrompt(false); navigate('/login'); }}
+                                    style={{ backgroundColor: '#991B1B', color: 'white', padding: '0.8rem', borderRadius: '12px', fontSize: '1rem', transition: 'transform 0.1s' }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    Log In
+                                </button>
+                                <button
+                                    className="btn w-100 fw-bold d-flex align-items-center justify-content-center"
+                                    onClick={() => { setShowLoginPrompt(false); navigate('/signup'); }}
+                                    style={{ backgroundColor: 'transparent', color: '#111827', padding: '0.8rem', borderRadius: '12px', fontSize: '1rem', border: '1px solid #D1D5DB', transition: 'background-color 0.2s' }}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#F9FAFB'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    Create Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthContext.Provider>
     );
 }
