@@ -883,6 +883,287 @@
     flex-shrink: 0;
 }
 
+/* Form Modal */
+.formModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.formModalOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.formModalContent {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.formModalHeader {
+    padding: 24px;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.formModalHeader h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0;
+}
+
+.formModalClose {
+    background: none;
+    border: none;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.formModalClose:hover {
+    color: #1F2937;
+}
+
+/* Form Sections */
+.formSection {
+    padding: 20px 24px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.formSection:last-of-type {
+    border-bottom: none;
+}
+
+.formSection h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1F2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 16px 0;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.formGroup label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.formGroup input,
+.formGroup select {
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+    outline: none;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Currency Input */
+.currencyInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.currencyInput span {
+    padding: 10px 12px;
+    background: #F9FAFB;
+    color: #6B7280;
+    font-weight: 600;
+    border-right: 1px solid #D1D5DB;
+}
+
+.currencyInput input {
+    flex: 1;
+    border: none;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+.currencyInput input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Radio Group */
+.radioGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.radioOption {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radioOption input[type="radio"] {
+    cursor: pointer;
+    accent-color: #DC2626;
+    margin: 0;
+}
+
+.radioOption:has(input[type="radio"]:checked) {
+    background: #FEF2F2;
+    border-color: #DC2626;
+}
+
+.radioOption span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Search Input */
+.searchInput {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Tags */
+.tagList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #FEF2F2;
+    border: 1px solid #DC2626;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #DC2626;
+    font-weight: 600;
+}
+
+.tag button {
+    background: none;
+    border: none;
+    color: #DC2626;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.tag button:hover {
+    opacity: 0.7;
+}
+
+/* Form Actions */
+.formActions {
+    padding: 20px 24px;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.formCancelBtn {
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.formCancelBtn:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+.formSaveBtn {
+    padding: 10px 20px;
+    background: #DC2626;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.formSaveBtn:hover {
+    background: #B91C1C;
+}
+
 /* Details Sidebar */
 .detailsOverlay {
     position: fixed;

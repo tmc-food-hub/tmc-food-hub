@@ -95,4 +95,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/disputes', [AdminController::class, 'disputes']);
     Route::get('/settings', [AdminController::class, 'settings']);
     Route::post('/logout', [AdminController::class, 'logout']);
+
+    // Promotions Management
+    Route::get('/promotions', [AdminController::class, 'promotions']);
+    Route::post('/promotions', [AdminController::class, 'storePromotion']);
+    Route::put('/promotions/{id}', [AdminController::class, 'updatePromotion']);
+    Route::delete('/promotions/{id}', [AdminController::class, 'deletePromotion']);
+    Route::get('/promotions/{id}', [AdminController::class, 'showPromotion']);
 });

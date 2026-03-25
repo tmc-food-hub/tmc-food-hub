@@ -35,12 +35,14 @@ export default function AdminPromotionsSection() {
         }
     });
     const [adminNotes, setAdminNotes] = useState('');
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [itemSearch, setItemSearch] = useState('');
+    const [applicabilityType, setApplicabilityType] = useState('all');
     const [formData, setFormData] = useState({
-        code: '',
-        discount: '',
+        name: '',
         type: 'percentage',
-        maxUses: '',
-        restaurants: 'All',
+        discountValue: '',
+        minimumOrderValue: '',
         startDate: '',
         endDate: '',
     });
@@ -201,42 +203,150 @@ export default function AdminPromotionsSection() {
 
                     {/* Form */}
                     {showForm && (
-                        <div className={styles.formCard}>
-                            <h4 className={styles.formTitle}>{editingId ? 'Edit Promotion' : 'Create New Promotion'}</h4>
-                            <div className={styles.formGrid}>
-                                <div className={styles.formGroup}>
-                                    <label>Promotion Name</label>
-                                    <input type="text" placeholder="E.g., Summer Flash Sale" />
+                        <div className={styles.formModal}>
+                            <div className={styles.formModalOverlay} onClick={() => setShowForm(false)} />
+                            <div className={styles.formModalContent}>
+                                <div className={styles.formModalHeader}>
+                                    <h3>Create New Promotion</h3>
+                                    <button className={styles.formModalClose} onClick={() => setShowForm(false)}>
+                                        <X size={20} />
+                                    </button>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Promo Code</label>
-                                    <input type="text" placeholder="E.g., SUMMER50" />
+
+                                {/* Promotion Details */}
+                                <div className={styles.formSection}>
+                                    <h4>Promotion Details</h4>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Name of Promotion</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. Summer Pizza Party"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Promotion Type</label>
+                                            <select 
+                                                value={formData.type}
+                                                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                            >
+                                                <option value="percentage">Percentage Off (%)</option>
+                                                <option value="fixed">Fixed Amount (₱)</option>
+                                                <option value="bogo">Buy 1 Get 1</option>
+                                                <option value="free">Free Delivery</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Discount Type</label>
-                                    <select>
-                                        <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed">Fixed Amount (₱)</option>
-                                        <option value="bogo">Buy 1 Get 1</option>
-                                        <option value="free">Free Delivery</option>
-                                    </select>
+
+                                {/* Discount Configuration */}
+                                <div className={styles.formSection}>
+                                    <h4>Discount Configuration</h4>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Discount Value</label>
+                                            <div className={styles.currencyInput}>
+                                                <span>₱</span>
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="0.00"
+                                                    value={formData.discountValue}
+                                                    onChange={(e) => setFormData({...formData, discountValue: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>Minimum Order Value</label>
+                                            <div className={styles.currencyInput}>
+                                                <span>₱</span>
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="250.00"
+                                                    value={formData.minimumOrderValue}
+                                                    onChange={(e) => setFormData({...formData, minimumOrderValue: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Discount Amount</label>
-                                    <input type="number" placeholder="E.g., 50" />
+
+                                {/* Applicability */}
+                                <div className={styles.formSection}>
+                                    <h4>Applicability</h4>
+                                    <div className={styles.radioGroup}>
+                                        <label className={styles.radioOption}>
+                                            <input
+                                                type="radio"
+                                                name="applicability"
+                                                value="all"
+                                                checked={applicabilityType === 'all'}
+                                                onChange={(e) => setApplicabilityType(e.target.value)}
+                                            />
+                                            <span>All Menu Items</span>
+                                        </label>
+                                        <label className={styles.radioOption}>
+                                            <input
+                                                type="radio"
+                                                name="applicability"
+                                                value="specific"
+                                                checked={applicabilityType === 'specific'}
+                                                onChange={(e) => setApplicabilityType(e.target.value)}
+                                            />
+                                            <span>Specific Categories/Items</span>
+                                        </label>
+                                    </div>
+
+                                    {applicabilityType === 'specific' && (
+                                        <>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Search items..."
+                                                className={styles.searchInput}
+                                                value={itemSearch}
+                                                onChange={(e) => setItemSearch(e.target.value)}
+                                            />
+                                            <div className={styles.tagList}>
+                                                {selectedItems.map((item, idx) => (
+                                                    <span key={idx} className={styles.tag}>
+                                                        {item}
+                                                        <button onClick={() => setSelectedItems(selectedItems.filter((_, i) => i !== idx))}>×</button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>Start Date</label>
-                                    <input type="date" />
+
+                                {/* Date Schedule */}
+                                <div className={styles.formSection}>
+                                    <h4>Date Schedule</h4>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.formGroup}>
+                                            <label>Start Date</label>
+                                            <input 
+                                                type="date"
+                                                value={formData.startDate}
+                                                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label>End Date</label>
+                                            <input 
+                                                type="date"
+                                                value={formData.endDate}
+                                                onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={styles.formGroup}>
-                                    <label>End Date</label>
-                                    <input type="date" />
+
+                                {/* Actions */}
+                                <div className={styles.formActions}>
+                                    <button className={styles.formCancelBtn} onClick={() => setShowForm(false)}>Cancel</button>
+                                    <button className={styles.formSaveBtn} onClick={() => setShowForm(false)}>Save Promotion</button>
                                 </div>
-                            </div>
-                            <div className={styles.formActions}>
-                                <button className={styles.cancelBtn} onClick={() => setShowForm(false)}>Cancel</button>
-                                <button className={styles.saveBtn}>Save Promotion</button>
                             </div>
                         </div>
                     )}

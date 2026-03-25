@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\RestaurantOwner;
 use App\Models\Review;
 use App\Models\User;
+use App\Models\Promotion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -1053,5 +1054,177 @@ class AdminController extends Controller
             ],
             'message' => 'Settings management endpoint ready',
         ]);
+    }
+
+    public function promotions(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $page = $request->query('page', 1);
+            $per_page = $request->query('per_page', 10);
+            $status = $request->query('status');
+            $search = $request->query('search');
+
+            $query = Promotion::query();
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            }
+
+            $total = $query->count();
+            $promotions = $query->orderBy('created_at', 'desc')
+                ->paginate($per_page, ['*'], 'page', $page);
+
+            return response()->json([
+                'data' => $promotions->items(),
+                'pagination' => [
+                    'current_page' => $promotions->currentPage(),
+                    'per_page' => $promotions->perPage(),
+                    'total' => $total,
+                    'last_page' => $promotions->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching promotions: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching promotions'], 500);
+        }
+    }
+
+    public function storePromotion(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'code' => 'required|string|unique:promotions|max:50',
+                'discount_type' => 'required|in:percentage,fixed,bogo,free_delivery',
+                'discount_value' => 'required|numeric|min:0',
+                'minimum_order_value' => 'nullable|numeric|min:0',
+                'applicability_type' => 'required|in:all_items,specific_items',
+                'applicable_categories' => 'nullable|array',
+                'applicable_restaurants' => 'nullable|array',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'max_redemptions' => 'nullable|integer|min:1',
+                'description' => 'nullable|string|max:1000',
+            ]);
+
+            $promotion = Promotion::create($validated);
+
+            return response()->json([
+                'message' => 'Promotion created successfully',
+                'data' => $promotion,
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating promotion: ' . $e->getMessage());
+            return response()->json(['message' => 'Error creating promotion'], 500);
+        }
+    }
+
+    public function updatePromotion(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $promotion = Promotion::find($id);
+
+            if (!$promotion) {
+                return response()->json(['message' => 'Promotion not found'], 404);
+            }
+
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'discount_type' => 'sometimes|in:percentage,fixed,bogo,free_delivery',
+                'discount_value' => 'sometimes|numeric|min:0',
+                'minimum_order_value' => 'nullable|numeric|min:0',
+                'applicability_type' => 'sometimes|in:all_items,specific_items',
+                'applicable_categories' => 'nullable|array',
+                'applicable_restaurants' => 'nullable|array',
+                'start_date' => 'sometimes|date',
+                'end_date' => 'sometimes|date',
+                'status' => 'sometimes|in:active,scheduled,inactive,expired',
+                'max_redemptions' => 'nullable|integer|min:1',
+                'description' => 'nullable|string|max:1000',
+            ]);
+
+            $promotion->update($validated);
+
+            return response()->json([
+                'message' => 'Promotion updated successfully',
+                'data' => $promotion,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating promotion: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating promotion'], 500);
+        }
+    }
+
+    public function deletePromotion(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $promotion = Promotion::find($id);
+
+            if (!$promotion) {
+                return response()->json(['message' => 'Promotion not found'], 404);
+            }
+
+            $promotion->delete();
+
+            return response()->json(['message' => 'Promotion deleted successfully']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting promotion: ' . $e->getMessage());
+            return response()->json(['message' => 'Error deleting promotion'], 500);
+        }
+    }
+
+    public function showPromotion(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $promotion = Promotion::find($id);
+
+            if (!$promotion) {
+                return response()->json(['message' => 'Promotion not found'], 404);
+            }
+
+            return response()->json(['data' => $promotion]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching promotion: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching promotion'], 500);
+        }
     }
 }
