@@ -239,7 +239,7 @@ function MenuPage() {
                                     {paginatedStores.map(store => (
                                         <Link to={`/menu/${store.id}`} className={styles.productCard} key={store.id}>
                                             <div className={styles.cardImageWrapper}>
-                                                <img src={store.cover} alt={store.name} className={styles.cardImage} loading="lazy" />
+                                                <img src={store.cover} alt={store.name} className={styles.cardImage} loading="lazy" decoding="async" />
                                             </div>
                                             <div className={styles.cardBody}>
                                                 <div className={styles.badgesTopLeft}>

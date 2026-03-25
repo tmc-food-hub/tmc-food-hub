@@ -186,7 +186,7 @@ function RestaurantMenuPage() {
 
                         {/* Restaurant Header */}
                         <div className={styles.restaurantHeader}>
-                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} />
+                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} loading="lazy" decoding="async" />
                             <div className={styles.restaurantInfo}>
                                 <div className={styles.restaurantCategory}>{store.cuisine}</div>
                                 <h1 className={styles.restaurantName}>{store.name}</h1>
@@ -288,6 +288,8 @@ function RestaurantMenuPage() {
                                                         src={resolveMediaUrl(item.image)}
                                                         alt={item.title}
                                                         className={`${styles.menuCardImg} ${item.title === 'Jolly Spaghetti' ? styles.spaghettiImg : ''}`}
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     {item.isBestSeller && <span className={styles.bestSellerBadge}>Best Seller</span>}
                                                     {!isAvailable && <span className={styles.outOfStockBadge}>Out of Stock</span>}
@@ -373,7 +375,7 @@ function RestaurantMenuPage() {
                                 {similarStores.map(similar => (
                                     <Link to={`/menu/${similar.id}`} className={styles.productCard} key={similar.id}>
                                         <div className={styles.cardImageWrapper}>
-                                            <img src={similar.cover} alt={similar.name} className={styles.cardImage} loading="lazy" />
+                                            <img src={similar.cover} alt={similar.name} className={styles.cardImage} loading="lazy" decoding="async" />
                                         </div>
                                         <div className={styles.cardBody}>
                                             <div className={styles.badgesTopLeftSmall}>

@@ -110,7 +110,7 @@ function AccountTab({ store, refreshOwner }) {
                 <div className={styles.profileHeader}>
                     <div className={styles.avatarUploadWrapper} onClick={() => avatarRef.current?.click()}>
                         {store.logo ? (
-                            <img src={store.logo} alt={fullName} className={styles.avatar} />
+                            <img src={store.logo} alt={fullName} className={styles.avatar} loading="lazy" decoding="async" />
                         ) : (
                             <div className={styles.avatar}>{fullName.charAt(0)}</div>
                         )}
