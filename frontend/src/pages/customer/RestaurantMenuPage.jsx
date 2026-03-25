@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight, PenLine, ThumbsUp, X, UploadCloud, CheckCircle2, ShoppingCart } from 'lucide-react';
 import Navbar from '../../components/sections/Navbar';
@@ -34,10 +34,16 @@ function RestaurantMenuPage() {
     const [allStores, setAllStores] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('Popular');
+    const [activeTab, setActiveTab] = useState('All');
     const [activeCategory, setActiveCategory] = useState('All');
     const [activeDietary, setActiveDietary] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 9;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, activeCategory, activeDietary, activeTab]);
 
     // Modal state for Add To Cart Variations
     const [selectedItemForModal, setSelectedItemForModal] = useState(null);
@@ -111,15 +117,40 @@ function RestaurantMenuPage() {
 
     // Extract categories
     const allCategories = ['All', ...new Set(menuItems.map(i => i.categoryName))];
-    const tabs = ['Popular', 'Group Meals', 'Drinks', 'Desserts'];
+    const tabs = ['All', 'Popular', 'Group Meals', 'Drinks', 'Desserts'];
 
     // Filter menu items
     const filteredItems = menuItems.filter(item => {
         const matchCat = activeCategory === 'All' || item.categoryName === activeCategory;
         const matchSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchCat && matchSearch;
+            
+        let matchTab = true;
+        if (activeTab === 'Popular') {
+            matchTab = item.isBestSeller || (item.categoryName && item.categoryName.toLowerCase().includes('popular'));
+        } else if (activeTab === 'Group Meals') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('group') || 
+                       item.categoryName.toLowerCase().includes('bucket') || 
+                       item.categoryName.toLowerCase().includes('family') ||
+                       item.categoryName.toLowerCase().includes('platter'));
+        } else if (activeTab === 'Drinks') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('drink') || 
+                       item.categoryName.toLowerCase().includes('beverage'));
+        } else if (activeTab === 'Desserts') {
+            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('dessert') || 
+                       item.categoryName.toLowerCase().includes('sweet') ||
+                       item.categoryName.toLowerCase().includes('ice cream'));
+        } else if (activeTab === 'All') {
+            matchTab = true;
+        }
+
+        let matchDiet = activeDietary === 'All' || item.dietary === activeDietary;
+
+        return matchCat && matchSearch && matchTab && matchDiet;
     });
+
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handleAddToCartClick = (item) => {
         setSelectedItemForModal({
@@ -155,13 +186,13 @@ function RestaurantMenuPage() {
 
                         {/* Restaurant Header */}
                         <div className={styles.restaurantHeader}>
-                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} />
+                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} loading="lazy" decoding="async" />
                             <div className={styles.restaurantInfo}>
                                 <div className={styles.restaurantCategory}>{store.cuisine}</div>
                                 <h1 className={styles.restaurantName}>{store.name}</h1>
                                 <div className={styles.restaurantMeta}>
                                     <span className={store.status === 'Operational' ? styles.statusBadgeOpen : styles.statusBadgeClosed}>
-                                        ? {store.status}
+                                        • {store.status}
                                     </span>
                                     <span><MapPin size={14} className="me-1" /> 2.5 km radius</span>
                                     <span><Clock size={14} className="me-1" /> {store.deliveryTime} delivery</span>
@@ -244,7 +275,7 @@ function RestaurantMenuPage() {
                             {/* Menu Items Grid */}
                             <div className="col-lg-9">
                                 <div className={styles.menuGrid}>
-                                    {filteredItems.map(item => {
+                                    {paginatedItems.map(item => {
                                         const isAvailable = !!item.available && (item.stock_level > 0 || !item.auto_toggle);
 
                                         return (
@@ -257,6 +288,8 @@ function RestaurantMenuPage() {
                                                         src={resolveMediaUrl(item.image)}
                                                         alt={item.title}
                                                         className={`${styles.menuCardImg} ${item.title === 'Jolly Spaghetti' ? styles.spaghettiImg : ''}`}
+                                                        loading="lazy"
+                                                        decoding="async"
                                                     />
                                                     {item.isBestSeller && <span className={styles.bestSellerBadge}>Best Seller</span>}
                                                     {!isAvailable && <span className={styles.outOfStockBadge}>Out of Stock</span>}
@@ -286,13 +319,46 @@ function RestaurantMenuPage() {
                                     })}
                                 </div>
 
-                                <div className={styles.pagination}>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.pageIconBtn}`}><ChevronLeft size={18} /></Link>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.active}`}>1</Link>
-                                    <Link to="#" className={styles.pageBtn}>2</Link>
-                                    <Link to="#" className={styles.pageBtn}>3</Link>
-                                    <Link to="#" className={`${styles.pageBtn} ${styles.pageIconBtn}`}><ChevronRight size={18} /></Link>
-                                </div>
+                                {totalPages > 1 && (
+                                    <div className={styles.pagination}>
+                                        <button 
+                                            className={`${styles.pageBtn} ${styles.pageIconBtn}`} 
+                                            onClick={() => {
+                                                setCurrentPage(p => Math.max(1, p - 1));
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            disabled={currentPage === 1}
+                                            style={currentPage === 1 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                        >
+                                            <ChevronLeft size={18} />
+                                        </button>
+                                        
+                                        {Array.from({ length: totalPages }).map((_, i) => (
+                                            <button 
+                                                key={i} 
+                                                className={`${styles.pageBtn} ${currentPage === i + 1 ? styles.active : ''}`}
+                                                onClick={() => {
+                                                    setCurrentPage(i + 1);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                        
+                                        <button 
+                                            className={`${styles.pageBtn} ${styles.pageIconBtn}`}
+                                            onClick={() => {
+                                                setCurrentPage(p => Math.min(totalPages, p + 1));
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            disabled={currentPage === totalPages}
+                                            style={currentPage === totalPages ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                        >
+                                            <ChevronRight size={18} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -309,7 +375,7 @@ function RestaurantMenuPage() {
                                 {similarStores.map(similar => (
                                     <Link to={`/menu/${similar.id}`} className={styles.productCard} key={similar.id}>
                                         <div className={styles.cardImageWrapper}>
-                                            <img src={similar.cover} alt={similar.name} className={styles.cardImage} loading="lazy" />
+                                            <img src={similar.cover} alt={similar.name} className={styles.cardImage} loading="lazy" decoding="async" />
                                         </div>
                                         <div className={styles.cardBody}>
                                             <div className={styles.badgesTopLeftSmall}>
@@ -356,4 +422,3 @@ function RestaurantMenuPage() {
 }
 
 export default RestaurantMenuPage;
-

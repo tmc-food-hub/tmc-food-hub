@@ -2,6 +2,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+import { Link } from 'react-router-dom';
+
 /**
  * Main hero banner with headline, description, and call-to-action buttons.
  */

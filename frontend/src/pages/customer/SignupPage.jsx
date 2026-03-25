@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useOwnerAuth } from '../../context/OwnerAuthContext';
@@ -15,6 +16,9 @@ function SignupPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [googleError, setGoogleError] = useState('');
+    const [isGoogleSignup, setIsGoogleSignup] = useState(false);
+    const [googleCredential, setGoogleCredential] = useState('');
 
     // OTP state
     const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
@@ -25,7 +29,7 @@ function SignupPage() {
     const [verifiedEmail, setVerifiedEmail] = useState('');
     const otpInputRefs = useRef([]);
 
-    const { register, sendOtp, verifyOtp, setAuthData: setCustomerAuthData } = useAuth();
+    const { register, sendOtp, verifyOtp, setAuthData: setCustomerAuthData, googleSignup } = useAuth();
     const { setAuthData: setOwnerAuthData } = useOwnerAuth();
     const navigate = useNavigate();
     const apiFieldMap = {
@@ -34,6 +38,62 @@ function SignupPage() {
         business_address: 'businessAddress',
         business_contact_number: 'businessContactNumber',
         business_permit: 'businessPermit',
+    };
+
+    // Google Sign-In handlers
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setGoogleError('');
+        try {
+            // Decode JWT to extract user info
+            const { credential } = credentialResponse;
+            if (!credential) {
+                throw new Error('No credential from Google');
+            }
+
+            const parts = credential.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Invalid credential format');
+            }
+
+            const decodedToken = JSON.parse(atob(parts[1]));
+            const nameParts = (decodedToken.name || '').split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            // Autofill form with Google data
+            setFormData(prev => ({
+                ...prev,
+                firstName,
+                lastName,
+                email: decodedToken.email || '',
+            }));
+
+            // Store credential for later use after OTP verification
+            setGoogleCredential(credential);
+            setIsGoogleSignup(true);
+
+            // Send OTP to the email
+            setOtpSending(true);
+            try {
+                await sendOtp(decodedToken.email);
+                setResendCooldown(60);
+                setOtpValues(['', '', '', '', '', '']);
+                setStep(2);
+                setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+            } catch (err) {
+                setGoogleError(getFirstApiError(err, 'Failed to send verification code.'));
+                setIsGoogleSignup(false);
+            } finally {
+                setOtpSending(false);
+            }
+        } catch (err) {
+            setGoogleError(err.message || 'Google signup failed. Please try again.');
+            console.error('Google signup error:', err);
+        }
+    };
+
+    const handleGoogleError = () => {
+        setGoogleError('Google signup failed. Please try again.');
     };
 
     // Form fields
@@ -197,7 +257,21 @@ function SignupPage() {
             }
             setEmailVerificationToken(data.email_verification_token);
             setVerifiedEmail(formData.email);
-            setStep(3);
+            
+            // If this was a Google signup, complete it now
+            if (isGoogleSignup && googleCredential) {
+                try {
+                    await googleSignup({ credential: googleCredential });
+                    navigate('/', { state: { signupSuccess: true } });
+                } catch (err) {
+                    setGoogleError(err.response?.data?.message || 'Google signup failed. Please try again.');
+                    setIsGoogleSignup(false);
+                    setGoogleCredential('');
+                    setStep(3); // Continue with normal flow
+                }
+            } else {
+                setStep(3);
+            }
         } catch (err) {
             if (err.response?.data?.errors) {
                 setErrors(normalizeApiErrors(err, apiFieldMap));
@@ -520,16 +594,43 @@ function SignupPage() {
                                 <span className={styles.dividerText}>Or continue with</span>
                             </div>
 
-                            <div className={styles.socialGrid}>
-                                <button type="button" className={styles.socialBtn}>
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" height="18" />
-                                    Google
-                                </button>
-                                <button type="button" className={styles.socialBtn}>
-                                    <i className="bi bi-linkedin text-primary"></i>
-                                    LinkedIn
-                                </button>
-                            </div>
+                            {googleError && (
+                                <div className="alert alert-danger py-2 mb-3" style={{ fontSize: '0.85rem', borderRadius: '8px' }}>
+                                    {googleError}
+                                </div>
+                            )}
+
+                            {role === 'Customer' && (
+                                <div className={styles.socialGrid}>
+                                    <div style={{ flex: 1 }}>
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleSuccess}
+                                            onError={handleGoogleError}
+                                            text="signin_with"
+                                        />
+                                    </div>
+                                    <button type="button" className={styles.socialBtn}>
+                                        <i className="bi bi-linkedin text-primary"></i>
+                                        LinkedIn
+                                    </button>
+                                </div>
+                            )}
+
+                            {role === 'Partner' && (
+                                <div className={styles.socialGrid}>
+                                    <div style={{ flex: 1 }}>
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleSuccess}
+                                            onError={handleGoogleError}
+                                            text="signin_with"
+                                        />
+                                    </div>
+                                    <button type="button" className={styles.socialBtn}>
+                                        <i className="bi bi-linkedin text-primary"></i>
+                                        LinkedIn
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
 
@@ -616,7 +717,10 @@ function SignupPage() {
                                     placeholder="09XX XXX XXXX"
                                     maxLength={11}
                                     value={formData.contactNumber}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        handleChange({ target: { name: 'contactNumber', value: val } });
+                                    }}
                                     required
                                 />
                                 {errors.contactNumber && <span className={styles.errorText}>{errors.contactNumber[0]}</span>}
@@ -683,7 +787,10 @@ function SignupPage() {
                                     placeholder="09XX XXX XXXX"
                                     maxLength={11}
                                     value={formData.businessContactNumber}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        handleChange({ target: { name: 'businessContactNumber', value: val } });
+                                    }}
                                     required
                                 />
                                 {errors.businessContactNumber && <span className={styles.errorText}>{errors.businessContactNumber[0]}</span>}

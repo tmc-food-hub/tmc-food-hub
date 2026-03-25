@@ -41,25 +41,7 @@ export function AuthProvider({ children }) {
         } else {
             setLoading(false);
         }
-    }, []);
-
-    const login = useCallback(async (email, password) => {
-        const res = await api.post('/login', { email, password });
-        const { user: userData, token: newToken } = res.data;
-
-        setToken(newToken);
-        setUser(userData);
-        localStorage.setItem('auth_token', newToken);
-        localStorage.setItem('auth_user', JSON.stringify(userData));
-        localStorage.setItem('user_type', 'customer');
-
-        return userData;
-    }, []);
-
-    const register = useCallback(async (formData) => {
-        const res = await api.post('/register', formData);
-        return res.data;
-    }, []);
+    }, [token]);
 
     const setAuthData = useCallback((newToken, userData) => {
         setToken(newToken);
@@ -68,6 +50,62 @@ export function AuthProvider({ children }) {
         localStorage.setItem('auth_user', JSON.stringify(userData));
         localStorage.setItem('user_type', 'customer');
     }, []);
+
+    const login = useCallback(async (email, password) => {
+        const res = await api.post('/login', { email, password });
+        const { user: userData, token: newToken } = res.data;
+
+        setAuthData(newToken, userData);
+
+        return userData;
+    }, [setAuthData]);
+
+    const register = useCallback(async (formData) => {
+        const res = await api.post('/register', formData);
+        return res.data;
+    }, []);
+
+    const googleLogin = useCallback(async (credentialResponse) => {
+        try {
+            // GoogleLogin component returns { credential: JWT }
+            const { credential } = credentialResponse;
+            
+            if (!credential) {
+                throw new Error('No credential received from Google');
+            }
+            
+            // Send JWT credential to backend for verification and user lookup
+            const res = await api.post('/auth/google-login', { credential });
+            
+            const { user: userData, token: newToken } = res.data;
+            setAuthData(newToken, userData);
+            return userData;
+        } catch (error) {
+            console.error('Google login failed:', error);
+            throw error;
+        }
+    }, [setAuthData]);
+
+    const googleSignup = useCallback(async (credentialResponse) => {
+        try {
+            // GoogleLogin component returns { credential: JWT }
+            const { credential } = credentialResponse;
+            
+            if (!credential) {
+                throw new Error('No credential received from Google');
+            }
+            
+            // Send JWT credential to backend for verification and user creation
+            const res = await api.post('/auth/google-signup', { credential });
+            
+            const { user: userData, token: newToken } = res.data;
+            setAuthData(newToken, userData);
+            return userData;
+        } catch (error) {
+            console.error('Google signup failed:', error);
+            throw error;
+        }
+    }, [setAuthData]);
 
     const sendOtp = useCallback(async (email) => {
         const res = await api.post('/send-otp', { email });
@@ -136,7 +174,13 @@ export function AuthProvider({ children }) {
         updateProfile,
         logout,
         setAuthData,
-    }), [user, token, loading, login, register, sendOtp, verifyOtp, forgotPassword, verifyResetOtp, resetPassword, changePassword, updateProfile, logout, setAuthData]);
+        googleLogin,
+        googleSignup,
+    }), [
+        user, token, loading, login, register, sendOtp, verifyOtp, 
+        forgotPassword, verifyResetOtp, resetPassword, changePassword, 
+        updateProfile, logout, setAuthData, googleLogin, googleSignup
+    ]);
 
     return (
         <AuthContext.Provider value={value}>

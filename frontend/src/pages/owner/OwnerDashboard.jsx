@@ -110,6 +110,17 @@ function OwnerDashboard() {
     };
 
     useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth <= 1024) {
+                setSidebarCollapsed(false);
+            }
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
         const isMissingOrPlaceholder = (img) => !img || img.includes('placeholder.svg');
 
         if (welcomeBanner && ownerStore && (isMissingOrPlaceholder(ownerStore.logo) || isMissingOrPlaceholder(ownerStore.cover))) {

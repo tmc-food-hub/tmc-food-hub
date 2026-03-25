@@ -12,6 +12,11 @@ import styles from './AdminDashboard.module.css';
 import AdminOrdersSection from './AdminOrdersSection';
 import AdminCustomersSection from './AdminCustomersSection';
 import AdminRestaurantsSection from './AdminRestaurantsSection';
+import AdminReviewsSection from './AdminReviewsSection';
+import AdminDisputesSection from './AdminDisputesSection';
+import AdminPaymentsSection from './AdminPaymentsSection';
+import AdminAnalyticsSection from './AdminAnalyticsSection';
+import AdminSettingsSection from './AdminSettingsSection';
 
 const NAV = [
     { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> }, { key: 'orders', label: 'Orders', icon: <ShoppingCart size={16} />, badge: 5 }, { key: 'customers', label: 'Customers', icon: <Users size={16} /> }] },
@@ -133,7 +138,7 @@ export default function AdminDashboard() {
                 <div className={styles.topBar}>
                     <div>
                         <h1 className={styles.title}>
-                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active.charAt(0).toUpperCase() + active.slice(1)}
+                            {active === 'dashboard' ? 'Dashboard' : active === 'orders' ? 'Order Management' : active === 'customers' ? 'Customers' : active === 'restaurants' ? 'Restaurant Partners' : active === 'reviews' ? 'Reviews Moderation' : active === 'disputes' ? 'Disputes' : active === 'payments' ? 'Payments & Payouts' : active === 'analytics' ? 'Analytics' : active === 'settings' ? 'Settings' : active.charAt(0).toUpperCase() + active.slice(1)}
                         </h1>
                         <p className={styles.subtitle}>
                             {active === 'orders'
@@ -141,6 +146,16 @@ export default function AdminDashboard() {
                                 : active === 'customers'
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : active === 'restaurants'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : active === 'reviews'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : active === 'disputes'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : active === 'payments'
+                                ? 'Review and manage marketplace restaurant integrity.'
+                                : active === 'analytics'
+                                ? 'Real-time performance metrics for TMC Foodhub ecosystem.'
+                                : active === 'settings'
                                 ? 'Review and manage marketplace restaurant integrity.'
                                 : `Welcome back, ${admin.first_name || 'Admin'}!`}
                         </p>
@@ -160,6 +175,16 @@ export default function AdminDashboard() {
                     <AdminCustomersSection />
                 ) : active === 'restaurants' ? (
                     <AdminRestaurantsSection />
+                ) : active === 'reviews' ? (
+                    <AdminReviewsSection />
+                ) : active === 'disputes' ? (
+                    <AdminDisputesSection />
+                ) : active === 'payments' ? (
+                    <AdminPaymentsSection />
+                ) : active === 'analytics' ? (
+                    <AdminAnalyticsSection />
+                ) : active === 'settings' ? (
+                    <AdminSettingsSection />
                 ) : active !== 'dashboard' ? (
                     <div className={styles.card}>
                         <h3 className={styles.cardTitle}>{active.charAt(0).toUpperCase() + active.slice(1)}</h3>

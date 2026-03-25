@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import AuthLayout from '../../components/layout/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { getFirstApiError } from '../../utils/apiErrors';
@@ -12,14 +13,30 @@ function LoginPage() {
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
+    const [googleError, setGoogleError] = useState('');
 
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const signupSuccess = location.state?.signupSuccess;
     const passwordReset = location.state?.passwordReset;
 
     const togglePassword = () => setShowPassword(!showPassword);
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setGoogleError('');
+        try {
+            await googleLogin(credentialResponse);
+            navigate('/profile');
+        } catch (err) {
+            setGoogleError(err.response?.data?.message || 'Google login failed. Please try again.');
+            console.error('Google login error:', err);
+        }
+    };
+
+    const handleGoogleError = () => {
+        setGoogleError('Google login failed. Please try again.');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -136,11 +153,20 @@ function LoginPage() {
                     <span className={styles.dividerText}>Or continue with</span>
                 </div>
 
+                {googleError && (
+                    <div className="alert alert-danger py-2 mb-3" style={{ fontSize: '0.85rem', borderRadius: '8px' }}>
+                        {googleError}
+                    </div>
+                )}
+
                 <div className={styles.socialGrid}>
-                    <button type="button" className={styles.socialBtn}>
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" height="18" />
-                        Google
-                    </button>
+                    <div style={{ flex: 1 }}>
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleError}
+                            text="signin_with"
+                        />
+                    </div>
                     <button type="button" className={styles.socialBtn}>
                         <i className="bi bi-linkedin text-primary"></i>
                         LinkedIn

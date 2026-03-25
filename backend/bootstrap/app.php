@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // CORS must run first (before routing), including for OPTIONS preflight requests
         $middleware->prepend(HandleCors::class);
         
+        // Allow Google OAuth popup communication
+        $middleware->append(\App\Http\Middleware\OAuthCorsHeaders::class);
+        
         $middleware->validateCsrfTokens(except: [
             'adminer*',
         ]);

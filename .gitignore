@@ -1,3 +1,4 @@
 frontend/src/api/axios.js
 backend/config/cors.php
 run.bat
+backend/.env_hillllll

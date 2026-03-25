@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
@@ -14,6 +15,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/send-otp', [AuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
+
+// ── Google OAuth Routes ────────────────────────────────────────────────────
+Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
+Route::post('/auth/google-signup', [GoogleAuthController::class, 'signupWithToken']);
+Route::post('/auth/google-login', [GoogleAuthController::class, 'loginWithToken']);
 
 // ── Owner Auth Routes ─────────────────────────────────────────────────────
 Route::post('/owner/login', [OwnerAuthController::class, 'login']);
@@ -82,5 +89,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AdminController::class, 'user']);
     Route::get('/dashboard', [AdminController::class, 'dashboard']);
     Route::post('/refresh-token', [AdminController::class, 'refreshToken']);
+    Route::get('/orders', [AdminController::class, 'orders']);
+    Route::get('/customers', [AdminController::class, 'customers']);
+    Route::get('/restaurants', [AdminController::class, 'restaurants']);
+    Route::get('/reviews', [AdminController::class, 'reviews']);
+    Route::get('/payments', [AdminController::class, 'payments']);
+    Route::get('/analytics', [AdminController::class, 'analytics']);
+    Route::get('/disputes', [AdminController::class, 'disputes']);
+    Route::get('/settings', [AdminController::class, 'settings']);
     Route::post('/logout', [AdminController::class, 'logout']);
 });
