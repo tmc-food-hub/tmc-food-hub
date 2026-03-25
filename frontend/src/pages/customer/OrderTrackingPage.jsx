@@ -101,6 +101,7 @@ const ORDER_DATA = {
         vehicle: 'Honda PCX',
         plate: 'NY-8291',
         rating: 4.8,
+        phone: '+63 912 345 6789'
     },
     statuses: [
         {
@@ -489,16 +490,12 @@ function OrderTrackingPage() {
                                     </div>
 
                                     {/* Action Buttons - Hide if delivered */}
-                                    {order.status !== 'Delivered' && (
-                                        <div className={styles.riderActions}>
-                                            <button className={styles.callBtn}>
-                                                <Phone size={16} />
-                                                Call Rider
-                                            </button>
-                                            <button className={styles.callBtnOutline}>
-                                                <MessageCircle size={16} />
-                                                Message
-                                            </button>
+                                    {order.status !== 'Delivered' && order.rider_info?.phone && (
+                                        <div className={styles.riderContactInfo} style={{ marginBottom: '1.25rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4B5563', fontSize: '0.9rem', padding: '12px', backgroundColor: '#F3F4F6', borderRadius: '8px', outline: '1px solid #E5E7EB' }}>
+                                                <Phone size={16} color="#B91C1C" />
+                                                <span>Contact Rider: <strong style={{color: '#1a1a1a'}}>{order.rider_info.phone}</strong></span>
+                                            </div>
                                         </div>
                                     )}
 
