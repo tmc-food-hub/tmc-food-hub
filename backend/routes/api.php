@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/user/password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/restaurants/{id}/reviewable-orders', [ReviewController::class, 'reviewableOrders']);
     Route::post('/restaurants/{id}/reviews', [ReviewController::class, 'store']);
@@ -61,6 +62,7 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::put('/user', [OwnerAuthController::class, 'updateProfile']);
     Route::put('/store-operations', [OwnerAuthController::class, 'updateStoreOperations']);
     Route::post('/profile-update', [OwnerAuthController::class, 'updateProfile']);
+    Route::post('/refresh-token', [OwnerAuthController::class, 'refreshToken']);
     Route::post('/logout', [OwnerAuthController::class, 'logout']);
 
     // Owner: fetch only their restaurant's orders and update status
@@ -86,6 +88,7 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AdminController::class, 'user']);
     Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    Route::post('/refresh-token', [AdminController::class, 'refreshToken']);
     Route::get('/orders', [AdminController::class, 'orders']);
     Route::get('/customers', [AdminController::class, 'customers']);
     Route::get('/restaurants', [AdminController::class, 'restaurants']);
