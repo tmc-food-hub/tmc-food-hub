@@ -52,36 +52,33 @@ export function OrderProvider({ children }) {
                 const currentStatusIndex = statusList.indexOf(currentStatus);
                 const timeline = statusList.map((label, index) => {
                     let state = 'pending';
-                    if (currentStatusIndex === 0) {
-                        if (index === 0) state = 'active';
-                    } else if (currentStatusIndex < 3) {
-                        if (index <= currentStatusIndex) state = 'completed';
-                        else if (index === currentStatusIndex + 1) state = 'active';
-                    } else {
+                    if (index <= currentStatusIndex) {
                         state = 'completed';
                     }
 
-                    const getStatusDesc = (label, state) => {
+                    const getStatusDesc = (label, state, isCurrent) => {
                         if (state === 'pending') return 'Pending';
                         if (state === 'completed') {
                             if (label === 'Delivered') return 'Enjoy your meal!';
+                            if (isCurrent) {
+                                const activeDescs = {
+                                    'Pending': 'Your order has been placed',
+                                    'Order Confirmed': 'Restaurant is preparing your food',
+                                    'Out for Delivery': 'Your rider is on the way',
+                                };
+                                return activeDescs[label] || 'In progress';
+                            }
                             return 'Done';
                         }
-                        const activeDescs = {
-                            'Pending': 'Your order has been placed',
-                            'Order Confirmed': 'Restaurant is preparing your food',
-                            'Out for Delivery': 'Your rider is on the way',
-                            'Delivered': 'Enjoy your meal!'
-                        };
-                        return activeDescs[label] || 'In progress';
+                        return 'In progress';
                     };
 
-                    const stepTime = (state === 'active' || (state === 'completed' && index === currentStatusIndex)) ? updatedAt : createdAt;
+                    const stepTime = (state === 'completed' && index === currentStatusIndex) ? updatedAt : createdAt;
 
                     return {
                         label,
-                        time: (state === 'completed' || state === 'active') ? stepTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-                        description: getStatusDesc(label, state),
+                        time: state === 'completed' ? stepTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                        description: getStatusDesc(label, state, index === currentStatusIndex),
                         state
                     };
                 });
