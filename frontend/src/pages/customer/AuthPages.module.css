@@ -328,6 +328,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    align-items: center;
 }
 
 .socialBtn {
@@ -335,15 +336,17 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.75rem;
+    height: 40px;
+    padding: 0 1rem;
     background-color: var(--btn-social-bg);
     border: 1px solid var(--btn-social-border);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--btn-social-text);
-    font-size: 0.95rem;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
 }
 
 .socialBtn:hover {

@@ -602,7 +602,7 @@ function SignupPage() {
 
                             {role === 'Customer' && (
                                 <div className={styles.socialGrid}>
-                                    <div style={{ flex: 1 }}>
+                                    <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                                         <GoogleLogin
                                             onSuccess={handleGoogleSuccess}
                                             onError={handleGoogleError}
@@ -618,7 +618,7 @@ function SignupPage() {
 
                             {role === 'Partner' && (
                                 <div className={styles.socialGrid}>
-                                    <div style={{ flex: 1 }}>
+                                    <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                                         <GoogleLogin
                                             onSuccess={handleGoogleSuccess}
                                             onError={handleGoogleError}
