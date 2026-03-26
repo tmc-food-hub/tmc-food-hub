@@ -349,6 +349,28 @@
     border-color: #9CA3AF;
 }
 
+.reviewBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .5rem 1rem;
+    background: #FFFBEB;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.reviewBtn:hover {
+    background: #FEF3C7;
+    border-color: #F59E0B;
+}
+
 .deliveredBadge {
     display: inline-flex;
     align-items: center;

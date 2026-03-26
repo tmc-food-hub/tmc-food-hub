@@ -1,8 +1,6 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, CreditCard, Banknote, CalendarDays, Clock } from 'lucide-react';
-import gcashLogo from '../../assets/imgs/gcash-logo.png';
-import mayaLogo from '../../assets/imgs/maya-logo.jpg';
+import { MapPin, Banknote, CalendarDays, Clock } from 'lucide-react';
 import { CartContext } from '../../components/ui/CartContext';
 import { useOrders } from '../../context/OrderContext';
 import { useAuth } from '../../context/AuthContext';
@@ -26,7 +24,7 @@ function CheckoutPage() {
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [deliveryType, setDeliveryType] = useState('asap');
     const [specialInstructions, setSpecialInstructions] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('gcash');
+    const [paymentMethod, setPaymentMethod] = useState('cod');
     const [scheduledDate, setScheduledDate] = useState('');
     const [scheduledTime, setScheduledTime] = useState('');
 
@@ -275,33 +273,19 @@ function CheckoutPage() {
                                 <div className={styles.card}>
                                     <h2 className={styles.cardTitle}>Payment Method</h2>
                                     <div className={styles.paymentGrid}>
-                                        {[
-                                            { id: 'gcash', label: 'GCash', logo: gcashLogo },
-                                            { id: 'maya', label: 'Maya', logo: mayaLogo },
-                                            { id: 'card', label: 'Credit / Debit Card', icon: 'card' },
-                                            { id: 'cod', label: 'Cash on Delivery', icon: 'cod' },
-                                        ].map(opt => (
-                                            <label
-                                                key={opt.id}
-                                                className={`${styles.paymentOption} ${paymentMethod === opt.id ? styles.paymentActive : ''}`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="payment"
-                                                    className={styles.paymentRadio}
-                                                    checked={paymentMethod === opt.id}
-                                                    onChange={() => setPaymentMethod(opt.id)}
-                                                />
-                                                <span className={styles.paymentIcon}>
-                                                    {opt.logo && (
-                                                        <img src={opt.logo} alt={opt.label} className={styles.paymentLogo} />
-                                                    )}
-                                                    {opt.icon === 'card' && <CreditCard size={18} />}
-                                                    {opt.icon === 'cod' && <Banknote size={18} />}
-                                                </span>
-                                                <span className={styles.paymentLabelText}>{opt.label}</span>
-                                            </label>
-                                        ))}
+                                        <label className={`${styles.paymentOption} ${styles.paymentActive}`}>
+                                            <input
+                                                type="radio"
+                                                name="payment"
+                                                className={styles.paymentRadio}
+                                                checked={true}
+                                                readOnly
+                                            />
+                                            <span className={styles.paymentIcon}>
+                                                <Banknote size={18} />
+                                            </span>
+                                            <span className={styles.paymentLabelText}>Cash on Delivery</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
