@@ -83,6 +83,7 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::patch('/inventory/items/{id}/availability', [InventoryController::class, 'toggleAvailability']);
     Route::get('/reviews', [ReviewController::class, 'ownerIndex']);
     Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply']);
+    Route::get('/analytics', [OwnerAuthController::class, 'analytics']);
 });
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {

@@ -1,22 +1,38 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
     User, Shield, Bell, Store, CreditCard, Search,
     CheckCircle2, AlertCircle, X, Save, Check,
-    PauseCircle, XCircle
+    PauseCircle, XCircle, MapPin, Phone
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import styles from './SettingsSection.module.css';
 import api from '../../../api/axios';
+
+// Fix Leaflet default marker icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 const SETTINGS_TABS = [
     { key: 'account', label: 'Account', icon: <User size={16} /> },
     { key: 'security', label: 'Security Settings', icon: <Shield size={16} /> },
     { key: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
+    { key: 'restaurant-profile', label: 'Restaurant Profile', icon: <Store size={16} /> },
     { key: 'store-operations', label: 'Store Operations', icon: <Store size={16} /> },
     { key: 'payment', label: 'Payment', icon: <CreditCard size={16} /> },
 ];
 
-export default function SettingsSection({ store, refreshOwner, items = [], refreshInventory }) {
-    const [activeTab, setActiveTab] = useState('account');
+export default function SettingsSection({ store, refreshOwner, items = [], refreshInventory, activeSubTab }) {
+    const [activeTab, setActiveTab] = useState(activeSubTab || 'account');
+
+    useEffect(() => {
+        if (activeSubTab) setActiveTab(activeSubTab);
+    }, [activeSubTab]);
 
     return (
         <div className={styles.settingsLayout}>
@@ -37,6 +53,7 @@ export default function SettingsSection({ store, refreshOwner, items = [], refre
                 {activeTab === 'account' && <AccountTab store={store} refreshOwner={refreshOwner} />}
                 {activeTab === 'security' && <PlaceholderTab title="Security Settings" description="Manage your password, two-factor authentication, and login sessions." />}
                 {activeTab === 'notifications' && <PlaceholderTab title="Notifications" description="Configure your notification preferences for orders, promotions, and system alerts." />}
+                {activeTab === 'restaurant-profile' && <RestaurantProfileTab store={store} refreshOwner={refreshOwner} />}
                 {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} />}
                 {activeTab === 'payment' && <PlaceholderTab title="Payment" description="Manage payment methods and billing information." />}
             </div>
@@ -598,3 +615,413 @@ function PlaceholderTab({ title, description }) {
         </div>
     );
 }
+
+const SectionIcon = ({ children }) => (
+    <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', flexShrink: 0 }}>
+        {children}
+    </div>
+);
+
+const DEFAULT_CENTER = [14.6433, 121.0425]; // Quezon City default
+
+// Geocode address text → [lat, lng] via Nominatim (free OSM)
+async function geocodeAddressToLatLng(address) {
+    if (!address || address.trim().length < 3) return null;
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        const data = await res.json();
+        if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    } catch (e) { console.error('Geocode failed:', e); }
+    return null;
+}
+
+// Reverse geocode [lat, lng] → address string
+async function reverseGeocode(lat, lng) {
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        const data = await res.json();
+        return data.display_name || '';
+    } catch (e) { console.error('Reverse geocode failed:', e); }
+    return '';
+}
+
+// Helper: fly the map to a new position
+function MapFlyTo({ position }) {
+    const map = useMap();
+    useEffect(() => { map.flyTo(position, 15); }, [position, map]);
+    return null;
+}
+
+// Read-only map for the profile view
+function ReadOnlyMap({ address }) {
+    const [pos, setPos] = useState(DEFAULT_CENTER);
+    useEffect(() => {
+        if (address) {
+            geocodeAddressToLatLng(address).then(result => { if (result) setPos(result); });
+        }
+    }, [address]);
+    return (
+        <MapContainer center={pos} zoom={15} style={{ height: '100%', minHeight: '160px', width: '100%' }} scrollWheelZoom={false} dragging={false} zoomControl={false}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+            <Marker position={pos} />
+            <MapFlyTo position={pos} />
+        </MapContainer>
+    );
+}
+
+// Editable map for the modal — click to move pin
+function ClickHandler({ onPositionChange }) {
+    useMapEvents({ click(e) { onPositionChange([e.latlng.lat, e.latlng.lng]); } });
+    return null;
+}
+
+function EditableMap({ position, onPositionChange }) {
+    return (
+        <MapContainer center={position} zoom={15} style={{ height: '100%', minHeight: '160px', width: '100%' }} scrollWheelZoom={true}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+            <Marker position={position} />
+            <ClickHandler onPositionChange={onPositionChange} />
+            <MapFlyTo position={position} />
+        </MapContainer>
+    );
+}
+
+function RestaurantProfileTab({ store, refreshOwner }) {
+    const [editMode, setEditMode] = useState(false);
+    
+    const cuisine = Array.isArray(store.cuisineType) && store.cuisineType.length > 0 ? store.cuisineType : [];
+    const priceRange = store.priceRange || '';
+    const brn = store.businessRegistrationNumber || 'BRN-9823-X102';
+    const email = store.email || 'pattyshack@email.com';
+    const phone = store.phone || '+1 (555) 000-1234';
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#111827' }}>Restaurant Profile</h2>
+                <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Update your restaurant's brand details, contact information, and store visibility.</p>
+            </div>
+
+            <div className={styles.card} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                    {store.logo ? (
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '0.2rem', border: '1px solid #e5e7eb', backgroundColor: 'white' }}>
+                            <img src={store.logo} alt={store.branchName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        </div>
+                    ) : (
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
+                            {(store.branchName || 'P').charAt(0)}
+                        </div>
+                    )}
+                    <div>
+                        <p style={{ color: '#6b7280', margin: '0 0 0.25rem 0', fontSize: '0.85rem', fontWeight: 500 }}>{cuisine.length > 0 ? cuisine.join(' • ') : 'No cuisine tags set'}</p>
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#111827' }}>{store.branchName || 'Patty Shack'}</h3>
+                    </div>
+                </div>
+                <button
+                    onClick={() => setEditMode(true)}
+                    style={{ padding: '0.6rem 1.25rem', border: '1px solid #d1d5db', borderRadius: '6px', backgroundColor: 'white', fontWeight: 500, cursor: 'pointer', fontSize: '0.85rem', color: '#374151', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                >
+                    Edit Profile
+                </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                <div className={styles.card} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <SectionIcon><Store size={16} /></SectionIcon>
+                        <h4 style={{ margin: 0, color: '#111827', fontSize: '1.05rem', fontWeight: 600 }}>Restaurant Information</h4>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.5rem' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Restaurant Name</label>
+                            <div style={{ backgroundColor: '#f9fafb', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>{store.branchName || 'Patty Shack'}</div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Business Registration Number</label>
+                            <div style={{ backgroundColor: '#f9fafb', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>{brn}</div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Cuisine Type</label>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {cuisine.length > 0 ? cuisine.map((c, i) => (
+                                    <span key={i} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600 }}>{c}</span>
+                                )) : <span style={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>None set</span>}
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Price Range</label>
+                            <div style={{ color: '#b91c1c', fontSize: '0.85rem', fontWeight: 800, display: 'inline-block', backgroundColor: '#fee2e2', padding: '0.25rem 0.75rem', borderRadius: '99px' }}>
+                                {priceRange ? priceRange.replace(/P/g, '₱') : 'Not set'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.card} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <SectionIcon><Phone size={16} /></SectionIcon>
+                        <h4 style={{ margin: 0, color: '#111827', fontSize: '1.05rem', fontWeight: 600 }}>Contact Information</h4>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '0.5rem' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Email</label>
+                            <div style={{ backgroundColor: '#f9fafb', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>{email}</div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Phone Number</label>
+                            <div style={{ backgroundColor: '#f9fafb', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>{phone}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.card} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <SectionIcon><MapPin size={16} /></SectionIcon>
+                    <h4 style={{ margin: 0, color: '#111827', fontSize: '1.05rem', fontWeight: 600 }}>Restaurant Location</h4>
+                </div>
+                <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem' }}>
+                    <div style={{ flex: 1.2 }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Address</label>
+                        <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem 1rem', borderRadius: '6px', fontSize: '0.9rem', color: '#4b5563', lineHeight: '1.5', minHeight: '90px', fontWeight: 500 }}>
+                            {store.location || 'No address set'}
+                        </div>
+                    </div>
+                    <div style={{ flex: 1, borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb', minHeight: '160px' }}>
+                        <ReadOnlyMap address={store.location} />
+                    </div>
+                </div>
+            </div>
+
+            {editMode && <EditRestaurantProfileModal store={store} onClose={() => setEditMode(false)} refreshOwner={refreshOwner} />}
+        </div>
+    );
+}
+
+function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
+    const defaultCuisines = Array.isArray(store.cuisineType) ? store.cuisineType : [];
+    const [form, setForm] = useState({
+        restaurantName: store.branchName || '',
+        brn: store.businessRegistrationNumber || '',
+        cuisines: defaultCuisines,
+        priceRange: store.priceRange || '',
+        email: store.email || '',
+        phone: store.phone || '',
+        address: store.location || '',
+        newCuisine: ''
+    });
+    const [logoFile, setLogoFile] = useState(null);
+    const [previewLogo, setPreviewLogo] = useState(store.logo);
+    const [saving, setSaving] = useState(false);
+    const [mapPosition, setMapPosition] = useState(DEFAULT_CENTER);
+    const fileRef = useRef(null);
+
+    // Geocode initial address on mount
+    useEffect(() => {
+        if (store.location) {
+            geocodeAddressToLatLng(store.location).then(r => { if (r) setMapPosition(r); });
+        }
+    }, []);
+
+    const geocodeAddress = useCallback(async (addr) => {
+        const result = await geocodeAddressToLatLng(addr);
+        if (result) setMapPosition(result);
+    }, []);
+
+    const handleMapClick = useCallback(async (pos) => {
+        setMapPosition(pos);
+        const addr = await reverseGeocode(pos[0], pos[1]);
+        if (addr) setForm(prev => ({ ...prev, address: addr }));
+    }, []);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setLogoFile(file);
+            setPreviewLogo(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const formData = new FormData();
+            formData.append('first_name', store.firstName || '');
+            formData.append('last_name', store.lastName || '');
+            formData.append('restaurant_name', form.restaurantName);
+            formData.append('business_address', form.address);
+            formData.append('business_contact_number', form.phone);
+            formData.append('business_registration_number', form.brn);
+            formData.append('price_range', form.priceRange);
+            form.cuisines.forEach(c => formData.append('cuisine_type[]', c));
+            
+            if (logoFile) formData.append('logo_file', logoFile);
+            
+            await api.post('/owner/profile-update', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            await refreshOwner?.();
+            onClose();
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const addCuisine = () => {
+        const v = form.newCuisine.trim();
+        if (v && !form.cuisines.includes(v)) {
+            setForm({ ...form, cuisines: [...form.cuisines, v], newCuisine: '' });
+        }
+    };
+    
+    const removeCuisine = (idx) => {
+        setForm({ ...form, cuisines: form.cuisines.filter((_, i) => i !== idx) });
+    };
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', width: '100%', maxWidth: '780px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.75rem', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 10 }}>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: '#111827' }}>Edit Restaurant Profile</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', padding: '0.25rem' }}><X size={20} /></button>
+                </div>
+
+                <div style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', backgroundColor: '#f9fafb' }}>
+                    
+                    <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '1.5rem', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
+                        <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#111827', fontWeight: 700 }}>Restaurant Information</h4>
+                        <div style={{ display: 'flex', gap: '1.5rem' }}>
+                            <div style={{ flexShrink: 0 }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Restaurant Name</label>
+                                <div 
+                                    onClick={() => fileRef.current?.click()}
+                                    style={{ width: '110px', height: '110px', borderRadius: '12px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', backgroundColor: 'white', padding: '0.5rem' }}
+                                >
+                                    {previewLogo ? (
+                                        <img src={previewLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        <div style={{ color: '#9ca3af', fontSize: '0.85rem', fontWeight: 500 }}>Upload</div>
+                                    )}
+                                </div>
+                                <input type="file" ref={fileRef} accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                            </div>
+
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Restaurant Name</label>
+                                        <input value={form.restaurantName} onChange={e => setForm({...form, restaurantName: e.target.value})} style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', outline: 'none' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Business Registration Number</label>
+                                        <input value={form.brn} onChange={e => setForm({...form, brn: e.target.value})} style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', outline: 'none' }} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Cuisine Type</label>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                                            {form.cuisines.map((c, i) => (
+                                                <span key={i} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem', border: '1px solid #fca5a5' }}>
+                                                    {c} <X size={12} cursor="pointer" onClick={() => removeCuisine(i)} />
+                                                </span>
+                                            ))}
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px dashed #d1d5db', borderRadius: '99px', padding: '0.1rem 0.5rem', backgroundColor: 'white' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '0.85rem', marginRight: '0.3rem' }}>+</span>
+                                                <input 
+                                                    value={form.newCuisine} 
+                                                    onChange={e => setForm({...form, newCuisine: e.target.value})}
+                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCuisine(); } }}
+                                                    placeholder="Add Cuisine" 
+                                                    style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '0.8rem', width: '75px', color: '#4b5563', fontWeight: 500 }} 
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Price Range</label>
+                                        <div style={{ display: 'flex', borderRadius: '6px', border: '1px solid #d1d5db', height: '36px', overflow: 'hidden' }}>
+                                            {['P', 'PP', 'PPP', 'PPPP'].map(p => (
+                                                <button 
+                                                    key={p} 
+                                                    type="button"
+                                                    onClick={() => setForm({...form, priceRange: p})}
+                                                    style={{ flex: 1, backgroundColor: form.priceRange === p ? '#991b1b' : 'white', color: form.priceRange === p ? 'white' : '#6b7280', border: 'none', borderRight: p !== 'PPPP' ? '1px solid #e5e7eb' : 'none', fontWeight: form.priceRange === p ? 700 : 500, fontSize: '0.75rem', cursor: 'pointer', transition: 'all 0.15s' }}
+                                                >
+                                                    {p.replace(/P/g, '₱')}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '1.5rem', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
+                        <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#111827', fontWeight: 700 }}>Contact Information</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.3rem' }}>Email</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <span style={{ fontSize: '0.9rem', color: '#111827', fontWeight: 600 }}>{form.email}</span>
+                                        <span style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '0.15rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                            <CheckCircle2 size={12} /> Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <button style={{ color: '#b91c1c', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Change Email</button>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.3rem' }}>Phone Number</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <span style={{ fontSize: '0.9rem', color: '#111827', fontWeight: 600 }}>{form.phone}</span>
+                                        <span style={{ backgroundColor: '#fef3c7', color: '#92400e', padding: '0.15rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                            Not Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <button style={{ color: '#b91c1c', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Change Phone</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '1.5rem', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
+                        <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#111827', fontWeight: 700 }}>Restaurant Location</h4>
+                        <div style={{ display: 'flex', gap: '1.5rem' }}>
+                            <div style={{ flex: 1.2 }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Address</label>
+                                <textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', outline: 'none', minHeight: '90px', resize: 'vertical', fontFamily: 'inherit' }} />
+                                <button
+                                    type="button"
+                                    onClick={() => geocodeAddress(form.address)}
+                                    style={{ marginTop: '0.5rem', padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#f9fafb', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                                >
+                                    <MapPin size={14} /> Pin on Map
+                                </button>
+                            </div>
+                            <div style={{ flex: 1, borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb', minHeight: '160px' }}>
+                                <EditableMap position={mapPosition} onPositionChange={handleMapClick} />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style={{ padding: '1rem 1.75rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '1rem', backgroundColor: 'white', position: 'sticky', bottom: 0, zIndex: 10, borderRadius: '0 0 12px 12px' }}>
+                    <button onClick={onClose} style={{ padding: '0.6rem 1.5rem', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem', color: '#374151' }}>Cancel</button>
+                    <button onClick={handleSave} disabled={saving} style={{ padding: '0.6rem 1.5rem', border: 'none', borderRadius: '8px', backgroundColor: '#991b1b', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem', opacity: saving ? 0.7 : 1 }}>{saving ? 'Saving...' : 'Save Changes'}</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+

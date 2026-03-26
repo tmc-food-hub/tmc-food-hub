@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OwnerAuthController extends Controller
@@ -288,5 +289,170 @@ class OwnerAuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    /**
+     * Owner analytics — aggregate order data for dashboard charts.
+     */
+    public function analytics(Request $request)
+    {
+        $owner = $request->user();
+        $ownerId = $owner->id;
+        $days = (int) $request->query('days', 30);
+
+        $now = now();
+        $startDate = $now->copy()->subDays($days)->startOfDay();
+        $prevStartDate = $startDate->copy()->subDays($days);
+
+        // All orders in current period
+        $orders = \App\Models\Order::with('customer')->where('restaurant_owner_id', $ownerId)
+            ->where('created_at', '>=', $startDate)
+            ->get();
+
+        // Previous period orders (for comparison)
+        $prevOrders = \App\Models\Order::where('restaurant_owner_id', $ownerId)
+            ->where('created_at', '>=', $prevStartDate)
+            ->where('created_at', '<', $startDate)
+            ->get();
+
+        // All-time orders for total earnings
+        $allOrders = \App\Models\Order::where('restaurant_owner_id', $ownerId)->get();
+
+        // ── Metrics ──────────────────────────────────────────────────────
+        $deliveredOrders = $orders->where('status', 'Delivered');
+        $pendingOrders = $orders->whereIn('status', ['Pending', 'Order Confirmed', 'Out for Delivery']);
+        $allDelivered = $allOrders->where('status', 'Delivered');
+
+        $totalRevenue = $deliveredOrders->sum('total');
+        $pendingRevenue = $pendingOrders->sum('total');
+        $allTimeRevenue = $allDelivered->sum('total');
+        $prevRevenue = $prevOrders->where('status', 'Delivered')->sum('total');
+        $revenueTrend = $prevRevenue > 0 ? round((($totalRevenue - $prevRevenue) / $prevRevenue) * 100, 1) : 0;
+
+        $totalOrdersCount = $orders->count();
+        $prevOrdersCount = $prevOrders->count();
+        $ordersTrend = $prevOrdersCount > 0 ? round((($totalOrdersCount - $prevOrdersCount) / $prevOrdersCount) * 100, 1) : 0;
+
+        $avgOrderValue = $totalOrdersCount > 0 ? round($totalRevenue / $totalOrdersCount, 2) : 0;
+        $prevAvg = $prevOrdersCount > 0 ? round($prevRevenue / $prevOrdersCount, 2) : 0;
+        $avgTrend = $prevAvg > 0 ? round((($avgOrderValue - $prevAvg) / $prevAvg) * 100, 1) : 0;
+
+        // Unique customers
+        $newCustomers = $orders->pluck('customer_id')->unique()->count();
+        $prevCustomers = $prevOrders->pluck('customer_id')->unique()->count();
+        $customersTrend = $prevCustomers > 0 ? round((($newCustomers - $prevCustomers) / $prevCustomers) * 100, 1) : 0;
+
+        // ── Daily Revenue (bar chart) ────────────────────────────────────
+        $dailyRevenue = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = $startDate->copy()->addDays($i);
+            $dayOrders = $orders->filter(function ($o) use ($date) {
+                return $o->created_at->format('Y-m-d') === $date->format('Y-m-d') && $o->status === 'Delivered';
+            });
+            $dayAllOrders = $orders->filter(function ($o) use ($date) {
+                return $o->created_at->format('Y-m-d') === $date->format('Y-m-d');
+            });
+            $dailyRevenue[] = [
+                'date' => $date->format('M d, Y'),
+                'day' => $date->format('M d'),
+                'revenue' => round($dayOrders->sum('total'), 2),
+                'orders' => $dayAllOrders->count(),
+            ];
+        }
+
+        // ── Top Selling Items ────────────────────────────────────────────
+        $orderIds = $deliveredOrders->pluck('id');
+        $topItems = \App\Models\OrderItem::whereIn('order_id', $orderIds)
+            ->select('item_name', 'image',
+                DB::raw('SUM(quantity) as total_qty'),
+                DB::raw('SUM(price * quantity) as total_revenue'))
+            ->groupBy('item_name', 'image')
+            ->orderByDesc('total_revenue')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->item_name,
+                    'image' => $item->image,
+                    'orders' => (int) $item->total_qty,
+                    'revenue' => round((float) $item->total_revenue, 2),
+                ];
+            });
+
+        // ── Order Patterns Heatmap (hour × day-of-week) ──────────────────
+        $heatmap = [];
+        $dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $hours = [10, 12, 14, 16, 18, 20, 22];
+        foreach ($dayNames as $dayName) {
+            $row = ['day' => $dayName, 'data' => []];
+            foreach ($hours as $hour) {
+                $count = $orders->filter(function ($o) use ($dayName, $hour) {
+                    $orderDay = $o->created_at->format('D');
+                    $orderHour = (int) $o->created_at->format('G');
+                    return $orderDay === $dayName && $orderHour >= $hour && $orderHour < ($hour + 2);
+                })->count();
+                $row['data'][] = $count;
+            }
+            $heatmap[] = $row;
+        }
+        // Normalize heatmap to 0-4 scale
+        $allHeatValues = [];
+        foreach ($heatmap as $r) {
+            foreach ($r['data'] as $v) {
+                $allHeatValues[] = $v;
+            }
+        }
+        $maxHeat = count($allHeatValues) > 0 ? max($allHeatValues) : 1;
+        if ($maxHeat < 1) $maxHeat = 1;
+        foreach ($heatmap as &$row) {
+            $row['data'] = array_map(function ($v) use ($maxHeat) {
+                return (int) round(($v / $maxHeat) * 4);
+            }, $row['data']);
+        }
+
+        // ── Recent High Value Orders ─────────────────────────────────────
+        $highValueOrders = $orders->sortByDesc('total')->take(4)->map(function ($o) {
+            return [
+                'id' => '#' . str_pad($o->id, 4, '0', STR_PAD_LEFT),
+                'customer' => $o->customer ? ($o->customer->first_name . ' ' . $o->customer->last_name) : 'Guest',
+                'avatar' => null,
+                'total' => round((float) $o->total, 2),
+                'status' => $o->status,
+            ];
+        })->values();
+
+        // ── Revenue Breakdown ────────────────────────────────────────────
+        $totalFoodSales = $deliveredOrders->sum('subtotal');
+        $platformFees = round($totalFoodSales * 0.15, 2); // 15% platform fee
+        $taxes = round($totalFoodSales * 0.05, 2); // 5% tax
+        $netRevenue = round($totalFoodSales - $platformFees - $taxes, 2);
+
+        return response()->json([
+            'metrics' => [
+                'total_revenue' => round($totalRevenue, 2),
+                'revenue_trend' => $revenueTrend,
+                'prev_revenue' => round($prevRevenue, 2),
+                'pending_revenue' => round($pendingRevenue, 2),
+                'all_time_revenue' => round($allTimeRevenue, 2),
+                'total_orders' => $totalOrdersCount,
+                'orders_trend' => $ordersTrend,
+                'prev_orders' => $prevOrdersCount,
+                'avg_order_value' => $avgOrderValue,
+                'avg_trend' => $avgTrend,
+                'new_customers' => $newCustomers,
+                'customers_trend' => $customersTrend,
+                'prev_customers' => $prevCustomers,
+            ],
+            'revenue_breakdown' => [
+                'food_sales' => round($totalFoodSales, 2),
+                'platform_fees' => $platformFees,
+                'taxes' => $taxes,
+                'net_revenue' => $netRevenue,
+            ],
+            'daily_revenue' => $dailyRevenue,
+            'top_items' => $topItems,
+            'heatmap' => $heatmap,
+            'high_value_orders' => $highValueOrders,
+        ]);
     }
 }
