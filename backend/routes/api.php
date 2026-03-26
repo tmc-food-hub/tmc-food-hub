@@ -111,4 +111,10 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Performance Overview
     Route::get('/performance', [AdminController::class, 'performance']);
+
+    // Settings Management
+    Route::get('/settings', [AdminController::class, 'getSettings']);
+    Route::put('/settings/general', [AdminController::class, 'updateGeneralSettings']);
+    Route::put('/settings/commission', [AdminController::class, 'updateCommissionSettings']);
+    Route::put('/settings/notifications', [AdminController::class, 'updateNotificationSettings']);
 });

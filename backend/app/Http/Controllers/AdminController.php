@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\PlatformSettings;
 use App\Models\RestaurantOwner;
 use App\Models\Review;
 use App\Models\User;
@@ -1460,6 +1461,121 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             Log::error('Error fetching performance data: ' . $e->getMessage());
             return response()->json(['message' => 'Error fetching performance data'], 500);
+        }
+    }
+
+    public function getSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $settings = PlatformSettings::getSettings();
+            return response()->json([
+                'data' => $settings,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching settings'], 500);
+        }
+    }
+
+    public function updateGeneralSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'platform_status' => 'sometimes|in:live,maintenance',
+                'platform_name' => 'sometimes|string|max:255',
+                'tagline' => 'sometimes|string|max:255',
+                'support_email' => 'sometimes|email',
+                'phone_number' => 'sometimes|string|max:20',
+                'currency' => 'sometimes|in:PHP,USD,EUR',
+                'language' => 'sometimes|in:English,Filipino',
+                'timezone' => 'sometimes|timezone',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'General settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating general settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating general settings'], 500);
+        }
+    }
+
+    public function updateCommissionSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'default_commission_rate' => 'sometimes|numeric|min:0|max:100',
+                'commission_type' => 'sometimes|in:percentage,fixed,tiered',
+                'tiered_commission' => 'sometimes|array',
+                'delivery_mode' => 'sometimes|in:restaurant,platform,mixed',
+                'platform_delivery_fee' => 'sometimes|numeric|min:0',
+                'minimum_order_value' => 'sometimes|numeric|min:0',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'Commission settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating commission settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating commission settings'], 500);
+        }
+    }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'notify_new_orders' => 'sometimes|boolean',
+                'notify_disputes' => 'sometimes|boolean',
+                'notify_reviews' => 'sometimes|boolean',
+                'notify_promotions' => 'sometimes|boolean',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'Notification settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating notification settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating notification settings'], 500);
         }
     }
 }
