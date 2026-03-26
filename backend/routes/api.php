@@ -127,4 +127,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Activity Logs
     Route::get('/activity-logs', [AdminController::class, 'getActivityLogs']);
+
+    // Security Settings
+    Route::get('/security-settings', [AdminController::class, 'getSecuritySettings']);
+    Route::put('/security-settings', [AdminController::class, 'updateSecuritySettings']);
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\SecuritySettings;
 use App\Models\Order;
 use App\Models\PlatformSettings;
 use App\Models\RestaurantOwner;
@@ -1821,5 +1822,61 @@ class AdminController extends Controller
             return $parts[0] . '.' . $parts[1] . '.····.···';
         }
         return '···.···.····.···';
+    }
+
+    public function getSecuritySettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $settings = SecuritySettings::getSettings();
+
+            return response()->json([
+                'data' => [
+                    'two_factor_auth' => $settings->two_factor_auth,
+                    'email_alerts' => $settings->email_alerts,
+                    'sms_emergency' => $settings->sms_emergency,
+                    'session_timeout' => $settings->session_timeout,
+                    'max_login_attempts' => $settings->max_login_attempts,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching security settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching security settings'], 500);
+        }
+    }
+
+    public function updateSecuritySettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'two_factor_auth' => 'sometimes|boolean',
+                'email_alerts' => 'sometimes|boolean',
+                'sms_emergency' => 'sometimes|boolean',
+                'session_timeout' => 'sometimes|string',
+                'max_login_attempts' => 'sometimes|integer|min:1|max:20',
+            ]);
+
+            SecuritySettings::updateSettings($validated);
+
+            return response()->json([
+                'message' => 'Security settings updated successfully'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating security settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating security settings'], 500);
+        }
     }
 }

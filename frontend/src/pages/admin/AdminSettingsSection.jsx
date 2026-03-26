@@ -1028,36 +1028,123 @@ function ActivityLogsTab() {
 
 /* ─── Security Tab ──────────────────────────────────────────────────────────── */
 function SecurityTab() {
-    const [twoFA, setTwoFA] = useState(true);
-    const [emailAlerts, setEmailAlerts] = useState(true);
-    const [smsEmergency, setSmsEmergency] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [securitySettings, setSecuritySettings] = useState({
+        two_factor_auth: true,
+        email_alerts: true,
+        sms_emergency: true,
+        session_timeout: '30 minutes',
+        max_login_attempts: 5,
+    });
+
+    useEffect(() => {
+        fetchSecuritySettings();
+    }, []);
+
+    const fetchSecuritySettings = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/security-settings');
+            const data = response.data.data;
+            setSecuritySettings({
+                two_factor_auth: data.two_factor_auth ?? true,
+                email_alerts: data.email_alerts ?? true,
+                sms_emergency: data.sms_emergency ?? true,
+                session_timeout: data.session_timeout || '30 minutes',
+                max_login_attempts: data.max_login_attempts || 5,
+            });
+        } catch (err) {
+            console.error('Error fetching security settings:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveSecuritySettings = async () => {
+        try {
+            setSaving(true);
+            await api.put('/admin/security-settings', {
+                two_factor_auth: securitySettings.two_factor_auth,
+                email_alerts: securitySettings.email_alerts,
+                sms_emergency: securitySettings.sms_emergency,
+                session_timeout: securitySettings.session_timeout,
+                max_login_attempts: securitySettings.max_login_attempts,
+            });
+            setSuccessMessage('Security settings saved successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving security settings:', err);
+            alert('Failed to save security settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSecurityChange = (field, value) => {
+        setSecuritySettings(prev => ({ ...prev, [field]: value }));
+    };
+
+    const toggleSecuritySwitch = (field) => {
+        setSecuritySettings(prev => ({ ...prev, [field]: !prev[field] }));
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading security settings...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Security Settings</h2>
         <p className={styles.sectionSub}>Configure platform-wide security protocols, authentication policies, and access controls for the TMC Foodhub administrative interface.</p>
+
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
 
         <div className={styles.twoColWide}>
             <div className={styles.leftCol}>
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔒 Authentication & Access</h3>
                     <div className={styles.securityToggleRow}>
-                        <div className={`${styles.toggle} ${twoFA ? styles.toggleOn : ''}`} onClick={() => setTwoFA(!twoFA)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.two_factor_auth ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('two_factor_auth')}><div className={styles.toggleDot} /></div>
                         <div><div className={styles.deliveryName}>Force Two-Factor Authentication</div><div className={styles.deliveryDesc}>Require all admin users to authenticate via mobile app or SMS.</div></div>
                     </div>
                     <div className={styles.fieldGrid} style={{ marginTop: '1rem' }}>
-                        <div className={styles.field}><label>Session Timeout</label><select><option>30 minutes</option><option>15 minutes</option><option>1 hour</option></select></div>
-                        <div className={styles.field}><label>Max Login Attempts</label><select><option>5 attempts</option><option>3 attempts</option><option>10 attempts</option></select></div>
+                        <div className={styles.field}>
+                            <label>Session Timeout</label>
+                            <select value={securitySettings.session_timeout} onChange={(e) => handleSecurityChange('session_timeout', e.target.value)}>
+                                <option>30 minutes</option>
+                                <option>15 minutes</option>
+                                <option>1 hour</option>
+                            </select>
+                        </div>
+                        <div className={styles.field}>
+                            <label>Max Login Attempts</label>
+                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value))}>
+                                <option value="3">3 attempts</option>
+                                <option value="5">5 attempts</option>
+                                <option value="10">10 attempts</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔔 Security Notifications</h3>
                     <div className={styles.secNotifRow}>
-                        <div className={`${styles.toggle} ${emailAlerts ? styles.toggleOn : ''}`} onClick={() => setEmailAlerts(!emailAlerts)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.email_alerts ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('email_alerts')}><div className={styles.toggleDot} /></div>
                         <span className={styles.secNotifLabel}>Email Alerts</span>
                     </div>
                     <div className={styles.secNotifRow}>
-                        <div className={`${styles.toggle} ${smsEmergency ? styles.toggleOn : ''}`} onClick={() => setSmsEmergency(!smsEmergency)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.sms_emergency ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('sms_emergency')}><div className={styles.toggleDot} /></div>
                         <span className={styles.secNotifLabel}>SMS (Emergency)</span>
                     </div>
                 </div>
@@ -1078,6 +1165,46 @@ function SecurityTab() {
 
         <div className={styles.secFooterNote}>
             <span className={styles.secFooterDot} /> System changes will be logged in Activity Logs audit trail.
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSaveSecuritySettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Update Security Policy</>}
+            </button>
+            <button 
+                onClick={fetchSecuritySettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
