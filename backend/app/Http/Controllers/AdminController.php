@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\PlatformSettings;
 use App\Models\RestaurantOwner;
@@ -1763,5 +1764,62 @@ class AdminController extends Controller
             Log::error('Error updating role permissions: ' . $e->getMessage());
             return response()->json(['message' => 'Error updating role permissions'], 500);
         }
+    }
+
+    public function getActivityLogs(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $logs = ActivityLog::with('admin')
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function ($log) {
+                    return [
+                        'id' => $log->id,
+                        'name' => $log->admin->name,
+                        'role' => $log->admin->role,
+                        'action' => $log->action,
+                        'actionClass' => $this->getActionClass($log->action),
+                        'desc' => $log->description,
+                        'page' => $log->page,
+                        'ip' => $this->maskIp($log->ip_address),
+                        'device' => $log->device ?? 'Unknown',
+                        'time' => $log->created_at->format('M d, Y. g:i:s A'),
+                    ];
+                });
+
+            return response()->json(['data' => $logs]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching activity logs: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching activity logs'], 500);
+        }
+    }
+
+    private function getActionClass($action): string
+    {
+        return match($action) {
+            'Delete' => 'actionDelete',
+            'Update' => 'actionUpdate',
+            'Access' => 'actionAccess',
+            'Auth' => 'actionAuth',
+            default => 'actionDefault',
+        };
+    }
+
+    private function maskIp($ip): string
+    {
+        if (!$ip) return '···.···.····.···';
+        
+        $parts = explode('.', $ip);
+        if (count($parts) === 4) {
+            return $parts[0] . '.' . $parts[1] . '.····.···';
+        }
+        return '···.···.····.···';
     }
 }

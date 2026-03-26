@@ -124,4 +124,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Roles & Permissions
     Route::get('/permissions-roles', [AdminController::class, 'getPermissionsAndRoles']);
     Route::put('/permissions-roles', [AdminController::class, 'updateRolePermissions']);
+
+    // Activity Logs
+    Route::get('/activity-logs', [AdminController::class, 'getActivityLogs']);
 });

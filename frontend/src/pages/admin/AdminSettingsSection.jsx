@@ -959,13 +959,33 @@ function RolesPermissionsTab() {
 
 /* ─── Activity Logs Tab ─────────────────────────────────────────────────────── */
 function ActivityLogsTab() {
-    const LOGS = [
-        { name: 'Jordan Smith', role: 'Super Admin', action: 'Delete', actionClass: 'actionDelete', desc: "Deleted inactive vendor 'Spicy Hut #42'", page: 'Restaurant Management', ip: '192.168.····.···', device: 'macOS (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Alex Martinez', role: 'Analyst', action: 'Update', actionClass: 'actionUpdate', desc: 'Adjusted delivery radius to 15km for zone B2', page: 'Delivery Rules', ip: '172.16.····.···', device: 'Windows 11 (Edge)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Moderator', action: 'Access', actionClass: 'actionAccess', desc: "Downloaded 'Weekly Settlement Report'", page: 'Financials', ip: '10.0.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Admin', action: 'Auth', actionClass: 'actionAuth', desc: 'Modified login attempts policy to 5 retries', page: 'Security Settings', ip: '45.72.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Super Admin', action: 'Update', actionClass: 'actionUpdate', desc: 'Flagged order #9942 for manual review', page: 'Orders', ip: '24.112.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [logs, setLogs] = useState([]);
+
+    useEffect(() => {
+        fetchActivityLogs();
+    }, []);
+
+    const fetchActivityLogs = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/activity-logs');
+            setLogs(response.data.data || []);
+        } catch (err) {
+            console.error('Error fetching activity logs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading activity logs...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Activity Logs</h2>
@@ -982,8 +1002,8 @@ function ActivityLogsTab() {
             <table className={styles.logsTable}>
                 <thead><tr><th>Admin</th><th>Action Description</th><th>Page/Module</th><th>Masked IP</th><th>Device</th><th>Timestamp</th></tr></thead>
                 <tbody>
-                    {LOGS.map((l, i) => (
-                        <tr key={i}>
+                    {logs.map((l) => (
+                        <tr key={l.id}>
                             <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{l.name.split(' ').map(x => x[0]).join('')}</div><div><div className={styles.adminName}>{l.name}</div><div className={styles.adminEmail}>{l.role}</div></div></div></td>
                             <td><span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span><div className={styles.logActionDesc}>{l.desc}</div></td>
                             <td className={styles.logModule}>{l.page}</td>
