@@ -43,22 +43,26 @@ function MenuPage() {
         setLoading(true);
         try {
             const res = await api.get('/restaurants');
-            const mapped = res.data.map(s => ({
-                ...s,
-                cuisine: s.cuisine || 'Fast Food • Filipino • Asian',
-                deliveryTime: s.deliveryTime || '25-40 min',
-                status: s.status || 'Operational',
-                rating: s.rating || 4.5,
-                dietary: s.dietary || 'All',
-                cover: resolveMediaUrl(s.cover_image || s.logo) || 
-                    (s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
-                    s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
-                    s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
-                    s.name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
-                    s.name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
-                    s.name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
-                    '/assets/images/service/placeholder.svg')
-            }));
+            const mapped = res.data.map(s => {
+                const cuisineArr = Array.isArray(s.cuisine_type) && s.cuisine_type.length > 0 ? s.cuisine_type : [];
+                return {
+                    ...s,
+                    cuisine: cuisineArr.length > 0 ? cuisineArr.join(', ') : 'Fast Food',
+                    cuisineTags: cuisineArr,
+                    deliveryTime: s.deliveryTime || '25-40 min',
+                    status: s.status || 'Operational',
+                    rating: s.rating || 4.5,
+                    dietary: s.dietary || 'All',
+                    cover: resolveMediaUrl(s.cover_image || s.logo) || 
+                        (s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
+                        s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
+                        s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :
+                        s.name?.includes('Mang Inasal') ? '/assets/images/service/resturant_logo/Mang_Inasal.svg' :
+                        s.name?.includes('KFC') ? '/assets/images/service/resturant_logo/KFC.svg' :
+                        s.name?.includes('Chowking') ? '/assets/images/service/resturant_logo/chowking.svg' :
+                        '/assets/images/service/placeholder.svg')
+                };
+            });
             setStores(mapped);
         } catch (error) {
             console.error('Failed to fetch restaurants:', error);
@@ -93,9 +97,9 @@ function MenuPage() {
         if (activeCuisines.length > 0) {
             matchCuisine = activeCuisines.some(c => {
                 if (c === 'Asian') {
-                    return /asian|japanese|chinese|filipino|korean|thai|vietnamese|indian/i.test(s.cuisine);
+                    return s.cuisineTags.some(t => /asian|japanese|chinese|filipino|korean|thai|vietnamese|indian/i.test(t));
                 }
-                return s.cuisine.toLowerCase().includes(c.toLowerCase());
+                return s.cuisineTags.some(t => t.toLowerCase() === c.toLowerCase());
             });
         }
 
@@ -178,17 +182,21 @@ function MenuPage() {
                                             <Search size={14} className={styles.sidebarSearchIcon} />
                                             <input type="text" placeholder="Search for cuisines" className={styles.sidebarSearchInput} />
                                         </div>
-                                        {['Alcoholic Drinks', 'American', 'Asian', 'BBQ', 'Beverages', 'Biryani'].map(cuisine => (
-                                            <label key={cuisine} className={styles.checkboxLabel}>
-                                                <input
-                                                    type="checkbox"
-                                                    className={styles.checkboxInput}
-                                                    checked={activeCuisines.includes(cuisine)}
-                                                    onChange={() => toggleCuisine(cuisine)}
-                                                />
-                                                {cuisine}
-                                            </label>
-                                        ))}
+                                        {(() => {
+                                            const allTags = [...new Set(stores.flatMap(s => s.cuisineTags))];
+                                            const tagsToShow = allTags.length > 0 ? allTags : ['Alcoholic Drinks', 'American', 'Asian', 'BBQ', 'Beverages', 'Biryani'];
+                                            return tagsToShow.map(cuisine => (
+                                                <label key={cuisine} className={styles.checkboxLabel}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className={styles.checkboxInput}
+                                                        checked={activeCuisines.includes(cuisine)}
+                                                        onChange={() => toggleCuisine(cuisine)}
+                                                    />
+                                                    {cuisine}
+                                                </label>
+                                            ));
+                                        })()}
                                         <button className={styles.showMoreBtn}>Show More ∨</button>
                                     </div>
 

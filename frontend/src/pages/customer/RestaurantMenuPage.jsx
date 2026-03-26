@@ -72,12 +72,14 @@ function RestaurantMenuPage() {
                 });
             });
 
+            const cuisineArr = Array.isArray(storeData.cuisine_type) && storeData.cuisine_type.length > 0 ? storeData.cuisine_type : [];
+
             // Map backend store data to frontend structure if needed
             const formattedStore = {
                 ...storeData,
                 restaurant_id: storeData.id,
                 name: storeData.restaurant_name || storeData.name,
-                cuisine: storeData.cuisine || 'Fast Food • Filipino • Asian',
+                cuisine: cuisineArr.length > 0 ? cuisineArr.join(' • ') : 'Fast Food • Filipino • Asian',
                 deliveryTime: storeData.deliveryTime || '25-40 min',
                 status: storeData.status || 'Operational',
                 logo: resolveMediaUrl(storeData.logo) || (storeData.restaurant_name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :

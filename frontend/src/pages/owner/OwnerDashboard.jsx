@@ -82,6 +82,7 @@ function OwnerDashboard() {
     const navigate = useNavigate();
     const location = useLocation();
     const [active, setActive] = useState('overview');
+    const [settingsSubTab, setSettingsSubTab] = useState(null);
     const [profileOpen, setProfileOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -282,8 +283,18 @@ function OwnerDashboard() {
                 <div className={styles.sidebarFooter}>
                     {!sidebarCollapsed && profileOpen && (
                         <div className={styles.profileMenu}>
-                            <button className={styles.profileMenuBtn}>View Profile</button>
-                            <button className={styles.profileMenuBtn}>Account Settings</button>
+                            <button 
+                                className={styles.profileMenuBtn}
+                                onClick={() => { setActive('settings'); setSettingsSubTab('restaurant-profile'); setProfileOpen(false); }}
+                            >
+                                Restaurant Profile
+                            </button>
+                            <button 
+                                className={styles.profileMenuBtn}
+                                onClick={() => { setActive('settings'); setSettingsSubTab('account'); setProfileOpen(false); }}
+                            >
+                                Account Settings
+                            </button>
                             <button className={styles.profileMenuBtn}>Dark Mode <ToggleLeft size={16} /></button>
                             <div className={styles.profileMenuDivider}></div>
                             <button className={`${styles.profileMenuBtn} ${styles.profileMenuLogout}`} onClick={() => { logout(); navigate('/owner-login'); }}>
@@ -292,10 +303,10 @@ function OwnerDashboard() {
                         </div>
                     )}
                     <button className={styles.storeProfileBtn} onClick={() => !sidebarCollapsed && setProfileOpen(!profileOpen)}>
-                        {ownerStore.cover ? (
-                            <img src={ownerStore.cover} alt={ownerStore.name} className={styles.storeAvatar} style={{ objectFit: 'contain', background: '#fff', border: '1px solid #E5E7EB' }} />
+                        {ownerStore.logo ? (
+                            <img src={ownerStore.logo} alt={ownerStore.branchName} className={styles.storeAvatar} style={{ objectFit: 'contain', background: '#fff', border: '1px solid #E5E7EB' }} />
                         ) : (
-                            <div className={styles.storeAvatar}>{ownerStore.name.charAt(0)}</div>
+                            <div className={styles.storeAvatar}>{(ownerStore.branchName || 'S').charAt(0)}</div>
                         )}
                         {!sidebarCollapsed && (
                             <div className={styles.storeDetails}>
@@ -393,6 +404,7 @@ function OwnerDashboard() {
                             refreshOwner={refreshOwner}
                             items={inventoryItems}
                             refreshInventory={refreshInventory}
+                            activeSubTab={settingsSubTab}
                         />
                     )}
                 </div>
