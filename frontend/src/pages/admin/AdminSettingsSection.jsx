@@ -427,12 +427,6 @@ function CommissionTab() {
                     </div>
                     <p className={styles.fieldNote}>Applied per order for platform-managed deliveries.</p>
                 </div>
-                {/* Revenue Card */}
-                <div className={styles.revenueCard}>
-                    <div className={styles.revenueLabel}>Estimated Daily Revenue</div>
-                    <div className={styles.revenueValue}>₱ 142,500.25</div>
-                    <div className={styles.revenueSub}><TrendingUp size={14} /> +4.2% from yesterday</div>
-                </div>
             </div>
         </div>
 
