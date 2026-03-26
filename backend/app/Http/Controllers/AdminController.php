@@ -1645,4 +1645,123 @@ class AdminController extends Controller
         ];
         return $classMap[$status] ?? 'statusActive';
     }
+
+    public function getPermissionsAndRoles(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $roles = \DB::table('roles')->get();
+            $permissions = \DB::table('permissions')
+                ->select('id', 'name', 'display_name', 'description', 'category')
+                ->get();
+            $rolePermissions = \DB::table('role_permissions')->get();
+
+            // Group permissions by category
+            $permissionsByCategory = [];
+            foreach ($permissions as $perm) {
+                if (!isset($permissionsByCategory[$perm->category])) {
+                    $permissionsByCategory[$perm->category] = [];
+                }
+                $permissionsByCategory[$perm->category][] = $perm;
+            }
+
+            // Build permissions structure
+            $permsStructure = [];
+            foreach ($permissionsByCategory as $category => $perms) {
+                $items = [];
+                foreach ($perms as $perm) {
+                    $permRoles = $rolePermissions
+                        ->filter(function ($rp) use ($perm) {
+                            return $rp->permission_id == $perm->id;
+                        })
+                        ->pluck('role_id')
+                        ->toArray();
+
+                    $items[] = [
+                        'id' => 'perm_' . $perm->id,
+                        'label' => $perm->display_name,
+                        'desc' => $perm->description,
+                        'permissionId' => $perm->id,
+                        'roleIds' => $permRoles,
+                    ];
+                }
+                $permsStructure[] = [
+                    'category' => $category,
+                    'items' => $items,
+                ];
+            }
+
+            // Build roles structure
+            $rolesStructure = $roles->map(function ($role) {
+                return [
+                    'id' => $role->id,
+                    'name' => $role->display_name,
+                    'icon' => $role->icon ?? '🎯',
+                    'badge' => $role->badge,
+                    'badgeClass' => $role->badge_class,
+                    'desc' => $role->description,
+                ];
+            })->values();
+
+            return response()->json([
+                'roles' => $rolesStructure,
+                'permissions' => $permsStructure,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching permissions and roles: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching permissions and roles'], 500);
+        }
+    }
+
+    public function updateRolePermissions(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'permissions' => 'required|array',
+                'permissions.*.permission_id' => 'required|integer',
+                'permissions.*.role_ids' => 'required|array',
+            ]);
+
+            // Update role_permissions pivot table
+            foreach ($validated['permissions'] as $item) {
+                $permissionId = $item['permission_id'];
+                $roleIds = $item['role_ids'];
+
+                // Delete existing associations
+                \DB::table('role_permissions')
+                    ->where('permission_id', $permissionId)
+                    ->delete();
+
+                // Insert new associations
+                foreach ($roleIds as $roleId) {
+                    \DB::table('role_permissions')->insert([
+                        'role_id' => $roleId,
+                        'permission_id' => $permissionId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Role permissions updated successfully',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating role permissions: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating role permissions'], 500);
+        }
+    }
 }

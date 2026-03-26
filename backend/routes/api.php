@@ -120,4 +120,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Admin Management
     Route::get('/admins', [AdminController::class, 'getAdmins']);
+
+    // Roles & Permissions
+    Route::get('/permissions-roles', [AdminController::class, 'getPermissionsAndRoles']);
+    Route::put('/permissions-roles', [AdminController::class, 'updateRolePermissions']);
 });

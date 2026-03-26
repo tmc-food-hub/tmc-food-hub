@@ -787,51 +787,112 @@ function AdminManagementTab() {
 
 /* ─── Roles & Permissions Tab ───────────────────────────────────────────────── */
 function RolesPermissionsTab() {
-    const PERMS = [
-        { category: 'Platform Management', items: [
-            { label: 'System Configuration', desc: 'Edit core platform settings & integrations', perms: [true, false, false, false] },
-            { label: 'User Role Management', desc: 'User Role Management', perms: [true, true, false, false] },
-        ]},
-        { category: 'Order Operations', items: [
-            { label: 'Cancel & Refund Orders', desc: 'Ability to override active orders and issue credits', perms: [true, true, true, false] },
-            { label: 'View Transaction Data', desc: 'Access to detailed payment and fee breakdown', perms: [true, true, true, true] },
-        ]},
-        { category: 'Marketing & Growth', items: [
-            { label: 'Create Promotions', desc: 'Manage coupon codes and delivery fee waivers', perms: [true, true, false, false] },
-        ]},
-    ];
-    const ROLES = ['SUPER ADMIN', 'ADMIN', 'MODERATOR', 'ANALYST'];
-    const ROLE_CARDS = [
-        { icon: '🎯', name: 'Super Admin', badge: 'Unlimited Power', badgeClass: 'badgeRed', desc: 'Unrestricted access to all modules, financial settings, and API integrations. Primary account owner role.' },
-        { icon: '👤', name: 'Admin', badge: 'Operational Lead', badgeClass: 'badgeGray', desc: 'Full operational control over orders, merchants, and users. Cannot modify global system billing logic.' },
-        { icon: '🛡', name: 'Moderator', badge: 'Support Level', badgeClass: 'badgeGray', desc: 'Focused on order support and merchant menu management. Limited access to financial data.' },
-        { icon: '📊', name: 'Analyst', badge: 'Data Only', badgeClass: 'badgeGray', desc: 'Read-only access to dashboards and transaction logs. Can export data but cannot modify records.' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [permissions, setPermissions] = useState([]);
+    const [roles, setRoles] = useState([]);
+    const [permState, setPermState] = useState({});
 
-    const [permState, setPermState] = useState(() => {
-        const s = {};
-        PERMS.forEach(cat => cat.items.forEach(item => { item.perms.forEach((v, i) => { s[`${item.label}_${i}`] = v; }); }));
-        return s;
-    });
+    useEffect(() => {
+        fetchPermissionsAndRoles();
+    }, []);
+
+    const fetchPermissionsAndRoles = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/permissions-roles');
+            const { permissions: permsData, roles: rolesData } = response.data;
+            
+            setPermissions(permsData);
+            setRoles(rolesData);
+
+            // Build permState from fetched data
+            const newPermState = {};
+            permsData.forEach(cat => {
+                cat.items.forEach(item => {
+                    rolesData.forEach((role, roleIdx) => {
+                        newPermState[`${item.id}_${roleIdx}`] = item.roleIds.includes(role.id);
+                    });
+                });
+            });
+            setPermState(newPermState);
+        } catch (err) {
+            console.error('Error fetching permissions and roles:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSavePermissions = async () => {
+        try {
+            setSaving(true);
+            
+            // Build the update payload
+            const updates = [];
+            permissions.forEach(cat => {
+                cat.items.forEach(item => {
+                    const roleIds = [];
+                    roles.forEach((role, roleIdx) => {
+                        if (permState[`${item.id}_${roleIdx}`]) {
+                            roleIds.push(role.id);
+                        }
+                    });
+                    updates.push({
+                        permission_id: item.permissionId,
+                        role_ids: roleIds,
+                    });
+                });
+            });
+
+            await api.put('/admin/permissions-roles', { permissions: updates });
+            setSuccessMessage('Permissions updated successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving permissions:', err);
+            alert('Failed to save permissions');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading permissions and roles...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Roles & Permissions</h2>
         <p className={styles.sectionSub}>Configure platform access levels by defining granular permissions for each user role. Ensure administrative security through the principle of least privilege.</p>
 
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
+
         <div className={styles.card}>
             <table className={styles.permTable}>
-                <thead><tr><th>Permission Category & Action</th>{ROLES.map(r => <th key={r}>{r}</th>)}</tr></thead>
+                <thead><tr><th>Permission Category & Action</th>{roles.map(r => <th key={r.id}>{r.name.toUpperCase()}</th>)}</tr></thead>
                 <tbody>
-                    {PERMS.map(cat => (
+                    {permissions.map(cat => (
                         <React.Fragment key={cat.category}>
-                            <tr><td colSpan={5} className={styles.permCategory}>{cat.category}</td></tr>
+                            <tr><td colSpan={roles.length + 1} className={styles.permCategory}>{cat.category}</td></tr>
                             {cat.items.map(item => (
-                                <tr key={item.label}>
+                                <tr key={item.id}>
                                     <td><div className={styles.permName}>{item.label}</div><div className={styles.permDesc}>{item.desc}</div></td>
-                                    {ROLES.map((_, ri) => (
-                                        <td key={ri} className={styles.permCheckCell}>
+                                    {roles.map((role, roleIdx) => (
+                                        <td key={role.id} className={styles.permCheckCell}>
                                             <label className={styles.permCheckbox}>
-                                                <input type="checkbox" checked={permState[`${item.label}_${ri}`] || false} onChange={() => setPermState(p => ({ ...p, [`${item.label}_${ri}`]: !p[`${item.label}_${ri}`] }))} />
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={permState[`${item.id}_${roleIdx}`] || false} 
+                                                    onChange={() => setPermState(p => ({ ...p, [`${item.id}_${roleIdx}`]: !p[`${item.id}_${roleIdx}`] }))} 
+                                                />
                                                 <span className={styles.permCheck}><CheckCircle2 size={14} /></span>
                                             </label>
                                         </td>
@@ -845,13 +906,53 @@ function RolesPermissionsTab() {
         </div>
 
         <div className={styles.roleCardsGrid}>
-            {ROLE_CARDS.map(r => (
-                <div key={r.name} className={styles.roleCard}>
+            {roles.map(r => (
+                <div key={r.id} className={styles.roleCard}>
                     <div className={styles.roleCardHeader}><span className={styles.roleCardIcon}>{r.icon}</span><strong>{r.name}</strong></div>
                     <span className={`${styles.roleCardBadge} ${styles[r.badgeClass]}`}>{r.badge}</span>
                     <p className={styles.roleCardDesc}>{r.desc}</p>
                 </div>
             ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSavePermissions}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Save Permissions</>}
+            </button>
+            <button 
+                onClick={fetchPermissionsAndRoles}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
