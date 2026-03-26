@@ -734,12 +734,33 @@ function NotificationsTab() {
 
 /* ─── Admin Management Tab ──────────────────────────────────────────────────── */
 function AdminManagementTab() {
-    const admins = [
-        { name: 'Jordan Smith', email: 'jordan.smith@email.com', role: 'Super Admin', roleClass: 'roleSuperAdmin', status: 'Active', statusClass: 'statusActive', lastActive: 'Just now' },
-        { name: 'Alex Martinez', email: 'alex.martinez@email.com', role: 'Analyst', roleClass: 'roleAnalyst', status: 'Inactive', statusClass: 'statusInactive', lastActive: '2 hours ago' },
-        { name: 'Elena Kostic', email: 'elena.kostic@email.com', role: 'Moderator', roleClass: 'roleModerator', status: 'Suspended', statusClass: 'statusSuspended', lastActive: '3 days ago' },
-        { name: 'John Doe', email: 'john.doe@email.com', role: 'Admin', roleClass: 'roleAdmin', status: 'Active', statusClass: 'statusActive', lastActive: '14 mins ago' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [admins, setAdmins] = useState([]);
+
+    useEffect(() => {
+        fetchAdmins();
+    }, []);
+
+    const fetchAdmins = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/admins');
+            setAdmins(response.data.data || []);
+        } catch (err) {
+            console.error('Error fetching admins:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading admins...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Admin Management</h2>
@@ -750,7 +771,7 @@ function AdminManagementTab() {
                 <thead><tr><th>Admin</th><th>Role</th><th>Status</th><th>Last Active</th><th>Actions</th></tr></thead>
                 <tbody>
                     {admins.map(a => (
-                        <tr key={a.email}>
+                        <tr key={a.id}>
                             <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{a.name.split(' ').map(x=>x[0]).join('')}</div><div><div className={styles.adminName}>{a.name}</div><div className={styles.adminEmail}>{a.email}</div></div></div></td>
                             <td><span className={`${styles.rolePill} ${styles[a.roleClass]}`}>{a.role}</span></td>
                             <td><span className={`${styles.statusDot} ${styles[a.statusClass]}`}>{a.status}</span></td>
@@ -760,19 +781,6 @@ function AdminManagementTab() {
                     ))}
                 </tbody>
             </table>
-        </div>
-
-        <div className={styles.twoCol}>
-            <div className={styles.card}>
-                <h3 className={styles.cardLabel}>🔴 Recent Permission Changes</h3>
-                <div className={styles.logItem}><span className={styles.logDot} style={{ background: '#DC2626' }} /><div><div className={styles.logText}>Role "Analyst" assigned to Marcus Thorne</div><div className={styles.logMeta}>By Sarah Chen • 2 hours ago</div></div></div>
-                <div className={styles.logItem}><span className={styles.logDot} style={{ background: '#D1D5DB' }} /><div><div className={styles.logText}>Password reset enforced for all Moderators</div><div className={styles.logMeta}>System Security • 5 hours ago</div></div></div>
-            </div>
-            <div className={styles.card}>
-                <h3 className={styles.cardLabel}>🔒 Security Checklist</h3>
-                <div className={styles.checkItem}><span>2FA Enabled for all Admins</span><CheckCircle2 size={18} className={styles.checkGreen} /></div>
-                <div className={styles.checkItem}><span>IP Whitelisting Active</span><CheckCircle2 size={18} className={styles.checkGreen} /></div>
-            </div>
         </div>
     </>);
 }

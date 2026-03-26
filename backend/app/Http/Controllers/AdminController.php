@@ -1578,4 +1578,71 @@ class AdminController extends Controller
             return response()->json(['message' => 'Error updating notification settings'], 500);
         }
     }
+
+    public function getAdmins(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $admins = User::where('role', 'admin')
+                ->select('id', 'name', 'email', 'role', 'status', 'last_active', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($admin) {
+                    return [
+                        'id' => $admin->id,
+                        'name' => $admin->name,
+                        'email' => $admin->email,
+                        'role' => $this->formatAdminRole($admin->role),
+                        'roleClass' => $this->getRoleClass($admin->role),
+                        'status' => $admin->status ?? 'Active',
+                        'statusClass' => $this->getStatusClass($admin->status ?? 'Active'),
+                        'lastActive' => $admin->last_active ? \Carbon\Carbon::parse($admin->last_active)->diffForHumans() : 'Never',
+                    ];
+                });
+
+            return response()->json([
+                'data' => $admins,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching admins: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching admins'], 500);
+        }
+    }
+
+    private function formatAdminRole($role)
+    {
+        $roleMap = [
+            'admin' => 'Admin',
+            'super_admin' => 'Super Admin',
+            'moderator' => 'Moderator',
+            'analyst' => 'Analyst',
+        ];
+        return $roleMap[$role] ?? ucfirst($role);
+    }
+
+    private function getRoleClass($role)
+    {
+        $classMap = [
+            'admin' => 'roleAdmin',
+            'super_admin' => 'roleSuperAdmin',
+            'moderator' => 'roleModerator',
+            'analyst' => 'roleAnalyst',
+        ];
+        return $classMap[$role] ?? 'roleAdmin';
+    }
+
+    private function getStatusClass($status)
+    {
+        $classMap = [
+            'Active' => 'statusActive',
+            'Inactive' => 'statusInactive',
+            'Suspended' => 'statusSuspended',
+        ];
+        return $classMap[$status] ?? 'statusActive';
+    }
 }
