@@ -183,7 +183,13 @@ function MenuPage() {
                                             <input type="text" placeholder="Search for cuisines" className={styles.sidebarSearchInput} />
                                         </div>
                                         {(() => {
-                                            const allTags = [...new Set(stores.flatMap(s => s.cuisineTags))];
+                                            const seen = new Set();
+                                            const allTags = stores.flatMap(s => s.cuisineTags).filter(t => {
+                                                const key = t.toLowerCase();
+                                                if (seen.has(key)) return false;
+                                                seen.add(key);
+                                                return true;
+                                            });
                                             const tagsToShow = allTags.length > 0 ? allTags : ['Alcoholic Drinks', 'American', 'Asian', 'BBQ', 'Beverages', 'Biryani'];
                                             return tagsToShow.map(cuisine => (
                                                 <label key={cuisine} className={styles.checkboxLabel}>
