@@ -152,12 +152,15 @@ function AnalyticsSection() {
                                                             style={{
                                                                 height: `${barHeight}%`,
                                                                 background: hoveredBar === idx
-                                                                    ? 'linear-gradient(to bottom, #7F1D1D, #991B1B)'
-                                                                    : 'linear-gradient(to bottom, #8B3A2A, #D4845A)',
+                                                                    ? 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)'
+                                                                    : 'linear-gradient(135deg, #F87171 0%, #DC2626 100%)',
+                                                                boxShadow: hoveredBar === idx ? '0 -4px 12px rgba(220, 38, 38, 0.4)' : 'none',
+                                                                borderTopLeftRadius: '6px',
+                                                                borderTopRightRadius: '6px',
+                                                                borderBottomLeftRadius: '2px',
+                                                                borderBottomRightRadius: '2px',
                                                                 cursor: 'pointer',
-                                                                transition: 'background 0.2s ease',
-                                                                borderTopLeftRadius: '4px',
-                                                                borderTopRightRadius: '4px',
+                                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                                             }}
                                                             onMouseEnter={() => setHoveredBar(idx)}
                                                             onMouseLeave={() => setHoveredBar(null)}
@@ -178,7 +181,7 @@ function AnalyticsSection() {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className={styles.barXLabel}>{bar.day}</div>
+                                                    <div className={styles.barXLabel} style={{ minHeight: '16px', fontSize: '0.65rem', fontWeight: 600, color: hoveredBar === idx ? '#111827' : '#6B7280', transition: 'color 0.2s' }}>{bar.day}</div>
                                                 </div>
                                             );
                                         })}
@@ -188,32 +191,32 @@ function AnalyticsSection() {
                         </div>
 
                         {/* Top Selling Items */}
-                        <div className={styles.cardSection}>
-                            <div className={styles.chartHeader} style={{ marginBottom: '1.5rem' }}>
+                        <div className={styles.cardSection} style={{ background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)', border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+                            <div className={styles.chartHeader} style={{ marginBottom: '1.5rem', padding: '1.5rem 1.5rem 0' }}>
                                 <h3 className={styles.chartTitle}>Top Selling Items</h3>
                             </div>
 
-                            <div className={styles.topSellingList}>
+                            <div className={styles.topSellingList} style={{ padding: '0 1.5rem 1.5rem' }}>
                                 {topItems.length === 0 ? (
                                     <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem', fontSize: '0.9rem' }}>No sales data yet</div>
                                 ) : topItems.map((item, i) => (
-                                    <div key={i} className={styles.topSellingItem}>
+                                    <div key={i} className={styles.topSellingItem} style={{ padding: '0.75rem 0', borderBottom: i === topItems.length - 1 ? 'none' : '1px solid #F3F4F6' }}>
                                         {item.image ? (
-                                            <img src={resolveMediaUrl(item.image)} alt={item.name} className={styles.topSellingImg} />
+                                            <img src={resolveMediaUrl(item.image)} alt={item.name} className={styles.topSellingImg} style={{ borderRadius: '10px', width: '50px', height: '50px', objectFit: 'cover' }} />
                                         ) : (
-                                            <div className={styles.topSellingImg} style={{ background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#9ca3af', borderRadius: '8px' }}>
+                                            <div className={styles.topSellingImg} style={{ background: 'linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: '#9CA3AF', borderRadius: '10px', width: '50px', height: '50px' }}>
                                                 {item.name?.charAt(0)}
                                             </div>
                                         )}
-                                        <div className={styles.topSellingDetails}>
-                                            <div className={styles.topSellingRow}>
-                                                <span className={styles.topSellingName}>{item.name}</span>
-                                                <span className={styles.topSellingCount}>{item.orders} sold</span>
+                                        <div className={styles.topSellingDetails} style={{ flex: 1, marginLeft: '1rem' }}>
+                                            <div className={styles.topSellingRow} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                <span className={styles.topSellingName} style={{ fontWeight: 600, fontSize: '0.95rem', color: '#111827' }}>{item.name}</span>
+                                                <span className={styles.topSellingCount} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#DC2626' }}>{item.orders} sold</span>
                                             </div>
-                                            <div className={styles.progressBarBg}>
+                                            <div className={styles.progressBarBg} style={{ height: '6px', background: '#FEE2E2', borderRadius: '4px', overflow: 'hidden' }}>
                                                 <div
                                                     className={styles.progressBarFill}
-                                                    style={{ width: `${(item.orders / topItemsMax) * 100}%` }}
+                                                    style={{ width: `${(item.orders / topItemsMax) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #F87171 0%, #DC2626 100%)', borderRadius: '4px', transition: 'width 1s ease-out' }}
                                                 ></div>
                                             </div>
                                         </div>
