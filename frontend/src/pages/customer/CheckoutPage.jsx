@@ -44,10 +44,11 @@ function CheckoutPage() {
     const [receiptPreview, setReceiptPreview] = useState(null);
     const [uploadingReceipt, setUploadingReceipt] = useState(false);
     const [receiptUploaded, setReceiptUploaded] = useState(false);
+    const [paymentSenderName, setPaymentSenderName] = useState('');
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (cartItems.length === 0 && !showSuccessModal) {
+        if (cartItems.length === 0 && !showSuccessModal && !showReceiptModal) {
             navigate('/cart');
         }
         if (!loading) {
@@ -63,7 +64,7 @@ function CheckoutPage() {
                 }
             }
         }
-    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
+    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, showReceiptModal, user, setShowLoginPrompt]);
 
     // Fetch accepted payment methods from restaurant
     useEffect(() => {
@@ -162,7 +163,7 @@ function CheckoutPage() {
         }
     };
 
-    if (loading || !isAuthenticated || (cartItems.length === 0 && !showSuccessModal)) return null;
+    if (loading || !isAuthenticated || (cartItems.length === 0 && !showSuccessModal && !showReceiptModal)) return null;
 
     return (
         <>
@@ -529,16 +530,31 @@ function CheckoutPage() {
                                                 )}
                                             </label>
 
-                                            <div className="d-grid gap-2 mt-3">
+                                            <div className="mt-3">
+                                                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', marginBottom: '0.35rem', display: 'block' }}>
+                                                    Sender Name / Account Name
+                                                </label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Enter exact name used for payment"
+                                                    value={paymentSenderName}
+                                                    onChange={e => setPaymentSenderName(e.target.value)}
+                                                    className="form-control"
+                                                    style={{ borderRadius: '8px', padding: '0.6rem 0.8rem', fontSize: '0.9rem' }}
+                                                />
+                                            </div>
+
+                                            <div className="d-grid gap-2 mt-4">
                                                 <button
                                                     className="btn btn-primary py-2 fw-bold"
                                                     style={{ backgroundColor: '#B91C1C', border: 'none', borderRadius: '12px' }}
-                                                    disabled={!receiptFile || uploadingReceipt}
+                                                    disabled={!receiptFile || uploadingReceipt || !paymentSenderName.trim()}
                                                     onClick={async () => {
                                                         setUploadingReceipt(true);
                                                         try {
                                                             const formData = new FormData();
                                                             formData.append('receipt', receiptFile);
+                                                            formData.append('payment_sender_name', paymentSenderName);
                                                             await api.post(`/orders/${placedOrderId}/upload-receipt`, formData, {
                                                                 headers: { 'Content-Type': 'multipart/form-data' }
                                                             });

@@ -23,7 +23,8 @@ class Order extends Model
         'scheduled_time',
         'status',
         'payment_status',
-        'payment_receipt'
+        'payment_receipt',
+        'payment_sender_name'
     ];
 
     public function items()

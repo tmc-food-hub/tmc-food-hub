@@ -13,6 +13,7 @@ import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import styles from './OrderTrackingPage.module.css';
+import Swal from 'sweetalert2';
 
 /* ------------------------------------------------
    Fix Leaflet default marker icons in bundlers
@@ -195,6 +196,24 @@ function OrderTrackingPage() {
     const [cancelTimer, setCancelTimer] = useState(120);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const timerRef = useRef(null);
+    const prevPaymentStatusRef = useRef(order?.paymentStatus);
+
+    // Watch for payment confirmation updates
+    useEffect(() => {
+        if (!order) return;
+        if (prevPaymentStatusRef.current === 'pending_verification' && order.paymentStatus === 'paid') {
+            Swal.fire({
+                title: 'Payment Confirmed!',
+                text: 'The restaurant has verified your payment. Your order is now processing.',
+                icon: 'success',
+                confirmButtonText: 'Great',
+                confirmButtonColor: '#B91C1C'
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+        prevPaymentStatusRef.current = order.paymentStatus;
+    }, [order?.paymentStatus]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
