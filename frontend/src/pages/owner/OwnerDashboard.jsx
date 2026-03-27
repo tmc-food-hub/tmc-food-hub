@@ -26,6 +26,7 @@ import EarningsSection from './dashboard-sections/EarningsSection';
 import PaymentSettings from './dashboard-sections/PaymentSettings';
 import PayoutSection from './dashboard-sections/PayoutSection';
 import ReviewsSection from './dashboard-sections/ReviewsSection';
+import NotificationPanel from './dashboard-sections/NotificationPanel';
 import { useOrders } from '../../context/OrderContext';
 import api from '../../api/axios';
 /* ─── Dashboard Shell ────────────────────────────────────────────────────── */
@@ -87,6 +88,7 @@ function OwnerDashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [payoutViewData, setPayoutViewData] = useState(null);
+    const [notificationOpen, setNotificationOpen] = useState(false);
     const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
     const [inventoryItems, setInventoryItems] = useState([]);
     const [inventoryCategories, setInventoryCategories] = useState([]);
@@ -201,9 +203,10 @@ function OwnerDashboard() {
                     <Layers size={22} />
                 </button>
                 <img src={tmcLogo} alt="TMC Food Hub" className={styles.mobileLogo} />
-                <button className={styles.mobileNotificationBtn}>
+                <button className={styles.mobileNotificationBtn} onClick={() => setNotificationOpen(!notificationOpen)}>
                     <Bell size={20} />
                 </button>
+                <NotificationPanel isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={setActive} inventoryItems={inventoryItems} />
             </header>
 
             {/* Sidebar Overlay (Mobile only) */}
@@ -326,15 +329,16 @@ function OwnerDashboard() {
                             <h1 className={styles.topTitle}>{active === 'overview' ? 'Dashboard' : activeLabel}</h1>
                             <p className={styles.topSub}>{subTitle}</p>
                         </div>
-                        <div className={styles.topRight}>
+                        <div className={styles.topRight} style={{ position: 'relative' }}>
                             <div className={styles.searchWrap}>
                                 <Search className={styles.searchIcon} size={16} />
                                 <input type="text" placeholder="Search items..." className={styles.searchInput} />
                             </div>
-                            <button className={styles.notificationBtn}>
+                            <button className={styles.notificationBtn} onClick={() => setNotificationOpen(!notificationOpen)}>
                                 <Bell size={20} />
                                 <span className={styles.notificationBadge}></span>
                             </button>
+                            <NotificationPanel isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={setActive} inventoryItems={inventoryItems} />
                         </div>
                     </div>
                 )}
