@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import api from '../api/axios';
+import { resolveMediaUrl } from '../utils/media';
 
 export const OrderContext = createContext();
 
@@ -122,7 +123,7 @@ export function OrderProvider({ children }) {
                         name: i.item_name,
                         quantity: i.quantity,
                         qty: i.quantity,
-                        image: i.image,
+                        image: resolveMediaUrl(i.image),
                         price: parseFloat(i.price),
                         variations: i.variations
                     })),

@@ -53,8 +53,7 @@ function CheckoutPage() {
     }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
 
     const deliveryFee = 3.00;
-    const discount = 5.00;
-    const totalAmount = cartSubtotal + deliveryFee - discount;
+    const totalAmount = cartSubtotal + deliveryFee;
 
     // Compute min/max dates for the schedule picker (today to +7 days)
     const { minDate, maxDate } = useMemo(() => {
@@ -103,7 +102,7 @@ function CheckoutPage() {
                 restaurantId,
                 subtotal: cartSubtotal,
                 deliveryFee,
-                discount,
+                discount: 0,
                 total: totalAmount,
                 paymentMethod,
                 deliveryAddress,
@@ -298,7 +297,18 @@ function CheckoutPage() {
                                     <div className={styles.summaryItems}>
                                         {cartItems.map(item => (
                                             <div key={item.cartItemId} className={styles.summaryItem}>
-                                                <img src={item.image} alt={item.title} className={styles.summaryItemImg} />
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    className={styles.summaryItemImg}
+                                                    onError={e => {
+                                                        e.target.onerror = null;
+                                                        e.target.style.background = '#F3F4F6';
+                                                        e.target.style.objectFit = 'contain';
+                                                        e.target.style.padding = '4px';
+                                                        e.target.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>');
+                                                    }}
+                                                />
                                                 <div>
                                                     <div className={styles.summaryItemName}>{item.title}</div>
                                                     {(item.variation || (item.addOns && item.addOns.length > 0)) && (
@@ -321,10 +331,6 @@ function CheckoutPage() {
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
                                             <span>${Number(deliveryFee).toFixed(2)}</span>
-                                        </div>
-                                        <div className={styles.summaryRow}>
-                                            <span>Discount (PROMO5)</span>
-                                            <span className={styles.discountValue}>-${Number(discount).toFixed(2)}</span>
                                         </div>
                                     </div>
 
