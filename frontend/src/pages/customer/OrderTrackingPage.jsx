@@ -187,6 +187,9 @@ function OrderTrackingPage() {
         status: contextOrder.status,
         deliveryAddress: contextOrder.deliveryAddress,
         restaurantId: contextOrder.restaurantId,
+        paymentMethod: contextOrder.paymentMethod || 'cod',
+        paymentStatus: contextOrder.paymentStatus || 'paid',
+        paymentReceipt: contextOrder.paymentReceipt || null,
     } : null;
 
     const [cancelTimer, setCancelTimer] = useState(120);
@@ -425,6 +428,30 @@ function OrderTrackingPage() {
                                             ${Number(order.totalAmount).toFixed(2)}
                                         </span>
                                     </div>
+
+                                    {/* Payment Status */}
+                                    {order.paymentMethod && order.paymentMethod !== 'cod' && (
+                                        <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', background: '#F9FAFB', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: order.paymentReceipt ? '0.75rem' : 0 }}>
+                                                <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>
+                                                    Payment ({order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Bank Transfer'})
+                                                </span>
+                                                <span style={{
+                                                    fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '99px',
+                                                    background: order.paymentStatus === 'paid' ? '#D1FAE5' : order.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                                                    color: order.paymentStatus === 'paid' ? '#065F46' : order.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
+                                                }}>
+                                                    {order.paymentStatus === 'paid' ? '✓ Confirmed' : order.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting Confirmation'}
+                                                </span>
+                                            </div>
+                                            {order.paymentReceipt && (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <img src={order.paymentReceipt} alt="Payment receipt" style={{ maxHeight: '120px', borderRadius: '8px', objectFit: 'contain', cursor: 'pointer' }} onClick={() => window.open(order.paymentReceipt, '_blank')} />
+                                                    <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '4px' }}>Click to view full receipt</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

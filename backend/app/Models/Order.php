@@ -21,7 +21,9 @@ class Order extends Model
         'delivery_type',
         'scheduled_date',
         'scheduled_time',
-        'status'
+        'status',
+        'payment_status',
+        'payment_receipt'
     ];
 
     public function items()

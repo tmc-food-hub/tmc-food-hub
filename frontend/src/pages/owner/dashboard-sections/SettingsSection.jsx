@@ -55,7 +55,7 @@ export default function SettingsSection({ store, refreshOwner, items = [], refre
                 {activeTab === 'notifications' && <NotificationsTab />}
                 {activeTab === 'restaurant-profile' && <RestaurantProfileTab store={store} refreshOwner={refreshOwner} />}
                 {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} />}
-                {activeTab === 'payment' && <PlaceholderTab title="Payment" description="Manage payment methods and billing information." />}
+                {activeTab === 'payment' && <PaymentConfigTab />}
             </div>
         </div>
     );
@@ -850,6 +850,166 @@ function NotificationsTab() {
                     ))}
                 </div>
             ))}
+        </div>
+    );
+}
+
+/* ── Payment Config Tab ─────────────────────────── */
+function PaymentConfigTab() {
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [methods, setMethods] = useState(['cod']);
+    const [gcashNumber, setGcashNumber] = useState('');
+    const [mayaNumber, setMayaNumber] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [bankAccountName, setBankAccountName] = useState('');
+    const [bankAccountNumber, setBankAccountNumber] = useState('');
+
+    useEffect(() => {
+        api.get('/owner/payment-settings').then(res => {
+            const d = res.data;
+            setMethods(d.accepted_payment_methods || ['cod']);
+            setGcashNumber(d.gcash_number || '');
+            setMayaNumber(d.maya_number || '');
+            setBankName(d.bank_name || '');
+            setBankAccountName(d.bank_account_name || '');
+            setBankAccountNumber(d.bank_account_number || '');
+        }).catch(() => {}).finally(() => setLoading(false));
+    }, []);
+
+    const toggleMethod = (m) => {
+        setMethods(prev => {
+            if (prev.includes(m)) {
+                if (prev.length === 1) return prev; // must keep at least one
+                return prev.filter(x => x !== m);
+            }
+            return [...prev, m];
+        });
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await api.put('/owner/payment-settings', {
+                accepted_payment_methods: methods,
+                gcash_number: gcashNumber || null,
+                maya_number: mayaNumber || null,
+                bank_name: bankName || null,
+                bank_account_name: bankAccountName || null,
+                bank_account_number: bankAccountNumber || null,
+            });
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2500);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const paymentOptions = [
+        { key: 'cod', label: 'Cash on Delivery', icon: '💵', desc: 'Customer pays upon delivery. No additional setup needed.' },
+        { key: 'gcash', label: 'GCash', icon: '📱', desc: 'Accept payments via GCash. Enter your GCash number below.' },
+        { key: 'maya', label: 'Maya', icon: '💳', desc: 'Accept payments via Maya (PayMaya). Enter your Maya number below.' },
+        { key: 'bank_transfer', label: 'Bank Transfer', icon: '🏦', desc: 'Accept direct bank transfers. Enter your bank details below.' },
+    ];
+
+    if (loading) return <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>Loading payment settings...</div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#111827' }}>Payment Settings</h2>
+                <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Configure which payment methods your customers can use at checkout.</p>
+            </div>
+
+            {/* Accepted Payment Methods */}
+            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                <h3 className={styles.cardTitle} style={{ marginBottom: '1rem' }}>Accepted Payment Methods</h3>
+                <p style={{ color: '#6B7280', fontSize: '0.82rem', margin: '0 0 1.25rem' }}>Toggle the methods you want to accept. At least one must be enabled.</p>
+
+                {paymentOptions.map((opt, idx) => (
+                    <div key={opt.key} style={{ borderTop: idx > 0 ? '1px solid #F3F4F6' : 'none' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 0' }}>
+                            <button
+                                type="button"
+                                className={`${styles.switchBtn} ${methods.includes(opt.key) ? styles.switchBtnActive : ''}`}
+                                onClick={() => toggleMethod(opt.key)}
+                            >
+                                <span className={styles.switchThumb} />
+                            </button>
+                            <span style={{ fontSize: '1.25rem' }}>{opt.icon}</span>
+                            <div>
+                                <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#111827' }}>{opt.label}</div>
+                                <div style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '2px' }}>{opt.desc}</div>
+                            </div>
+                        </div>
+
+                        {/* GCash details */}
+                        {opt.key === 'gcash' && methods.includes('gcash') && (
+                            <div style={{ padding: '0 0 1rem 3.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>GCash Number</label>
+                                <input
+                                    type="text"
+                                    className={styles.fieldInput}
+                                    placeholder="09XX XXX XXXX"
+                                    value={gcashNumber}
+                                    onChange={e => setGcashNumber(e.target.value)}
+                                    style={{ maxWidth: '280px' }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Maya details */}
+                        {opt.key === 'maya' && methods.includes('maya') && (
+                            <div style={{ padding: '0 0 1rem 3.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Maya Number</label>
+                                <input
+                                    type="text"
+                                    className={styles.fieldInput}
+                                    placeholder="09XX XXX XXXX"
+                                    value={mayaNumber}
+                                    onChange={e => setMayaNumber(e.target.value)}
+                                    style={{ maxWidth: '280px' }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Bank Transfer details */}
+                        {opt.key === 'bank_transfer' && methods.includes('bank_transfer') && (
+                            <div style={{ padding: '0 0 1rem 3.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', maxWidth: '700px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Bank Name</label>
+                                    <input type="text" className={styles.fieldInput} placeholder="e.g. BDO, BPI" value={bankName} onChange={e => setBankName(e.target.value)} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Account Name</label>
+                                    <input type="text" className={styles.fieldInput} placeholder="Juan Dela Cruz" value={bankAccountName} onChange={e => setBankAccountName(e.target.value)} />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Account Number</label>
+                                    <input type="text" className={styles.fieldInput} placeholder="0000 0000 0000" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Info Banner */}
+            <div style={{ background: '#FEF2F2', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start', border: '1px solid #FECACA' }}>
+                <AlertCircle size={18} color="#991B1B" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ fontSize: '0.82rem', color: '#7F1D1D' }}>
+                    <strong>How online payments work:</strong> When a customer pays via GCash, Maya, or Bank Transfer, they will be shown your account details and asked to upload a screenshot of their payment receipt. You can then confirm or reject the payment from the order details page.
+                </div>
+            </div>
+
+            <div className={styles.formActions}>
+                <button className={styles.btnSave} disabled={saving} onClick={handleSave}>
+                    {saving ? 'Saving...' : saved ? <><Check size={14} /> Saved!</> : <><Save size={14} /> Save Payment Settings</>}
+                </button>
+            </div>
         </div>
     );
 }

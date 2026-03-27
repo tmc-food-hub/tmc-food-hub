@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Layers, X, AlertCircle, Check, Bell, RefreshCw } from 'lucide-react';
+import { MapPin, Layers, X, AlertCircle, Check, Bell, RefreshCw, Eye } from 'lucide-react';
+import api from '../../../api/axios';
 import { STATUS_ORDER, statusMeta } from './shared';
 import { useOrders } from '../../../context/OrderContext';
 import styles from '../OwnerDashboard.module.css';
@@ -366,6 +367,76 @@ export default function OrdersSection({ store }) {
                                     <span className={styles.breakdownTotalValue}>₱{Number(selectedOrder.total).toFixed(2)}</span>
                                 </div>
                             </div>
+
+                            {/* Payment Receipt (for online payments) */}
+                            {selectedOrder.paymentMethod && selectedOrder.paymentMethod !== 'cod' && (
+                                <div className={styles.panelSection}>
+                                    <h4 className={styles.sectionHeading}>Payment Receipt</h4>
+                                    <div style={{ padding: '1rem', background: '#F9FAFB', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                            <span style={{ fontSize: '0.85rem', color: '#374151', fontWeight: 600 }}>
+                                                {selectedOrder.paymentMethod === 'gcash' ? '📱 GCash' : selectedOrder.paymentMethod === 'maya' ? '💳 Maya' : '🏦 Bank Transfer'}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '99px',
+                                                background: selectedOrder.paymentStatus === 'paid' ? '#D1FAE5' : selectedOrder.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                                                color: selectedOrder.paymentStatus === 'paid' ? '#065F46' : selectedOrder.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
+                                            }}>
+                                                {selectedOrder.paymentStatus === 'paid' ? '✓ Confirmed' : selectedOrder.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting'}
+                                            </span>
+                                        </div>
+                                        {selectedOrder.paymentReceipt ? (
+                                            <div style={{ textAlign: 'center' }}>
+                                                <img
+                                                    src={selectedOrder.paymentReceipt}
+                                                    alt="Payment receipt"
+                                                    style={{ maxHeight: '200px', borderRadius: '8px', objectFit: 'contain', cursor: 'pointer', border: '1px solid #E5E7EB' }}
+                                                    onClick={() => window.open(selectedOrder.paymentReceipt, '_blank')}
+                                                />
+                                                <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '4px' }}>
+                                                    <Eye size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                                    Click to view full size
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: '0.82rem', padding: '1rem 0' }}>
+                                                Customer has not uploaded a receipt yet.
+                                            </p>
+                                        )}
+                                        {/* Confirm / Reject Buttons */}
+                                        {selectedOrder.paymentReceipt && selectedOrder.paymentStatus !== 'paid' && selectedOrder.paymentStatus !== 'rejected' && (
+                                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                                                <button
+                                                    className={styles.btnAcceptOrder}
+                                                    style={{ flex: 1, fontSize: '0.82rem', padding: '0.6rem' }}
+                                                    onClick={async () => {
+                                                        try {
+                                                            await api.put(`/owner/orders/${selectedOrder.id}/confirm-payment`, { action: 'confirm' });
+                                                            fetchOrders();
+                                                            setSelectedOrder(prev => ({ ...prev, paymentStatus: 'paid' }));
+                                                        } catch (err) { console.error(err); }
+                                                    }}
+                                                >
+                                                    <Check size={14} /> Confirm Payment
+                                                </button>
+                                                <button
+                                                    className={styles.btnPrint}
+                                                    style={{ flex: 1, fontSize: '0.82rem', padding: '0.6rem', color: '#991B1B', borderColor: '#FCA5A5' }}
+                                                    onClick={async () => {
+                                                        try {
+                                                            await api.put(`/owner/orders/${selectedOrder.id}/confirm-payment`, { action: 'reject' });
+                                                            fetchOrders();
+                                                            setSelectedOrder(prev => ({ ...prev, paymentStatus: 'rejected' }));
+                                                        } catch (err) { console.error(err); }
+                                                    }}
+                                                >
+                                                    <X size={14} /> Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Footer Actions */}

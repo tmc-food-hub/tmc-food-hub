@@ -33,6 +33,7 @@ Route::post('/admin/login', [AdminController::class, 'login']);
 Route::get('/restaurants', [MenuController::class, 'index']);
 Route::get('/restaurants/{id}/menu', [MenuController::class, 'show']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'index']);
+Route::get('/restaurants/{id}/payment-methods', [MenuController::class, 'paymentMethods']);
 
 // ── Customer Password Reset Routes ────────────────────────────────────────
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
@@ -54,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::post('/orders/{id}/upload-receipt', [OrderController::class, 'uploadReceipt']);
 });
 
 // ── Owner Authenticated Routes ────────────────────────────────────────────
@@ -84,6 +86,11 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::get('/reviews', [ReviewController::class, 'ownerIndex']);
     Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply']);
     Route::get('/analytics', [OwnerAuthController::class, 'analytics']);
+
+    // Payment Settings
+    Route::get('/payment-settings', [OwnerAuthController::class, 'getPaymentSettings']);
+    Route::put('/payment-settings', [OwnerAuthController::class, 'updatePaymentSettings']);
+    Route::put('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
 });
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {

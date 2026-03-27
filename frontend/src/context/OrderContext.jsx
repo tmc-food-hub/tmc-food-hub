@@ -133,6 +133,8 @@ export function OrderProvider({ children }) {
                     discount: parseFloat(o.discount),
                     total: parseFloat(o.total),
                     paymentMethod: o.payment_method,
+                    paymentStatus: o.payment_status || 'paid',
+                    paymentReceipt: o.payment_receipt || null,
                     // Status & timing
                     status: currentStatus,
                     placedAt: o.created_at,

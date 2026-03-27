@@ -99,6 +99,7 @@ class OrderController extends Controller
                 'scheduled_date'       => $validated['scheduledDate'] ?? null,
                 'scheduled_time'       => $validated['scheduledTime'] ?? null,
                 'status'               => 'Pending',
+                'payment_status'       => $validated['paymentMethod'] === 'cod' ? 'paid' : 'awaiting_confirmation',
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -198,5 +199,60 @@ class OrderController extends Controller
         });
 
         return response()->json($order->fresh('items'));
+    }
+
+    /**
+     * Customer uploads payment receipt as base64 blob.
+     */
+    public function uploadReceipt(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $user = $request->user();
+
+        if ($order->customer_id != $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'receipt' => 'required|file|image|max:5120', // Max 5MB
+        ]);
+
+        $file = $request->file('receipt');
+        $base64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+
+        $order->update([
+            'payment_receipt' => $base64,
+            'payment_status' => 'pending_verification',
+        ]);
+
+        return response()->json(['message' => 'Receipt uploaded successfully', 'payment_status' => 'pending_verification']);
+    }
+
+    /**
+     * Owner confirms or rejects payment for an order.
+     */
+    public function confirmPayment(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:confirm,reject',
+        ]);
+
+        $order = Order::findOrFail($id);
+        $owner = $request->user();
+
+        if ($order->restaurant_owner_id != $owner->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $newStatus = $validated['action'] === 'confirm' ? 'paid' : 'rejected';
+        $order->update(['payment_status' => $newStatus]);
+
+        Log::info('Payment status updated', [
+            'order_id' => $order->id,
+            'action' => $validated['action'],
+            'owner_id' => $owner->id,
+        ]);
+
+        return response()->json(['message' => 'Payment ' . $validated['action'] . 'ed', 'payment_status' => $newStatus]);
     }
 }

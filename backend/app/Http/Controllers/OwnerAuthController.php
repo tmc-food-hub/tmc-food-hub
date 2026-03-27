@@ -455,4 +455,43 @@ class OwnerAuthController extends Controller
             'high_value_orders' => $highValueOrders,
         ]);
     }
+
+    /**
+     * Get the owner's payment settings.
+     */
+    public function getPaymentSettings(Request $request)
+    {
+        $owner = $request->user();
+
+        return response()->json([
+            'accepted_payment_methods' => $owner->accepted_payment_methods ?? ['cod'],
+            'gcash_number' => $owner->gcash_number,
+            'maya_number' => $owner->maya_number,
+            'bank_name' => $owner->bank_name,
+            'bank_account_name' => $owner->bank_account_name,
+            'bank_account_number' => $owner->bank_account_number,
+        ]);
+    }
+
+    /**
+     * Update the owner's payment settings.
+     */
+    public function updatePaymentSettings(Request $request)
+    {
+        $owner = $request->user();
+
+        $validated = $request->validate([
+            'accepted_payment_methods' => 'required|array|min:1',
+            'accepted_payment_methods.*' => 'string|in:cod,gcash,maya,bank_transfer',
+            'gcash_number' => 'nullable|string|max:20',
+            'maya_number' => 'nullable|string|max:20',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_name' => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:50',
+        ]);
+
+        $owner->update($validated);
+
+        return response()->json(['message' => 'Payment settings updated successfully']);
+    }
 }
