@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
+use App\Models\SecuritySettings;
 use App\Models\Order;
+use App\Models\PlatformSettings;
 use App\Models\RestaurantOwner;
 use App\Models\Review;
 use App\Models\User;
@@ -1460,6 +1463,420 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             Log::error('Error fetching performance data: ' . $e->getMessage());
             return response()->json(['message' => 'Error fetching performance data'], 500);
+        }
+    }
+
+    public function getSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $settings = PlatformSettings::getSettings();
+            return response()->json([
+                'data' => $settings,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching settings'], 500);
+        }
+    }
+
+    public function updateGeneralSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'platform_status' => 'sometimes|in:live,maintenance',
+                'platform_name' => 'sometimes|string|max:255',
+                'tagline' => 'sometimes|string|max:255',
+                'support_email' => 'sometimes|email',
+                'phone_number' => 'sometimes|string|max:20',
+                'currency' => 'sometimes|in:PHP,USD,EUR',
+                'language' => 'sometimes|in:English,Filipino',
+                'timezone' => 'sometimes|timezone',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'General settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating general settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating general settings'], 500);
+        }
+    }
+
+    public function updateCommissionSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'default_commission_rate' => 'sometimes|numeric|min:0|max:100',
+                'commission_type' => 'sometimes|in:percentage,fixed,tiered',
+                'tiered_commission' => 'sometimes|array',
+                'delivery_mode' => 'sometimes|in:restaurant,platform,mixed',
+                'platform_delivery_fee' => 'sometimes|numeric|min:0',
+                'minimum_order_value' => 'sometimes|numeric|min:0',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'Commission settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating commission settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating commission settings'], 500);
+        }
+    }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'notify_new_orders' => 'sometimes|boolean',
+                'notify_disputes' => 'sometimes|boolean',
+                'notify_reviews' => 'sometimes|boolean',
+                'notify_promotions' => 'sometimes|boolean',
+            ]);
+
+            $settings = PlatformSettings::updateGeneral($validated);
+
+            return response()->json([
+                'message' => 'Notification settings updated successfully',
+                'data' => $settings,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating notification settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating notification settings'], 500);
+        }
+    }
+
+    public function getAdmins(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $admins = User::where('role', 'admin')
+                ->select('id', 'name', 'email', 'role', 'status', 'last_active', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($admin) {
+                    return [
+                        'id' => $admin->id,
+                        'name' => $admin->name,
+                        'email' => $admin->email,
+                        'role' => $this->formatAdminRole($admin->role),
+                        'roleClass' => $this->getRoleClass($admin->role),
+                        'status' => $admin->status ?? 'Active',
+                        'statusClass' => $this->getStatusClass($admin->status ?? 'Active'),
+                        'lastActive' => $admin->last_active ? \Carbon\Carbon::parse($admin->last_active)->diffForHumans() : 'Never',
+                    ];
+                });
+
+            return response()->json([
+                'data' => $admins,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching admins: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching admins'], 500);
+        }
+    }
+
+    private function formatAdminRole($role)
+    {
+        $roleMap = [
+            'admin' => 'Admin',
+            'super_admin' => 'Super Admin',
+            'moderator' => 'Moderator',
+            'analyst' => 'Analyst',
+        ];
+        return $roleMap[$role] ?? ucfirst($role);
+    }
+
+    private function getRoleClass($role)
+    {
+        $classMap = [
+            'admin' => 'roleAdmin',
+            'super_admin' => 'roleSuperAdmin',
+            'moderator' => 'roleModerator',
+            'analyst' => 'roleAnalyst',
+        ];
+        return $classMap[$role] ?? 'roleAdmin';
+    }
+
+    private function getStatusClass($status)
+    {
+        $classMap = [
+            'Active' => 'statusActive',
+            'Inactive' => 'statusInactive',
+            'Suspended' => 'statusSuspended',
+        ];
+        return $classMap[$status] ?? 'statusActive';
+    }
+
+    public function getPermissionsAndRoles(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $roles = \DB::table('roles')->get();
+            $permissions = \DB::table('permissions')
+                ->select('id', 'name', 'display_name', 'description', 'category')
+                ->get();
+            $rolePermissions = \DB::table('role_permissions')->get();
+
+            // Group permissions by category
+            $permissionsByCategory = [];
+            foreach ($permissions as $perm) {
+                if (!isset($permissionsByCategory[$perm->category])) {
+                    $permissionsByCategory[$perm->category] = [];
+                }
+                $permissionsByCategory[$perm->category][] = $perm;
+            }
+
+            // Build permissions structure
+            $permsStructure = [];
+            foreach ($permissionsByCategory as $category => $perms) {
+                $items = [];
+                foreach ($perms as $perm) {
+                    $permRoles = $rolePermissions
+                        ->filter(function ($rp) use ($perm) {
+                            return $rp->permission_id == $perm->id;
+                        })
+                        ->pluck('role_id')
+                        ->toArray();
+
+                    $items[] = [
+                        'id' => 'perm_' . $perm->id,
+                        'label' => $perm->display_name,
+                        'desc' => $perm->description,
+                        'permissionId' => $perm->id,
+                        'roleIds' => $permRoles,
+                    ];
+                }
+                $permsStructure[] = [
+                    'category' => $category,
+                    'items' => $items,
+                ];
+            }
+
+            // Build roles structure
+            $rolesStructure = $roles->map(function ($role) {
+                return [
+                    'id' => $role->id,
+                    'name' => $role->display_name,
+                    'icon' => $role->icon ?? '🎯',
+                    'badge' => $role->badge,
+                    'badgeClass' => $role->badge_class,
+                    'desc' => $role->description,
+                ];
+            })->values();
+
+            return response()->json([
+                'roles' => $rolesStructure,
+                'permissions' => $permsStructure,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching permissions and roles: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching permissions and roles'], 500);
+        }
+    }
+
+    public function updateRolePermissions(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'permissions' => 'required|array',
+                'permissions.*.permission_id' => 'required|integer',
+                'permissions.*.role_ids' => 'required|array',
+            ]);
+
+            // Update role_permissions pivot table
+            foreach ($validated['permissions'] as $item) {
+                $permissionId = $item['permission_id'];
+                $roleIds = $item['role_ids'];
+
+                // Delete existing associations
+                \DB::table('role_permissions')
+                    ->where('permission_id', $permissionId)
+                    ->delete();
+
+                // Insert new associations
+                foreach ($roleIds as $roleId) {
+                    \DB::table('role_permissions')->insert([
+                        'role_id' => $roleId,
+                        'permission_id' => $permissionId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Role permissions updated successfully',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating role permissions: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating role permissions'], 500);
+        }
+    }
+
+    public function getActivityLogs(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $logs = ActivityLog::with('admin')
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function ($log) {
+                    return [
+                        'id' => $log->id,
+                        'name' => $log->admin->name,
+                        'role' => $log->admin->role,
+                        'action' => $log->action,
+                        'actionClass' => $this->getActionClass($log->action),
+                        'desc' => $log->description,
+                        'page' => $log->page,
+                        'ip' => $this->maskIp($log->ip_address),
+                        'device' => $log->device ?? 'Unknown',
+                        'time' => $log->created_at->format('M d, Y. g:i:s A'),
+                    ];
+                });
+
+            return response()->json(['data' => $logs]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching activity logs: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching activity logs'], 500);
+        }
+    }
+
+    private function getActionClass($action): string
+    {
+        return match($action) {
+            'Delete' => 'actionDelete',
+            'Update' => 'actionUpdate',
+            'Access' => 'actionAccess',
+            'Auth' => 'actionAuth',
+            default => 'actionDefault',
+        };
+    }
+
+    private function maskIp($ip): string
+    {
+        if (!$ip) return '···.···.····.···';
+        
+        $parts = explode('.', $ip);
+        if (count($parts) === 4) {
+            return $parts[0] . '.' . $parts[1] . '.····.···';
+        }
+        return '···.···.····.···';
+    }
+
+    public function getSecuritySettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $settings = SecuritySettings::getSettings();
+
+            return response()->json([
+                'data' => [
+                    'two_factor_auth' => $settings->two_factor_auth,
+                    'email_alerts' => $settings->email_alerts,
+                    'sms_emergency' => $settings->sms_emergency,
+                    'session_timeout' => $settings->session_timeout,
+                    'max_login_attempts' => $settings->max_login_attempts,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching security settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error fetching security settings'], 500);
+        }
+    }
+
+    public function updateSecuritySettings(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'two_factor_auth' => 'sometimes|boolean',
+                'email_alerts' => 'sometimes|boolean',
+                'sms_emergency' => 'sometimes|boolean',
+                'session_timeout' => 'sometimes|string',
+                'max_login_attempts' => 'sometimes|integer|min:1|max:20',
+            ]);
+
+            SecuritySettings::updateSettings($validated);
+
+            return response()->json([
+                'message' => 'Security settings updated successfully'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating security settings: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating security settings'], 500);
         }
     }
 }

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Settings, CreditCard, Wallet, Bell, UserCog, Shield, FileText, Lock, Palette,
-    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp
+    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp, Loader
 } from 'lucide-react';
+import api from '../../api/axios';
 import styles from './AdminSettingsSection.module.css';
 
 const TABS = [
@@ -19,17 +20,108 @@ const TABS = [
 
 /* ─── General Tab ───────────────────────────────────────────────────────────── */
 function GeneralTab() {
-    const [platformStatus, setPlatformStatus] = useState('live');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [settings, setSettings] = useState({
+        platform_status: 'live',
+        platform_name: 'TMC Foodhub',
+        tagline: 'Your Cravings, Delivered. Anytime.',
+        support_email: 'support@tmcfoodhub.com',
+        phone_number: '+63 2 8123 4567',
+        currency: 'PHP',
+        language: 'English',
+        timezone: 'Asia/Manila',
+    });
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/settings');
+            const data = response.data.data;
+            setSettings({
+                platform_status: data.platform_status || 'live',
+                platform_name: data.platform_name || 'TMC Foodhub',
+                tagline: data.tagline || 'Your Cravings, Delivered. Anytime.',
+                support_email: data.support_email || 'support@tmcfoodhub.com',
+                phone_number: data.phone_number || '+63 2 8123 4567',
+                currency: data.currency || 'PHP',
+                language: data.language || 'English',
+                timezone: data.timezone || 'Asia/Manila',
+            });
+        } catch (err) {
+            console.error('Error fetching settings:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveGeneral = async () => {
+        try {
+            setSaving(true);
+            await api.put('/admin/settings/general', {
+                platform_status: settings.platform_status,
+                platform_name: settings.platform_name,
+                tagline: settings.tagline,
+                support_email: settings.support_email,
+                phone_number: settings.phone_number,
+                currency: settings.currency,
+                language: settings.language,
+                timezone: settings.timezone,
+            });
+            setSuccessMessage('General settings saved successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            alert('Failed to save settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleInputChange = (field, value) => {
+        setSettings(prev => ({ ...prev, [field]: value }));
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading settings...</span>
+            </div>
+        );
+    }
+
     return (<>
         <h2 className={styles.sectionTitle}>General Settings</h2>
         <p className={styles.sectionSub}>Configure your core platform identity and regional preferences.</p>
+
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
 
         {/* Platform Status */}
         <div className={styles.card}>
             <h3 className={styles.cardLabel}>Platform Status</h3>
             <div className={styles.statusToggle}>
-                <button className={`${styles.statusBtn} ${platformStatus === 'live' ? styles.statusActive : ''}`} onClick={() => setPlatformStatus('live')}>Live</button>
-                <button className={`${styles.statusBtn} ${platformStatus === 'maintenance' ? styles.statusActive : ''}`} onClick={() => setPlatformStatus('maintenance')}>Maintenance</button>
+                <button 
+                    className={`${styles.statusBtn} ${settings.platform_status === 'live' ? styles.statusActive : ''}`} 
+                    onClick={() => handleInputChange('platform_status', 'live')}
+                >
+                    Live
+                </button>
+                <button 
+                    className={`${styles.statusBtn} ${settings.platform_status === 'maintenance' ? styles.statusActive : ''}`} 
+                    onClick={() => handleInputChange('platform_status', 'maintenance')}
+                >
+                    Maintenance
+                </button>
             </div>
         </div>
 
@@ -38,10 +130,35 @@ function GeneralTab() {
             <div className={styles.card}>
                 <h3 className={styles.cardLabel}><Globe size={15} /> Platform Identity</h3>
                 <div className={styles.fieldGrid}>
-                    <div className={styles.field}><label>Platform Name</label><input defaultValue="TMC Foodhub" /></div>
-                    <div className={styles.field}><label>Tagline</label><input defaultValue="Your Cravings, Delivered. Anytim..." /></div>
-                    <div className={styles.field}><label>Support Email</label><input defaultValue="support@tmcfoodhub.com" /></div>
-                    <div className={styles.field}><label>Phone Number</label><input defaultValue="+63 2 8123 4567" /></div>
+                    <div className={styles.field}>
+                        <label>Platform Name</label>
+                        <input 
+                            value={settings.platform_name} 
+                            onChange={(e) => handleInputChange('platform_name', e.target.value)} 
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label>Tagline</label>
+                        <input 
+                            value={settings.tagline} 
+                            onChange={(e) => handleInputChange('tagline', e.target.value)} 
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label>Support Email</label>
+                        <input 
+                            type="email"
+                            value={settings.support_email} 
+                            onChange={(e) => handleInputChange('support_email', e.target.value)} 
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label>Phone Number</label>
+                        <input 
+                            value={settings.phone_number} 
+                            onChange={(e) => handleInputChange('phone_number', e.target.value)} 
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -72,21 +189,152 @@ function GeneralTab() {
         <div className={styles.card}>
             <h3 className={styles.cardLabel}><Globe size={15} /> Localization & Region</h3>
             <div className={styles.fieldGrid3}>
-                <div className={styles.field}><label>Currency</label><select><option>PHP</option><option>USD</option></select></div>
-                <div className={styles.field}><label>Language</label><select><option>English</option><option>Filipino</option></select></div>
-                <div className={styles.field}><label>Timezone</label><select><option>Asia/Manila (GMT+8)</option></select></div>
+                <div className={styles.field}>
+                    <label>Currency</label>
+                    <select value={settings.currency} onChange={(e) => handleInputChange('currency', e.target.value)}>
+                        <option>PHP</option>
+                        <option>USD</option>
+                        <option>EUR</option>
+                    </select>
+                </div>
+                <div className={styles.field}>
+                    <label>Language</label>
+                    <select value={settings.language} onChange={(e) => handleInputChange('language', e.target.value)}>
+                        <option>English</option>
+                        <option>Filipino</option>
+                    </select>
+                </div>
+                <div className={styles.field}>
+                    <label>Timezone</label>
+                    <select value={settings.timezone} onChange={(e) => handleInputChange('timezone', e.target.value)}>
+                        <option>Asia/Manila (GMT+8)</option>
+                        <option>UTC</option>
+                        <option>America/New_York</option>
+                    </select>
+                </div>
             </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSaveGeneral}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Save Changes</>}
+            </button>
+            <button 
+                onClick={fetchSettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
 
 /* ─── Commission & Fees Tab ─────────────────────────────────────────────────── */
 function CommissionTab() {
-    const [commType, setCommType] = useState('Tiered');
-    const [deliveryMode, setDeliveryMode] = useState('restaurant');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [commissionSettings, setCommissionSettings] = useState({
+        default_commission_rate: 15.00,
+        commission_type: 'flat',
+        delivery_mode: 'restaurant',
+        platform_delivery_fee: 50,
+    });
+
+    useEffect(() => {
+        fetchCommissionSettings();
+    }, []);
+
+    const fetchCommissionSettings = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/settings');
+            const data = response.data.data;
+            setCommissionSettings({
+                default_commission_rate: data.default_commission_rate || 15.00,
+                commission_type: data.commission_type || 'flat',
+                delivery_mode: data.delivery_mode || 'restaurant',
+                platform_delivery_fee: data.platform_delivery_fee || 50,
+            });
+        } catch (err) {
+            console.error('Error fetching commission settings:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveCommission = async () => {
+        try {
+            setSaving(true);
+            await api.put('/admin/settings/commission', {
+                default_commission_rate: commissionSettings.default_commission_rate,
+                commission_type: commissionSettings.commission_type,
+                delivery_mode: commissionSettings.delivery_mode,
+                platform_delivery_fee: commissionSettings.platform_delivery_fee,
+            });
+            setSuccessMessage('Commission settings saved successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving commission settings:', err);
+            alert('Failed to save commission settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleCommissionChange = (field, value) => {
+        setCommissionSettings(prev => ({ ...prev, [field]: value }));
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading settings...</span>
+            </div>
+        );
+    }
+
+    let commType = commissionSettings.commission_type;
+    let deliveryMode = commissionSettings.delivery_mode;
+
     return (<>
         <h2 className={styles.sectionTitle}>Commission Settings</h2>
         <p className={styles.sectionSub}>Configure how the platform generates revenue from transactions, delivery logistics, and administrative actions.</p>
+
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
 
         <div className={styles.twoColWide}>
             <div className={styles.leftCol}>
@@ -95,72 +343,131 @@ function CommissionTab() {
                     <h3 className={styles.cardLabel}>Commission Model</h3>
                     <p className={styles.cardHint}>Define the primary revenue structure for all partner restaurants.</p>
                     <div className={styles.fieldGrid}>
-                        <div className={styles.field}><label>Default Commission Rate</label><div className={styles.inputSuffix}><input defaultValue="15.00" /><span>%</span></div></div>
-                        <div className={styles.field}><label>Commission Type</label>
+                        <div className={styles.field}>
+                            <label>Default Commission Rate</label>
+                            <div className={styles.inputSuffix}>
+                                <input 
+                                    type="number" 
+                                    value={commissionSettings.default_commission_rate} 
+                                    onChange={(e) => handleCommissionChange('default_commission_rate', parseFloat(e.target.value))}
+                                    step="0.01"
+                                />
+                                <span>%</span>
+                            </div>
+                        </div>
+                        <div className={styles.field}>
+                            <label>Commission Type</label>
                             <div className={styles.typeToggle}>
-                                {['Flat','Per Order','Tiered'].map(t => <button key={t} className={`${styles.typeBtn} ${commType === t ? styles.typeBtnActive : ''}`} onClick={() => setCommType(t)}>{t}</button>)}
+                                {['flat', 'per_order', 'tiered'].map(t => (
+                                    <button 
+                                        key={t} 
+                                        className={`${styles.typeBtn} ${commissionSettings.commission_type === t ? styles.typeBtnActive : ''}`} 
+                                        onClick={() => handleCommissionChange('commission_type', t)}
+                                    >
+                                        {t === 'flat' ? 'Flat' : t === 'per_order' ? 'Per Order' : 'Tiered'}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
                     <span className={styles.fieldNote}>Global fallback rate applied to new vendors.</span>
-
-                    <div className={styles.tierHeader}><span className={styles.cardLabel} style={{ margin: 0 }}>Commission Type</span><button className={styles.addTier}>Add New Tier</button></div>
-                    <table className={styles.tierTable}>
-                        <thead><tr><th>Volume Range (Monthly)</th><th>Commission %</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            <tr><td>₱0 - ₱50,000</td><td className={styles.greenVal}>18.00%</td><td><button className={styles.editIcon}><Pencil size={14} /></button></td></tr>
-                            <tr><td>₱50,001 - ₱200,000</td><td className={styles.greenVal}>15.00%</td><td><button className={styles.editIcon}><Pencil size={14} /></button></td></tr>
-                            <tr><td>₱200,001+</td><td className={styles.greenVal}>12.00%</td><td><button className={styles.editIcon}><Pencil size={14} /></button></td></tr>
-                        </tbody>
-                    </table>
                 </div>
 
-                {/* Delivery Structure + Admin Penalties */}
+                {/* Delivery Structure */}
                 <div className={styles.twoCol}>
                     <div className={styles.card}>
                         <h3 className={styles.cardLabel}>🚚 Delivery Structure</h3>
                         <div className={styles.deliveryItem}>
-                            <div className={styles.deliveryRow}><div><div className={styles.deliveryName}>Platform-Managed</div><div className={styles.deliveryDesc}>Platform handles logistics. Fixed fee applied per order to the customer.</div></div>
-                                <div className={`${styles.toggle} ${deliveryMode === 'platform' ? styles.toggleOn : ''}`} onClick={() => setDeliveryMode('platform')}><div className={styles.toggleDot} /></div>
+                            <div className={styles.deliveryRow}>
+                                <div>
+                                    <div className={styles.deliveryName}>Platform-Managed</div>
+                                    <div className={styles.deliveryDesc}>Platform handles logistics. Fixed fee applied per order to the customer.</div>
+                                </div>
+                                <div 
+                                    className={`${styles.toggle} ${commissionSettings.delivery_mode === 'platform' ? styles.toggleOn : ''}`} 
+                                    onClick={() => handleCommissionChange('delivery_mode', 'platform')}
+                                >
+                                    <div className={styles.toggleDot} />
+                                </div>
                             </div>
                         </div>
                         <div className={styles.deliveryItem}>
-                            <div className={styles.deliveryRow}><div><div className={styles.deliveryName}>Restaurant-Managed</div><div className={styles.deliveryDesc}>Restaurant uses own fleet. Platform takes no delivery fee portion.</div></div>
-                                <div className={`${styles.toggle} ${deliveryMode === 'restaurant' ? styles.toggleOn : ''}`} onClick={() => setDeliveryMode('restaurant')}><div className={styles.toggleDot} /></div>
+                            <div className={styles.deliveryRow}>
+                                <div>
+                                    <div className={styles.deliveryName}>Restaurant-Managed</div>
+                                    <div className={styles.deliveryDesc}>Restaurant uses own fleet. Platform takes no delivery fee portion.</div>
+                                </div>
+                                <div 
+                                    className={`${styles.toggle} ${commissionSettings.delivery_mode === 'restaurant' ? styles.toggleOn : ''}`} 
+                                    onClick={() => handleCommissionChange('delivery_mode', 'restaurant')}
+                                >
+                                    <div className={styles.toggleDot} />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className={styles.card}>
-                        <h3 className={styles.cardLabel}>Admin Penalties</h3>
-                        <div className={styles.field}><label>Review Removal Fee (₱)</label><input defaultValue="250.00" /></div>
-                        <span className={styles.fieldNote}>Cost for merchants to appeal valid reviews.</span>
-                        <div className={styles.field} style={{ marginTop: '.65rem' }}><label>Cancellation Penalty</label><input defaultValue="10% of Order Val" /></div>
                     </div>
                 </div>
             </div>
 
             <div className={styles.rightCol}>
-                {/* Customer Service Fee */}
+                {/* Platform Fees */}
                 <div className={styles.card}>
-                    <h3 className={styles.cardLabel}>Customer Service Fee</h3>
-                    <div className={styles.bigFee}>₱ 15.00</div>
-                    <p className={styles.fieldNote}>Flat administrative fee charged to the user per checkout to cover server maintenance and support.</p>
-                </div>
-                {/* Tax & Compliance */}
-                <div className={styles.card}>
-                    <h3 className={styles.cardLabel}>🏛 Tax & Compliance</h3>
-                    <div className={styles.taxItem}><div><div className={styles.taxName}>Value Added Tax (VAT)</div><div className={styles.taxSub}>Standard PH Rate</div></div><span className={styles.taxVal}>12.0%</span></div>
-                    <div className={styles.taxItem}><div><div className={styles.taxName}>Withholding Tax</div><div className={styles.taxSub}>BIR Regulation</div></div><span className={styles.taxVal}>1.0%</span></div>
-                    <div className={styles.complianceBar}><span className={styles.complianceLabel}>Complaint</span><div className={styles.complianceFill} /></div>
-                    <p className={styles.fieldNote}>Tax settings are aligned with local regional guidelines as of Q4 2026.</p>
-                </div>
-                {/* Revenue Card */}
-                <div className={styles.revenueCard}>
-                    <div className={styles.revenueLabel}>Estimated Daily Revenue</div>
-                    <div className={styles.revenueValue}>₱ 142,500.25</div>
-                    <div className={styles.revenueSub}><TrendingUp size={14} /> +4.2% from yesterday</div>
+                    <h3 className={styles.cardLabel}>Platform Delivery Fee</h3>
+                    <div className={styles.field}>
+                        <label>Fee Amount (₱)</label>
+                        <div className={styles.inputSuffix}>
+                            <span>₱</span>
+                            <input 
+                                type="number" 
+                                value={commissionSettings.platform_delivery_fee} 
+                                onChange={(e) => handleCommissionChange('platform_delivery_fee', parseFloat(e.target.value))}
+                                step="0.01"
+                            />
+                        </div>
+                    </div>
+                    <p className={styles.fieldNote}>Applied per order for platform-managed deliveries.</p>
                 </div>
             </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSaveCommission}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Save Changes</>}
+            </button>
+            <button 
+                onClick={fetchCommissionSettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
@@ -248,58 +555,212 @@ function PaymentsTab() {
 
 /* ─── Notifications Tab ─────────────────────────────────────────────────────── */
 function NotificationsTab() {
-    const [toggles, setToggles] = useState({
-        newApp_inapp: true, newApp_email: true, newApp_sms: false,
-        dispute_inapp: true, dispute_email: true, dispute_sms: true,
-        payout_inapp: true, payout_email: true, payout_sms: false,
-        inventory_inapp: true, inventory_email: false, inventory_sms: false,
-        delayed_inapp: true, delayed_email: false, delayed_sms: true,
-        promo_inapp: true, promo_email: true, promo_sms: false,
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [notificationSettings, setNotificationSettings] = useState({
+        notify_new_orders: true,
+        notify_disputes: true,
+        notify_reviews: true,
+        notify_promotions: false,
     });
-    const t = (k) => setToggles(p => ({ ...p, [k]: !p[k] }));
+
+    useEffect(() => {
+        fetchNotificationSettings();
+    }, []);
+
+    const fetchNotificationSettings = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/settings');
+            const data = response.data.data;
+            setNotificationSettings({
+                notify_new_orders: data.notify_new_orders !== false,
+                notify_disputes: data.notify_disputes !== false,
+                notify_reviews: data.notify_reviews !== false,
+                notify_promotions: data.notify_promotions !== false,
+            });
+        } catch (err) {
+            console.error('Error fetching notification settings:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveNotifications = async () => {
+        try {
+            setSaving(true);
+            await api.put('/admin/settings/notifications', {
+                notify_new_orders: notificationSettings.notify_new_orders,
+                notify_disputes: notificationSettings.notify_disputes,
+                notify_reviews: notificationSettings.notify_reviews,
+                notify_promotions: notificationSettings.notify_promotions,
+            });
+            setSuccessMessage('Notification settings saved successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving notification settings:', err);
+            alert('Failed to save notification settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const toggleNotification = (field) => {
+        setNotificationSettings(prev => ({ ...prev, [field]: !prev[field] }));
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading settings...</span>
+            </div>
+        );
+    }
 
     const Toggle = ({ id }) => (
-        <div className={`${styles.toggle} ${toggles[id] ? styles.toggleOn : ''}`} onClick={() => t(id)}><div className={styles.toggleDot} /></div>
+        <div 
+            className={`${styles.toggle} ${notificationSettings[id] ? styles.toggleOn : ''}`} 
+            onClick={() => toggleNotification(id)}
+        >
+            <div className={styles.toggleDot} />
+        </div>
     );
 
     return (<>
         <h2 className={styles.sectionTitle}>Notifications</h2>
         <p className={styles.sectionSub}>Configure automated triggers and channel routing across the platform ecosystem.</p>
 
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
+
         {/* Admin System Triggers */}
         <div className={styles.card}>
-            <div className={styles.notifHeader}><div className={styles.notifIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>🔔</div><div><h3 className={styles.cardLabel} style={{ margin: 0 }}>Admin System Triggers</h3><span className={styles.fieldNote}>Internal alerts for system maintenance and oversight</span></div></div>
-            <div className={styles.notifCols}><span /><span>In-app</span><span>Email</span><span>SMS</span></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>New Application</div><div className={styles.notifDesc}>Notify when a new restaurant applies to join the hub</div></div><Toggle id="newApp_inapp" /><Toggle id="newApp_email" /><Toggle id="newApp_sms" /></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>Payment Dispute</div><div className={styles.notifDesc}>Escalate active chargebacks and refund requests</div></div><Toggle id="dispute_inapp" /><Toggle id="dispute_email" /><Toggle id="dispute_sms" /></div>
+            <div className={styles.notifHeader}>
+                <div className={styles.notifIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>🔔</div>
+                <div>
+                    <h3 className={styles.cardLabel} style={{ margin: 0 }}>Admin System Triggers</h3>
+                    <span className={styles.fieldNote}>Internal alerts for system maintenance and oversight</span>
+                </div>
+            </div>
+            <div className={styles.notifCols}><span /><span>Enabled</span></div>
+            <div className={styles.notifRow}>
+                <div>
+                    <div className={styles.notifName}>New Orders</div>
+                    <div className={styles.notifDesc}>Notify admin when new orders are placed</div>
+                </div>
+                <Toggle id="notify_new_orders" />
+            </div>
+            <div className={styles.notifRow}>
+                <div>
+                    <div className={styles.notifName}>Disputes & Chargebacks</div>
+                    <div className={styles.notifDesc}>Alert on payment disputes and refund requests</div>
+                </div>
+                <Toggle id="notify_disputes" />
+            </div>
         </div>
 
-        {/* Restaurant Merchant Triggers */}
+        {/* Customer & Review Triggers */}
         <div className={styles.card}>
-            <div className={styles.notifHeader}><div className={styles.notifIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>🏪</div><div><h3 className={styles.cardLabel} style={{ margin: 0 }}>Restaurant Merchant Triggers</h3><span className={styles.fieldNote}>Transactional alerts for vendor partners</span></div></div>
-            <div className={styles.notifCols}><span /><span>In-app</span><span>Email</span><span>SMS</span></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>Payout Confirmation</div><div className={styles.notifDesc}>Sent when weekly earnings are transferred to bank</div></div><Toggle id="payout_inapp" /><Toggle id="payout_email" /><Toggle id="payout_sms" /></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>Low Inventory Alert</div><div className={styles.notifDesc}>Triggered when stock levels fall below threshold</div></div><Toggle id="inventory_inapp" /><Toggle id="inventory_email" /><Toggle id="inventory_sms" /></div>
+            <div className={styles.notifHeader}>
+                <div className={styles.notifIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>⭐</div>
+                <div>
+                    <h3 className={styles.cardLabel} style={{ margin: 0 }}>Review & Rating Triggers</h3>
+                    <span className={styles.fieldNote}>Notifications for customer feedback and ratings</span>
+                </div>
+            </div>
+            <div className={styles.notifCols}><span /><span>Enabled</span></div>
+            <div className={styles.notifRow}>
+                <div>
+                    <div className={styles.notifName}>New Reviews & Ratings</div>
+                    <div className={styles.notifDesc}>Alert when customers leave restaurant reviews</div>
+                </div>
+                <Toggle id="notify_reviews" />
+            </div>
+            <div className={styles.notifRow}>
+                <div>
+                    <div className={styles.notifName}>Promotional Blasts</div>
+                    <div className={styles.notifDesc}>Enable marketing notifications for special offers</div>
+                </div>
+                <Toggle id="notify_promotions" />
+            </div>
         </div>
 
-        {/* Customer Journey Triggers */}
-        <div className={styles.card}>
-            <div className={styles.notifHeader}><div className={styles.notifIcon} style={{ background: '#FEF2F2', color: '#DC2626' }}>🛒</div><div><h3 className={styles.cardLabel} style={{ margin: 0 }}>Customer Journey Triggers</h3><span className={styles.fieldNote}>Touchpoints for end-user engagement</span></div></div>
-            <div className={styles.notifCols}><span /><span>In-app</span><span>Email</span><span>SMS</span></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>Order Delayed</div><div className={styles.notifDesc}>Apology message sent if prep time exceeds estimate</div></div><Toggle id="delayed_inapp" /><Toggle id="delayed_email" /><Toggle id="delayed_sms" /></div>
-            <div className={styles.notifRow}><div><div className={styles.notifName}>Promotional Offer</div><div className={styles.notifDesc}>Marketing blasts for weekend specials</div></div><Toggle id="promo_inapp" /><Toggle id="promo_email" /><Toggle id="promo_sms" /></div>
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSaveNotifications}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Save Changes</>}
+            </button>
+            <button 
+                onClick={fetchNotificationSettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
 
 /* ─── Admin Management Tab ──────────────────────────────────────────────────── */
 function AdminManagementTab() {
-    const admins = [
-        { name: 'Jordan Smith', email: 'jordan.smith@email.com', role: 'Super Admin', roleClass: 'roleSuperAdmin', status: 'Active', statusClass: 'statusActive', lastActive: 'Just now' },
-        { name: 'Alex Martinez', email: 'alex.martinez@email.com', role: 'Analyst', roleClass: 'roleAnalyst', status: 'Inactive', statusClass: 'statusInactive', lastActive: '2 hours ago' },
-        { name: 'Elena Kostic', email: 'elena.kostic@email.com', role: 'Moderator', roleClass: 'roleModerator', status: 'Suspended', statusClass: 'statusSuspended', lastActive: '3 days ago' },
-        { name: 'John Doe', email: 'john.doe@email.com', role: 'Admin', roleClass: 'roleAdmin', status: 'Active', statusClass: 'statusActive', lastActive: '14 mins ago' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [admins, setAdmins] = useState([]);
+
+    useEffect(() => {
+        fetchAdmins();
+    }, []);
+
+    const fetchAdmins = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/admins');
+            setAdmins(response.data.data || []);
+        } catch (err) {
+            console.error('Error fetching admins:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading admins...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Admin Management</h2>
@@ -310,7 +771,7 @@ function AdminManagementTab() {
                 <thead><tr><th>Admin</th><th>Role</th><th>Status</th><th>Last Active</th><th>Actions</th></tr></thead>
                 <tbody>
                     {admins.map(a => (
-                        <tr key={a.email}>
+                        <tr key={a.id}>
                             <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{a.name.split(' ').map(x=>x[0]).join('')}</div><div><div className={styles.adminName}>{a.name}</div><div className={styles.adminEmail}>{a.email}</div></div></div></td>
                             <td><span className={`${styles.rolePill} ${styles[a.roleClass]}`}>{a.role}</span></td>
                             <td><span className={`${styles.statusDot} ${styles[a.statusClass]}`}>{a.status}</span></td>
@@ -321,69 +782,117 @@ function AdminManagementTab() {
                 </tbody>
             </table>
         </div>
-
-        <div className={styles.twoCol}>
-            <div className={styles.card}>
-                <h3 className={styles.cardLabel}>🔴 Recent Permission Changes</h3>
-                <div className={styles.logItem}><span className={styles.logDot} style={{ background: '#DC2626' }} /><div><div className={styles.logText}>Role "Analyst" assigned to Marcus Thorne</div><div className={styles.logMeta}>By Sarah Chen • 2 hours ago</div></div></div>
-                <div className={styles.logItem}><span className={styles.logDot} style={{ background: '#D1D5DB' }} /><div><div className={styles.logText}>Password reset enforced for all Moderators</div><div className={styles.logMeta}>System Security • 5 hours ago</div></div></div>
-            </div>
-            <div className={styles.card}>
-                <h3 className={styles.cardLabel}>🔒 Security Checklist</h3>
-                <div className={styles.checkItem}><span>2FA Enabled for all Admins</span><CheckCircle2 size={18} className={styles.checkGreen} /></div>
-                <div className={styles.checkItem}><span>IP Whitelisting Active</span><CheckCircle2 size={18} className={styles.checkGreen} /></div>
-            </div>
-        </div>
     </>);
 }
 
 /* ─── Roles & Permissions Tab ───────────────────────────────────────────────── */
 function RolesPermissionsTab() {
-    const PERMS = [
-        { category: 'Platform Management', items: [
-            { label: 'System Configuration', desc: 'Edit core platform settings & integrations', perms: [true, false, false, false] },
-            { label: 'User Role Management', desc: 'User Role Management', perms: [true, true, false, false] },
-        ]},
-        { category: 'Order Operations', items: [
-            { label: 'Cancel & Refund Orders', desc: 'Ability to override active orders and issue credits', perms: [true, true, true, false] },
-            { label: 'View Transaction Data', desc: 'Access to detailed payment and fee breakdown', perms: [true, true, true, true] },
-        ]},
-        { category: 'Marketing & Growth', items: [
-            { label: 'Create Promotions', desc: 'Manage coupon codes and delivery fee waivers', perms: [true, true, false, false] },
-        ]},
-    ];
-    const ROLES = ['SUPER ADMIN', 'ADMIN', 'MODERATOR', 'ANALYST'];
-    const ROLE_CARDS = [
-        { icon: '🎯', name: 'Super Admin', badge: 'Unlimited Power', badgeClass: 'badgeRed', desc: 'Unrestricted access to all modules, financial settings, and API integrations. Primary account owner role.' },
-        { icon: '👤', name: 'Admin', badge: 'Operational Lead', badgeClass: 'badgeGray', desc: 'Full operational control over orders, merchants, and users. Cannot modify global system billing logic.' },
-        { icon: '🛡', name: 'Moderator', badge: 'Support Level', badgeClass: 'badgeGray', desc: 'Focused on order support and merchant menu management. Limited access to financial data.' },
-        { icon: '📊', name: 'Analyst', badge: 'Data Only', badgeClass: 'badgeGray', desc: 'Read-only access to dashboards and transaction logs. Can export data but cannot modify records.' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [permissions, setPermissions] = useState([]);
+    const [roles, setRoles] = useState([]);
+    const [permState, setPermState] = useState({});
 
-    const [permState, setPermState] = useState(() => {
-        const s = {};
-        PERMS.forEach(cat => cat.items.forEach(item => { item.perms.forEach((v, i) => { s[`${item.label}_${i}`] = v; }); }));
-        return s;
-    });
+    useEffect(() => {
+        fetchPermissionsAndRoles();
+    }, []);
+
+    const fetchPermissionsAndRoles = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/permissions-roles');
+            const { permissions: permsData, roles: rolesData } = response.data;
+            
+            setPermissions(permsData);
+            setRoles(rolesData);
+
+            // Build permState from fetched data
+            const newPermState = {};
+            permsData.forEach(cat => {
+                cat.items.forEach(item => {
+                    rolesData.forEach((role, roleIdx) => {
+                        newPermState[`${item.id}_${roleIdx}`] = item.roleIds.includes(role.id);
+                    });
+                });
+            });
+            setPermState(newPermState);
+        } catch (err) {
+            console.error('Error fetching permissions and roles:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSavePermissions = async () => {
+        try {
+            setSaving(true);
+            
+            // Build the update payload
+            const updates = [];
+            permissions.forEach(cat => {
+                cat.items.forEach(item => {
+                    const roleIds = [];
+                    roles.forEach((role, roleIdx) => {
+                        if (permState[`${item.id}_${roleIdx}`]) {
+                            roleIds.push(role.id);
+                        }
+                    });
+                    updates.push({
+                        permission_id: item.permissionId,
+                        role_ids: roleIds,
+                    });
+                });
+            });
+
+            await api.put('/admin/permissions-roles', { permissions: updates });
+            setSuccessMessage('Permissions updated successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving permissions:', err);
+            alert('Failed to save permissions');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading permissions and roles...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Roles & Permissions</h2>
         <p className={styles.sectionSub}>Configure platform access levels by defining granular permissions for each user role. Ensure administrative security through the principle of least privilege.</p>
 
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
+
         <div className={styles.card}>
             <table className={styles.permTable}>
-                <thead><tr><th>Permission Category & Action</th>{ROLES.map(r => <th key={r}>{r}</th>)}</tr></thead>
+                <thead><tr><th>Permission Category & Action</th>{roles.map(r => <th key={r.id}>{r.name.toUpperCase()}</th>)}</tr></thead>
                 <tbody>
-                    {PERMS.map(cat => (
+                    {permissions.map(cat => (
                         <React.Fragment key={cat.category}>
-                            <tr><td colSpan={5} className={styles.permCategory}>{cat.category}</td></tr>
+                            <tr><td colSpan={roles.length + 1} className={styles.permCategory}>{cat.category}</td></tr>
                             {cat.items.map(item => (
-                                <tr key={item.label}>
+                                <tr key={item.id}>
                                     <td><div className={styles.permName}>{item.label}</div><div className={styles.permDesc}>{item.desc}</div></td>
-                                    {ROLES.map((_, ri) => (
-                                        <td key={ri} className={styles.permCheckCell}>
+                                    {roles.map((role, roleIdx) => (
+                                        <td key={role.id} className={styles.permCheckCell}>
                                             <label className={styles.permCheckbox}>
-                                                <input type="checkbox" checked={permState[`${item.label}_${ri}`] || false} onChange={() => setPermState(p => ({ ...p, [`${item.label}_${ri}`]: !p[`${item.label}_${ri}`] }))} />
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={permState[`${item.id}_${roleIdx}`] || false} 
+                                                    onChange={() => setPermState(p => ({ ...p, [`${item.id}_${roleIdx}`]: !p[`${item.id}_${roleIdx}`] }))} 
+                                                />
                                                 <span className={styles.permCheck}><CheckCircle2 size={14} /></span>
                                             </label>
                                         </td>
@@ -397,26 +906,86 @@ function RolesPermissionsTab() {
         </div>
 
         <div className={styles.roleCardsGrid}>
-            {ROLE_CARDS.map(r => (
-                <div key={r.name} className={styles.roleCard}>
+            {roles.map(r => (
+                <div key={r.id} className={styles.roleCard}>
                     <div className={styles.roleCardHeader}><span className={styles.roleCardIcon}>{r.icon}</span><strong>{r.name}</strong></div>
                     <span className={`${styles.roleCardBadge} ${styles[r.badgeClass]}`}>{r.badge}</span>
                     <p className={styles.roleCardDesc}>{r.desc}</p>
                 </div>
             ))}
         </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSavePermissions}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Save Permissions</>}
+            </button>
+            <button 
+                onClick={fetchPermissionsAndRoles}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
+        </div>
     </>);
 }
 
 /* ─── Activity Logs Tab ─────────────────────────────────────────────────────── */
 function ActivityLogsTab() {
-    const LOGS = [
-        { name: 'Jordan Smith', role: 'Super Admin', action: 'Delete', actionClass: 'actionDelete', desc: "Deleted inactive vendor 'Spicy Hut #42'", page: 'Restaurant Management', ip: '192.168.····.···', device: 'macOS (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Alex Martinez', role: 'Analyst', action: 'Update', actionClass: 'actionUpdate', desc: 'Adjusted delivery radius to 15km for zone B2', page: 'Delivery Rules', ip: '172.16.····.···', device: 'Windows 11 (Edge)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Moderator', action: 'Access', actionClass: 'actionAccess', desc: "Downloaded 'Weekly Settlement Report'", page: 'Financials', ip: '10.0.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Admin', action: 'Auth', actionClass: 'actionAuth', desc: 'Modified login attempts policy to 5 retries', page: 'Security Settings', ip: '45.72.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-        { name: 'Jordan Smith', role: 'Super Admin', action: 'Update', actionClass: 'actionUpdate', desc: 'Flagged order #9942 for manual review', page: 'Orders', ip: '24.112.····.···', device: 'Windows 10 (Chrome)', time: 'Mar 23, 2026. 3:03:11' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [logs, setLogs] = useState([]);
+
+    useEffect(() => {
+        fetchActivityLogs();
+    }, []);
+
+    const fetchActivityLogs = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/activity-logs');
+            setLogs(response.data.data || []);
+        } catch (err) {
+            console.error('Error fetching activity logs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading activity logs...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Activity Logs</h2>
@@ -433,8 +1002,8 @@ function ActivityLogsTab() {
             <table className={styles.logsTable}>
                 <thead><tr><th>Admin</th><th>Action Description</th><th>Page/Module</th><th>Masked IP</th><th>Device</th><th>Timestamp</th></tr></thead>
                 <tbody>
-                    {LOGS.map((l, i) => (
-                        <tr key={i}>
+                    {logs.map((l) => (
+                        <tr key={l.id}>
                             <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{l.name.split(' ').map(x => x[0]).join('')}</div><div><div className={styles.adminName}>{l.name}</div><div className={styles.adminEmail}>{l.role}</div></div></div></td>
                             <td><span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span><div className={styles.logActionDesc}>{l.desc}</div></td>
                             <td className={styles.logModule}>{l.page}</td>
@@ -459,36 +1028,123 @@ function ActivityLogsTab() {
 
 /* ─── Security Tab ──────────────────────────────────────────────────────────── */
 function SecurityTab() {
-    const [twoFA, setTwoFA] = useState(true);
-    const [emailAlerts, setEmailAlerts] = useState(true);
-    const [smsEmergency, setSmsEmergency] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [securitySettings, setSecuritySettings] = useState({
+        two_factor_auth: true,
+        email_alerts: true,
+        sms_emergency: true,
+        session_timeout: '30 minutes',
+        max_login_attempts: 5,
+    });
+
+    useEffect(() => {
+        fetchSecuritySettings();
+    }, []);
+
+    const fetchSecuritySettings = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/admin/security-settings');
+            const data = response.data.data;
+            setSecuritySettings({
+                two_factor_auth: data.two_factor_auth ?? true,
+                email_alerts: data.email_alerts ?? true,
+                sms_emergency: data.sms_emergency ?? true,
+                session_timeout: data.session_timeout || '30 minutes',
+                max_login_attempts: data.max_login_attempts || 5,
+            });
+        } catch (err) {
+            console.error('Error fetching security settings:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveSecuritySettings = async () => {
+        try {
+            setSaving(true);
+            await api.put('/admin/security-settings', {
+                two_factor_auth: securitySettings.two_factor_auth,
+                email_alerts: securitySettings.email_alerts,
+                sms_emergency: securitySettings.sms_emergency,
+                session_timeout: securitySettings.session_timeout,
+                max_login_attempts: securitySettings.max_login_attempts,
+            });
+            setSuccessMessage('Security settings saved successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error saving security settings:', err);
+            alert('Failed to save security settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSecurityChange = (field, value) => {
+        setSecuritySettings(prev => ({ ...prev, [field]: value }));
+    };
+
+    const toggleSecuritySwitch = (field) => {
+        setSecuritySettings(prev => ({ ...prev, [field]: !prev[field] }));
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '12px' }}>
+                <Loader size={20} className={styles.spinner} />
+                <span>Loading security settings...</span>
+            </div>
+        );
+    }
 
     return (<>
         <h2 className={styles.sectionTitle}>Security Settings</h2>
         <p className={styles.sectionSub}>Configure platform-wide security protocols, authentication policies, and access controls for the TMC Foodhub administrative interface.</p>
+
+        {successMessage && (
+            <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
+                ✓ {successMessage}
+            </div>
+        )}
 
         <div className={styles.twoColWide}>
             <div className={styles.leftCol}>
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔒 Authentication & Access</h3>
                     <div className={styles.securityToggleRow}>
-                        <div className={`${styles.toggle} ${twoFA ? styles.toggleOn : ''}`} onClick={() => setTwoFA(!twoFA)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.two_factor_auth ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('two_factor_auth')}><div className={styles.toggleDot} /></div>
                         <div><div className={styles.deliveryName}>Force Two-Factor Authentication</div><div className={styles.deliveryDesc}>Require all admin users to authenticate via mobile app or SMS.</div></div>
                     </div>
                     <div className={styles.fieldGrid} style={{ marginTop: '1rem' }}>
-                        <div className={styles.field}><label>Session Timeout</label><select><option>30 minutes</option><option>15 minutes</option><option>1 hour</option></select></div>
-                        <div className={styles.field}><label>Max Login Attempts</label><select><option>5 attempts</option><option>3 attempts</option><option>10 attempts</option></select></div>
+                        <div className={styles.field}>
+                            <label>Session Timeout</label>
+                            <select value={securitySettings.session_timeout} onChange={(e) => handleSecurityChange('session_timeout', e.target.value)}>
+                                <option>30 minutes</option>
+                                <option>15 minutes</option>
+                                <option>1 hour</option>
+                            </select>
+                        </div>
+                        <div className={styles.field}>
+                            <label>Max Login Attempts</label>
+                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value))}>
+                                <option value="3">3 attempts</option>
+                                <option value="5">5 attempts</option>
+                                <option value="10">10 attempts</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔔 Security Notifications</h3>
                     <div className={styles.secNotifRow}>
-                        <div className={`${styles.toggle} ${emailAlerts ? styles.toggleOn : ''}`} onClick={() => setEmailAlerts(!emailAlerts)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.email_alerts ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('email_alerts')}><div className={styles.toggleDot} /></div>
                         <span className={styles.secNotifLabel}>Email Alerts</span>
                     </div>
                     <div className={styles.secNotifRow}>
-                        <div className={`${styles.toggle} ${smsEmergency ? styles.toggleOn : ''}`} onClick={() => setSmsEmergency(!smsEmergency)}><div className={styles.toggleDot} /></div>
+                        <div className={`${styles.toggle} ${securitySettings.sms_emergency ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('sms_emergency')}><div className={styles.toggleDot} /></div>
                         <span className={styles.secNotifLabel}>SMS (Emergency)</span>
                     </div>
                 </div>
@@ -509,6 +1165,46 @@ function SecurityTab() {
 
         <div className={styles.secFooterNote}>
             <span className={styles.secFooterDot} /> System changes will be logged in Activity Logs audit trail.
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-start' }}>
+            <button 
+                onClick={handleSaveSecuritySettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    opacity: saving ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                {saving ? <><Loader size={14} className={styles.spinner} /> Saving...</> : <> Update Security Policy</>}
+            </button>
+            <button 
+                onClick={fetchSecuritySettings}
+                disabled={saving}
+                style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                }}
+            >
+                Cancel
+            </button>
         </div>
     </>);
 }
