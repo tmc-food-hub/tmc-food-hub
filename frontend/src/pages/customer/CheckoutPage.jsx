@@ -40,7 +40,7 @@ function CheckoutPage() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (cartItems.length === 0 && !showSuccessModal) {
+        if (cartItems.length === 0 && !showSuccessModal && !placedOrderId) {
             navigate('/cart');
         }
         if (!loading) {
@@ -56,7 +56,7 @@ function CheckoutPage() {
                 }
             }
         }
-    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
+    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt, placedOrderId]);
 
     // Fetch accepted payment methods from restaurant
     useEffect(() => {
