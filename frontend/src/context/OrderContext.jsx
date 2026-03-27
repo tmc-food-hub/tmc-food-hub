@@ -134,7 +134,7 @@ export function OrderProvider({ children }) {
                     total: parseFloat(o.total),
                     paymentMethod: o.payment_method,
                     paymentStatus: o.payment_status || 'paid',
-                    paymentReceipt: o.payment_receipt || null,
+                    paymentReceipt: resolveMediaUrl(o.payment_receipt) || null,
                     paymentSenderName: o.payment_sender_name || '',
                     paymentTransactionId: o.payment_transaction_id || '',
                     // Status & timing

@@ -4,9 +4,8 @@ import { CheckCircle2, PenLine, Star, ThumbsUp, UploadCloud, X } from 'lucide-re
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import styles from './RestaurantMenuPage.module.css';
-
-const MAX_REVIEW_IMAGE_DIMENSION = 1600;
-const REVIEW_IMAGE_QUALITY = 0.82;
+import { prepareImageUpload, revokeObjectUrl } from '../../utils/imageUpload';
+import { resolveMediaUrl } from '../../utils/media';
 
 function StarRow({ rating, size = 14 }) {
     return (
@@ -23,12 +22,6 @@ function StarRow({ rating, size = 14 }) {
     );
 }
 
-function revokeObjectUrl(url) {
-    if (url?.startsWith?.('blob:')) {
-        URL.revokeObjectURL(url);
-    }
-}
-
 function getFirstApiError(error, fallback) {
     const validationErrors = error?.response?.data?.errors;
     if (validationErrors && typeof validationErrors === 'object') {
@@ -39,64 +32,6 @@ function getFirstApiError(error, fallback) {
     }
 
     return error?.response?.data?.message || fallback;
-}
-
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = src;
-    });
-}
-
-async function optimizeReviewImageUpload(file) {
-    if (!file.type?.startsWith('image/')) {
-        return { uploadFile: file, previewUrl: URL.createObjectURL(file) };
-    }
-
-    const sourceUrl = URL.createObjectURL(file);
-
-    try {
-        const image = await loadImage(sourceUrl);
-        const scale = Math.min(1, MAX_REVIEW_IMAGE_DIMENSION / Math.max(image.width, image.height));
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        if (!context) throw new Error('Canvas unavailable');
-
-        canvas.width = width;
-        canvas.height = height;
-        context.drawImage(image, 0, 0, width, height);
-
-        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        const blob = await new Promise((resolve, reject) => {
-            canvas.toBlob((result) => {
-                if (!result) {
-                    reject(new Error('Unable to optimize image'));
-                    return;
-                }
-                resolve(result);
-            }, outputType, outputType === 'image/png' ? undefined : REVIEW_IMAGE_QUALITY);
-        });
-
-        const extension = outputType === 'image/png' ? 'png' : 'jpg';
-        const baseName = (file.name || 'review-photo').replace(/\.[^.]+$/, '');
-
-        return {
-            uploadFile: new File([blob], `${baseName}.${extension}`, {
-                type: outputType,
-                lastModified: Date.now(),
-            }),
-            previewUrl: URL.createObjectURL(blob),
-        };
-    } catch {
-        return { uploadFile: file, previewUrl: URL.createObjectURL(file) };
-    } finally {
-        URL.revokeObjectURL(sourceUrl);
-    }
 }
 
 export default function RestaurantReviewsSection({ storeId, storeName, fallbackRating = 0 }) {
@@ -209,7 +144,7 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
     async function handleReviewPhotoChange(event) {
         const files = Array.from(event.target.files || []);
         const remainingSlots = Math.max(0, 3 - reviewPhotos.length);
-        const optimized = await Promise.all(files.slice(0, remainingSlots).map(optimizeReviewImageUpload));
+        const optimized = await Promise.all(files.slice(0, remainingSlots).map((file) => prepareImageUpload(file)));
 
         setReviewPhotos((prev) => [
             ...prev,
@@ -252,9 +187,7 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
             formData.append('review', reviewText.trim());
             reviewPhotos.forEach((photo) => formData.append('photo_files[]', photo.file));
 
-            await api.post(`/restaurants/${storeId}/reviews`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            await api.post(`/restaurants/${storeId}/reviews`, formData);
 
             await Promise.all([fetchReviews(), fetchReviewableOrders()]);
             resetReviewForm(true);
@@ -381,7 +314,7 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
                                     {review.photos?.length > 0 && (
                                         <div className={styles.reviewImages}>
                                             {review.photos.map((photo, index) => (
-                                                <img key={photo + index} src={photo} alt="Review Photo" className={styles.reviewImg} />
+                                                <img key={photo + index} src={resolveMediaUrl(photo)} alt="Review Photo" className={styles.reviewImg} />
                                             ))}
                                         </div>
                                     )}

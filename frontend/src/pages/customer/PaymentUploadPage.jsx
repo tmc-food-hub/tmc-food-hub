@@ -6,6 +6,7 @@ import { Upload, Smartphone, CreditCard, ChevronLeft, AlertCircle } from 'lucide
 import Swal from 'sweetalert2';
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
+import { prepareImageUpload, revokeObjectUrl } from '../../utils/imageUpload';
 
 const PaymentUploadPage = () => {
     const [searchParams] = useSearchParams();
@@ -22,6 +23,8 @@ const PaymentUploadPage = () => {
     const [paymentSenderName, setPaymentSenderName] = useState('');
     const [paymentTransactionId, setPaymentTransactionId] = useState('');
     const [uploadingReceipt, setUploadingReceipt] = useState(false);
+
+    useEffect(() => () => revokeObjectUrl(receiptPreview), [receiptPreview]);
 
     // Find the order
     useEffect(() => {
@@ -57,66 +60,24 @@ const PaymentUploadPage = () => {
         }
     }, [order]);
 
-    // Client-side image compression to avoid production base64 size limits
-    const compressImage = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1000;
-                    const MAX_HEIGHT = 1000;
-                    let width = img.width;
-                    let height = img.height;
+    const setPreparedReceipt = async (file) => {
+        if (!file || !file.type.startsWith('image/')) return;
 
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    canvas.toBlob((blob) => {
-                        resolve(new File([blob], file.name, {
-                            type: 'image/jpeg',
-                            lastModified: Date.now()
-                        }));
-                    }, 'image/jpeg', 0.8);
-                };
-                img.onerror = (error) => reject(error);
-            };
-            reader.onerror = (error) => reject(error);
-        });
+        const prepared = await prepareImageUpload(file, { maxDimension: 1200, quality: 0.8 });
+        revokeObjectUrl(receiptPreview);
+        setReceiptFile(prepared.uploadFile);
+        setReceiptPreview(prepared.previewUrl);
     };
 
     const handleDrop = async (e) => {
         e.preventDefault();
         const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const compressed = await compressImage(file);
-            setReceiptFile(compressed);
-            setReceiptPreview(URL.createObjectURL(compressed));
-        }
+        await setPreparedReceipt(file);
     };
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const compressed = await compressImage(file);
-            setReceiptFile(compressed);
-            setReceiptPreview(URL.createObjectURL(compressed));
-        }
+        await setPreparedReceipt(file);
     };
 
     const handleSubmit = async (e) => {
@@ -130,9 +91,7 @@ const PaymentUploadPage = () => {
             formData.append('payment_sender_name', paymentSenderName);
             formData.append('payment_transaction_id', paymentTransactionId);
 
-            await api.post(`/orders/${order.id}/upload-receipt`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post(`/orders/${order.id}/upload-receipt`, formData);
 
             Swal.fire({
                 title: 'Receipt Uploaded!',

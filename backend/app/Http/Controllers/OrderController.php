@@ -10,6 +10,7 @@ use App\Models\MenuItem;
 use App\Support\MediaPath;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -203,7 +204,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Customer uploads payment receipt as base64 blob.
+     * Customer uploads a payment receipt file that is stored on the public disk.
      */
     public function uploadReceipt(Request $request, $id)
     {
@@ -220,17 +221,35 @@ class OrderController extends Controller
             'payment_transaction_id' => 'required|string|max:255',
         ]);
 
-        $file = $request->file('receipt');
-        $base64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+        if ($order->payment_method === 'cod') {
+            return response()->json(['message' => 'Cash on delivery orders do not require a payment receipt.'], 422);
+        }
+
+        $existingReceiptPath = MediaPath::normalizeStoredPath($order->getRawOriginal('payment_receipt'));
+
+        if (
+            is_string($existingReceiptPath)
+            && $existingReceiptPath !== ''
+            && !str_starts_with($existingReceiptPath, 'data:')
+            && !preg_match('/^https?:\/\//i', $existingReceiptPath)
+        ) {
+            Storage::disk('public')->delete($existingReceiptPath);
+        }
+
+        $storedPath = $request->file('receipt')->store("orders/receipts/{$order->id}", 'public');
 
         $order->update([
-            'payment_receipt' => $base64,
+            'payment_receipt' => MediaPath::normalizeStoredPath($storedPath),
             'payment_sender_name' => $request->payment_sender_name,
             'payment_transaction_id' => $request->payment_transaction_id,
             'payment_status' => 'pending_verification',
         ]);
 
-        return response()->json(['message' => 'Receipt uploaded successfully', 'payment_status' => 'pending_verification']);
+        return response()->json([
+            'message' => 'Receipt uploaded successfully',
+            'payment_status' => 'pending_verification',
+            'payment_receipt' => $order->fresh()->payment_receipt,
+        ]);
     }
 
     /**

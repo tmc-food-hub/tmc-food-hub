@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -46,5 +47,10 @@ class Order extends Model
     public function review()
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function getPaymentReceiptAttribute($value)
+    {
+        return MediaPath::toPublicUrl($value);
     }
 }

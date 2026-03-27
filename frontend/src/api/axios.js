@@ -49,6 +49,15 @@ api.interceptors.request.use((config) => {
     const guard = config.meta?.guard || detectGuard(config.url);
     const { tokenKey } = AUTH_GUARDS[guard] || AUTH_GUARDS.customer;
 
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
+        if (typeof config.headers.delete === 'function') {
+            config.headers.delete('Content-Type');
+        } else {
+            delete config.headers['Content-Type'];
+            delete config.headers['content-type'];
+        }
+    }
+
     const token = localStorage.getItem(tokenKey);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;

@@ -4,6 +4,7 @@ import { IMAGES } from './shared';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
 import { resolveMediaUrl } from '../../../utils/media';
+import { prepareImageUpload, revokeObjectUrl } from '../../../utils/imageUpload';
 
 const createBlankForm = () => ({
     title: '',
@@ -18,19 +19,6 @@ const createBlankForm = () => ({
 });
 
 const BLANK = createBlankForm();
-
-function revokePreviewUrl(url) {
-    return url;
-}
-
-function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
 
 function getFirstApiError(error, fallback) {
     const validationErrors = error?.response?.data?.errors;
@@ -49,30 +37,12 @@ function getFirstApiError(error, fallback) {
     return error?.response?.data?.message || fallback;
 }
 
-async function prepareImageUpload(file) {
-    if (!file) return null;
-
-    try {
-        return {
-            uploadFile: file,
-            previewUrl: await readFileAsDataUrl(file),
-        };
-    } catch {
-        return {
-            uploadFile: file,
-            previewUrl: '',
-        };
-    }
-}
 
 export default function MenuSection({
-    store,
-    onUpdate,
     items = [],
     setItems,
     categories = [],
     setCategories,
-    loading = false,
     refreshInventory,
 }) {
     const [addOpen, setAddOpen] = useState(false);
@@ -86,8 +56,8 @@ export default function MenuSection({
     const [viewMode, setViewMode] = useState('grid');
     useEffect(() => {
         return () => {
-            revokePreviewUrl(form.preview);
-            revokePreviewUrl(editForm.preview);
+            revokeObjectUrl(form.preview);
+            revokeObjectUrl(editForm.preview);
         };
     }, [form.preview, editForm.preview]);
 
@@ -136,11 +106,9 @@ export default function MenuSection({
                 formData.append('image', form.image);
             }
 
-            await api.post('/owner/inventory/items', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/owner/inventory/items', formData);
             await refreshInventory?.();
-            revokePreviewUrl(form.preview);
+            revokeObjectUrl(form.preview);
             setForm(createBlankForm());
             setAddOpen(false);
             setError('');
@@ -163,7 +131,7 @@ export default function MenuSection({
             setItems(prev => prev.filter(item => item.id !== id));
             await refreshInventory?.();
             if (editId === id) {
-                revokePreviewUrl(editForm.preview);
+                revokeObjectUrl(editForm.preview);
                 setEditId(null);
                 setEditForm({});
             }
@@ -229,11 +197,9 @@ export default function MenuSection({
                 formData.append('image', editForm.image);
             }
 
-            await api.post(`/owner/inventory/items/${editId}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post(`/owner/inventory/items/${editId}`, formData);
             await refreshInventory?.();
-            revokePreviewUrl(editForm.preview);
+            revokeObjectUrl(editForm.preview);
             setEditId(null);
             setEditForm({});
             setDialog({ type: 'success', title: 'Item Updated Successfully', desc: `${editForm.title} has been updated.` });
@@ -362,7 +328,7 @@ export default function MenuSection({
                                 type="button"
                                 className={styles.iconBtn}
                                 onClick={() => {
-                                    revokePreviewUrl(form.preview);
+                                    revokeObjectUrl(form.preview);
                                     setAddOpen(false);
                                     setForm(createBlankForm());
                                     setError('');
@@ -388,7 +354,7 @@ export default function MenuSection({
                                                 if (file) {
                                                     const optimized = await prepareImageUpload(file);
                                                     setForm((prev) => {
-                                                        revokePreviewUrl(prev.preview);
+                                                        revokeObjectUrl(prev.preview);
 
                                                         return {
                                                             ...prev,
@@ -443,7 +409,7 @@ export default function MenuSection({
                                     type="button"
                                     className={styles.menuBtnCancel}
                                     onClick={() => {
-                                        revokePreviewUrl(form.preview);
+                                        revokeObjectUrl(form.preview);
                                         setAddOpen(false);
                                         setForm(createBlankForm());
                                         setError('');
@@ -468,7 +434,7 @@ export default function MenuSection({
                                 type="button"
                                 className={styles.iconBtn}
                                 onClick={() => {
-                                    revokePreviewUrl(editForm.preview);
+                                    revokeObjectUrl(editForm.preview);
                                     setEditId(null);
                                     setEditForm({});
                                 }}
@@ -492,7 +458,7 @@ export default function MenuSection({
                                                 if (file) {
                                                     const optimized = await prepareImageUpload(file);
                                                     setEditForm((prev) => {
-                                                        revokePreviewUrl(prev.preview);
+                                                        revokeObjectUrl(prev.preview);
 
                                                         return {
                                                             ...prev,
@@ -546,7 +512,7 @@ export default function MenuSection({
                                     type="button"
                                     className={styles.menuBtnCancel}
                                     onClick={() => {
-                                        revokePreviewUrl(editForm.preview);
+                                        revokeObjectUrl(editForm.preview);
                                         setEditId(null);
                                         setEditForm({});
                                     }}

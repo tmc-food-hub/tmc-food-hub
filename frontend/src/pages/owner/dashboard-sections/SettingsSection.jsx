@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 import styles from './SettingsSection.module.css';
 import api from '../../../api/axios';
 import { resolveMediaUrl } from '../../../utils/media';
+import { optimizeImageFile, prepareImageUpload, revokeObjectUrl } from '../../../utils/imageUpload';
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -85,9 +86,7 @@ function AccountTab({ store, refreshOwner }) {
             formData.append('business_address', store.location);
             formData.append('business_contact_number', store.phone || '');
 
-            await api.post('/owner/profile-update', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/owner/profile-update', formData);
 
             await refreshOwner?.();
             setSaved(true);
@@ -103,6 +102,7 @@ function AccountTab({ store, refreshOwner }) {
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        const optimizedFile = await optimizeImageFile(file);
 
         const formData = new FormData();
         formData.append('first_name', store.firstName || '');
@@ -110,12 +110,10 @@ function AccountTab({ store, refreshOwner }) {
         formData.append('restaurant_name', store.branchName || '');
         formData.append('business_address', store.location || '');
         formData.append('business_contact_number', store.phone || '');
-        formData.append('logo_file', file);
+        formData.append('logo_file', optimizedFile);
 
         try {
-            await api.post('/owner/profile-update', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/owner/profile-update', formData);
             await refreshOwner?.();
         } catch (err) {
             console.error('Failed to upload avatar:', err);
@@ -1235,6 +1233,8 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
         }
     }, []);
 
+    useEffect(() => () => revokeObjectUrl(previewLogo), [previewLogo]);
+
     const geocodeAddress = useCallback(async (addr) => {
         const result = await geocodeAddressToLatLng(addr);
         if (result) setMapPosition(result);
@@ -1246,11 +1246,13 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
         if (addr) setForm(prev => ({ ...prev, address: addr }));
     }, []);
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setLogoFile(file);
-            setPreviewLogo(URL.createObjectURL(file));
+            const prepared = await prepareImageUpload(file);
+            revokeObjectUrl(previewLogo);
+            setLogoFile(prepared.uploadFile);
+            setPreviewLogo(prepared.previewUrl);
         }
     };
 
@@ -1269,9 +1271,7 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
             
             if (logoFile) formData.append('logo_file', logoFile);
             
-            await api.post('/owner/profile-update', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/owner/profile-update', formData);
 
             await refreshOwner?.();
             onClose();

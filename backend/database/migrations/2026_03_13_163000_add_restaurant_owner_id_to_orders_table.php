@@ -14,12 +14,23 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $driver = DB::getDriverName();
+
         Schema::table('orders', function (Blueprint $table) {
             // Add the FK column if it doesn't already exist
             if (!Schema::hasColumn('orders', 'restaurant_owner_id')) {
                 $table->unsignedBigInteger('restaurant_owner_id')->nullable()->after('customer_id');
             }
         });
+
+        if ($driver === 'sqlite') {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('restaurant_owner_id');
+                $table->index('customer_id');
+            });
+
+            return;
+        }
 
         // Add indexes separately so we can check existence first
         Schema::table('orders', function (Blueprint $table) {
@@ -56,6 +67,20 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            Schema::table('orders', function (Blueprint $table) {
+                if (Schema::hasColumn('orders', 'restaurant_owner_id')) {
+                    $table->dropIndex(['restaurant_owner_id']);
+                    $table->dropIndex(['customer_id']);
+                    $table->dropColumn('restaurant_owner_id');
+                }
+            });
+
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
             $existingFks = collect(DB::select("
                 SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
@@ -82,4 +107,3 @@ return new class extends Migration
         });
     }
 };
-
