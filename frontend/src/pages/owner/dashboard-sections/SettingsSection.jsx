@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
     User, Shield, Bell, Store, CreditCard, Search,
     CheckCircle2, AlertCircle, X, Save, Check,
-    PauseCircle, XCircle, MapPin, Phone
+    PauseCircle, XCircle, MapPin, Phone, Eye, EyeOff
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -51,8 +51,8 @@ export default function SettingsSection({ store, refreshOwner, items = [], refre
 
             <div className={styles.settingsContent}>
                 {activeTab === 'account' && <AccountTab store={store} refreshOwner={refreshOwner} />}
-                {activeTab === 'security' && <PlaceholderTab title="Security Settings" description="Manage your password, two-factor authentication, and login sessions." />}
-                {activeTab === 'notifications' && <PlaceholderTab title="Notifications" description="Configure your notification preferences for orders, promotions, and system alerts." />}
+                {activeTab === 'security' && <SecuritySettingsTab />}
+                {activeTab === 'notifications' && <NotificationsTab />}
                 {activeTab === 'restaurant-profile' && <RestaurantProfileTab store={store} refreshOwner={refreshOwner} />}
                 {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} />}
                 {activeTab === 'payment' && <PlaceholderTab title="Payment" description="Manage payment methods and billing information." />}
@@ -600,6 +600,256 @@ function OperationDialog({ dialog, onClose, onRetry }) {
                     </>
                 )}
             </div>
+        </div>
+    );
+}
+
+/* ── Security Settings Tab ───────────────────────── */
+function SecuritySettingsTab() {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [error, setError] = useState('');
+    const [twoFA, setTwoFA] = useState(true);
+    const [secNotifs, setSecNotifs] = useState({ newDevice: true, passwordChange: true, suspicious: true });
+
+    const getStrength = (pw) => {
+        if (!pw) return { label: '', color: '#E5E7EB', pct: 0 };
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        if (pw.length >= 12) score++;
+        if (score <= 1) return { label: 'Weak', color: '#EF4444', pct: 25 };
+        if (score <= 2) return { label: 'Fair', color: '#F59E0B', pct: 50 };
+        if (score <= 3) return { label: 'Good', color: '#3B82F6', pct: 75 };
+        return { label: 'Strong', color: '#10B981', pct: 100 };
+    };
+
+    const strength = getStrength(newPassword);
+
+    const handleSave = async () => {
+        setError('');
+        if (!currentPassword) { setError('Current password is required.'); return; }
+        if (newPassword.length < 8) { setError('New password must be at least 8 characters.'); return; }
+        if (newPassword !== confirmPassword) { setError('Passwords do not match.'); return; }
+        setSaving(true);
+        try {
+            await api.put('/owner/change-password', {
+                current_password: currentPassword,
+                password: newPassword,
+                password_confirmation: confirmPassword,
+            });
+            setSaved(true);
+            setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+            setTimeout(() => setSaved(false), 2500);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to change password.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#111827' }}>Security Settings</h2>
+                <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Enhance your account's protection and manage access.</p>
+            </div>
+
+            {/* Change Password */}
+            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                <h3 className={styles.cardTitle} style={{ marginBottom: '0.25rem' }}>Change Password</h3>
+                <p style={{ color: '#6B7280', fontSize: '0.82rem', margin: '0 0 1.25rem' }}>Update your account password regularly to keep it secure.</p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Current Password</label>
+                        <input
+                            type="password"
+                            value={currentPassword}
+                            onChange={e => { setCurrentPassword(e.target.value); setError(''); }}
+                            className={styles.fieldInput}
+                            placeholder="••••••••"
+                        />
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>New Password</label>
+                        <input
+                            type={showNew ? 'text' : 'password'}
+                            value={newPassword}
+                            onChange={e => { setNewPassword(e.target.value); setError(''); }}
+                            className={styles.fieldInput}
+                            placeholder="••••••••"
+                        />
+                        <button onClick={() => setShowNew(!showNew)} style={{ position: 'absolute', right: '10px', top: '30px', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '4px' }}>
+                            {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>Confirm Password</label>
+                        <input
+                            type={showConfirm ? 'text' : 'password'}
+                            value={confirmPassword}
+                            onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
+                            className={styles.fieldInput}
+                            placeholder="••••••••"
+                        />
+                        <button onClick={() => setShowConfirm(!showConfirm)} style={{ position: 'absolute', right: '10px', top: '30px', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '4px' }}>
+                            {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Strength bar */}
+                {newPassword && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                        <div style={{ width: '100%', height: '4px', backgroundColor: '#E5E7EB', borderRadius: '99px', overflow: 'hidden' }}>
+                            <div style={{ width: `${strength.pct}%`, height: '100%', backgroundColor: strength.color, borderRadius: '99px', transition: 'all 0.3s' }} />
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: strength.color, fontWeight: 600, marginTop: '0.35rem' }}>Password Strength: {strength.label}</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div style={{ background: '#FEF2F2', color: '#991B1B', fontSize: '0.82rem', padding: '0.6rem 0.85rem', borderRadius: '8px', marginTop: '0.75rem', fontWeight: 500 }}>
+                        {error}
+                    </div>
+                )}
+
+                <div className={styles.formActions} style={{ marginTop: '1rem' }}>
+                    <button className={styles.btnCancel} onClick={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setError(''); }}>Cancel</button>
+                    <button className={styles.btnSave} disabled={saving} onClick={handleSave}>
+                        {saving ? 'Saving...' : <><Save size={14} /> Save Changes</>}
+                    </button>
+                </div>
+            </div>
+
+            {/* 2FA Toggle */}
+            <div className={styles.card} style={{ padding: '1.25rem 1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        type="button"
+                        className={`${styles.switchBtn} ${twoFA ? styles.switchBtnActive : ''}`}
+                        onClick={() => setTwoFA(!twoFA)}
+                    >
+                        <span className={styles.switchThumb} />
+                    </button>
+                    <div>
+                        <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#111827' }}>Two-Factor Authentication (2FA)</div>
+                        <div style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '2px' }}>Add an extra layer of security to your account by requiring a code from your phone.</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Security Notifications */}
+            <div className={styles.card} style={{ padding: '1.5rem' }}>
+                <h3 className={styles.cardTitle} style={{ marginBottom: '1.25rem' }}>Security Notifications</h3>
+                {[
+                    { key: 'newDevice', title: 'New device login', desc: 'Notify me when my account is accessed from a new device.' },
+                    { key: 'passwordChange', title: 'Password change', desc: 'Send an email alert whenever my password is updated.' },
+                    { key: 'suspicious', title: 'Suspicious activity', desc: 'Critical alerts about potentially compromised security.' },
+                ].map((item, idx) => (
+                    <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 0', borderTop: idx > 0 ? '1px solid #F3F4F6' : 'none' }}>
+                        <button
+                            type="button"
+                            className={`${styles.switchBtn} ${secNotifs[item.key] ? styles.switchBtnActive : ''}`}
+                            onClick={() => setSecNotifs(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                        >
+                            <span className={styles.switchThumb} />
+                        </button>
+                        <div>
+                            <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#111827' }}>{item.title}</div>
+                            <div style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '2px' }}>{item.desc}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {saved && (
+                <div className={styles.savedToast}>
+                    <Check size={16} /> Password changed successfully!
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ── Notifications Tab ───────────────────────── */
+function NotificationsTab() {
+    const [notifs, setNotifs] = useState({
+        emailUpdates: true,
+        smsAlerts: true,
+        dashboardPush: true,
+        emailInvoices: true,
+        transferSms: true,
+        balanceAlert: true,
+        reviewDigest: true,
+        newReviewAlerts: true,
+        reviewBalance: true,
+    });
+
+    const toggle = (key) => setNotifs(prev => ({ ...prev, [key]: !prev[key] }));
+
+    const sections = [
+        {
+            title: 'Order Notifications',
+            items: [
+                { key: 'emailUpdates', title: 'Email Updates', desc: 'Daily summary and major order issues' },
+                { key: 'smsAlerts', title: 'SMS Alerts', desc: 'Immediate text for every new incoming order' },
+                { key: 'dashboardPush', title: 'Dashboard Push', desc: 'Browser notifications while logged in' },
+            ],
+        },
+        {
+            title: 'Payout Notifications',
+            items: [
+                { key: 'emailInvoices', title: 'Email Invoices', desc: 'Receive weekly earnings statements' },
+                { key: 'transferSms', title: 'Transfer Confirmation (SMS)', desc: 'Get notified when money hits your account' },
+                { key: 'balanceAlert', title: 'Dashboard Balance Alert', desc: 'Notifications for low balance or failed transfers' },
+            ],
+        },
+        {
+            title: 'Review Notifications',
+            items: [
+                { key: 'reviewDigest', title: 'Review Digest (Email)', desc: 'Weekly report of customer ratings and feedback' },
+                { key: 'newReviewAlerts', title: 'New Review Alerts', desc: 'Get notified the moment a customer leaves feedback' },
+                { key: 'reviewBalance', title: 'Dashboard Balance Alert', desc: 'Notifications for low balance or failed transfers' },
+            ],
+        },
+    ];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#111827' }}>Notification Preferences</h2>
+                <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Choose how you'd like to stay informed about your restaurant's activity.</p>
+            </div>
+
+            {sections.map(section => (
+                <div key={section.title} className={styles.card} style={{ padding: '1.5rem' }}>
+                    <h3 className={styles.cardTitle} style={{ marginBottom: '1rem' }}>{section.title}</h3>
+                    {section.items.map((item, idx) => (
+                        <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 0', borderTop: idx > 0 ? '1px solid #F3F4F6' : 'none' }}>
+                            <button
+                                type="button"
+                                className={`${styles.switchBtn} ${notifs[item.key] ? styles.switchBtnActive : ''}`}
+                                onClick={() => toggle(item.key)}
+                            >
+                                <span className={styles.switchThumb} />
+                            </button>
+                            <div>
+                                <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#111827' }}>{item.title}</div>
+                                <div style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '2px' }}>{item.desc}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ))}
         </div>
     );
 }
