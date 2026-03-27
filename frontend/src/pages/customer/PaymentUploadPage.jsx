@@ -112,9 +112,9 @@ const PaymentUploadPage = () => {
 
     if (ordersLoading || !order) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F3F4F6' }}>
+            <div className="site-wrap" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F3F4F6' }}>
                 <Navbar />
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: '100px' }}>
                     <div className="spinner-border text-danger" role="status">
                         <span className="visually-hidden">Loading...</span>
                     </div>
@@ -125,10 +125,10 @@ const PaymentUploadPage = () => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F3F4F6' }}>
+        <div className="site-wrap" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F3F4F6' }}>
             <Navbar />
             
-            <main style={{ flex: 1, padding: '2rem 1rem', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+            <main style={{ flex: 1, padding: '120px 1rem 2rem 1rem', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
                 <Link to={`/order-tracking?id=${order.id}`} style={{ display: 'inline-flex', alignItems: 'center', color: '#4B5563', textDecoration: 'none', marginBottom: '1rem', fontWeight: 500 }}>
                     <ChevronLeft size={20} style={{ marginRight: '4px' }} />
                     Back to Order Tracking

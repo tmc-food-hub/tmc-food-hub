@@ -408,6 +408,36 @@ function OrderTrackingPage() {
                                         />
                                     </MapContainer>
                                 </div>
+                                
+                                {/* Order Status */}
+                                <div className={`${styles.statusCard} mt-4`}>
+                                    <h2 className={styles.statusCardTitle}>Order Status</h2>
+
+                                    <div className={styles.timeline}>
+                                        {order.statuses.map((status, index) => (
+                                            <div
+                                                key={index}
+                                                className={`${styles.timelineStep} ${styles[`timeline${status.state.charAt(0).toUpperCase() + status.state.slice(1)}`]}`}
+                                            >
+                                                {renderStatusIcon(status.state)}
+                                                <div className={styles.timelineContent}>
+                                                    <div className={styles.timelineLabel}>
+                                                        {status.label}
+                                                    </div>
+                                                    <div className={styles.timelineDesc}>
+                                                        {status.time && (
+                                                            <span className={styles.timelineTime}>
+                                                                {status.time}
+                                                            </span>
+                                                        )}
+                                                        {status.time && ' • '}
+                                                        {status.description}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right Column — Order Summary */}
@@ -512,47 +542,9 @@ function OrderTrackingPage() {
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Order Status + Rider Info Row */}
-                        <div className="row mt-4" data-aos="fade-up" data-aos-delay="200">
-
-                            {/* Left Column — Order Status */}
-                            <div className="col-lg-7 mb-4 mb-lg-0">
-                                <div className={styles.statusCard}>
-                                    <h2 className={styles.statusCardTitle}>Order Status</h2>
-
-                                    <div className={styles.timeline}>
-                                        {order.statuses.map((status, index) => (
-                                            <div
-                                                key={index}
-                                                className={`${styles.timelineStep} ${styles[`timeline${status.state.charAt(0).toUpperCase() + status.state.slice(1)}`]}`}
-                                            >
-                                                {renderStatusIcon(status.state)}
-                                                <div className={styles.timelineContent}>
-                                                    <div className={styles.timelineLabel}>
-                                                        {status.label}
-                                                    </div>
-                                                    <div className={styles.timelineDesc}>
-                                                        {status.time && (
-                                                            <span className={styles.timelineTime}>
-                                                                {status.time}
-                                                            </span>
-                                                        )}
-                                                        {status.time && ' • '}
-                                                        {status.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Column — Rider Info */}
-                            <div className="col-lg-5">
-                                <div className={styles.riderCard}>
+                                {/* Rider Info */}
+                                <div className={`${styles.riderCard} mt-4`}>
                                     <div className={styles.riderHeader}>
                                         <img
                                             src={order.rider_info.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop'}
