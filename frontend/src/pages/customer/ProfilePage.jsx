@@ -4,12 +4,17 @@ import { useAuth } from '../../context/AuthContext';
 import { ThemeContext } from '../../components/ui/ThemeContext';
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
+import {
+    User, Mail, Phone, Shield, MapPin, Home, Pencil, Lock,
+    LogOut, CalendarDays, CheckCircle2, X, ChevronRight, FileText
+} from 'lucide-react';
 import styles from './ProfilePage.module.css';
 
 function ProfilePage() {
     const { user, isAuthenticated, loading, logout, updateProfile, changePassword, setShowLoginPrompt } = useAuth();
     const { isDarkMode } = useContext(ThemeContext);
     const navigate = useNavigate();
+
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editForm, setEditForm] = useState({});
@@ -23,6 +28,11 @@ function ProfilePage() {
     const [passwordServerError, setPasswordServerError] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
     const [passwordSuccess, setPasswordSuccess] = useState('');
+
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [addressForm, setAddressForm] = useState({});
+    const [addressLoading, setAddressLoading] = useState(false);
+    const [addressErrors, setAddressErrors] = useState({});
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -41,18 +51,24 @@ function ProfilePage() {
         );
     }
 
+    /* ── Handlers ── */
+
     const handleLogout = async () => {
         await logout();
         navigate('/');
     };
 
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    };
+
+    /* Edit Profile */
     const openEditModal = () => {
         setEditForm({
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
             phone: user?.phone || '',
-            address: user?.address || '',
-            delivery_instructions: user?.delivery_instructions || '',
         });
         setEditErrors({});
         setEditServerError('');
@@ -72,38 +88,18 @@ function ProfilePage() {
         const nameRegex = /^[A-Za-z\u00C0-\u024F\s\-']+$/;
         const phoneRegex = /^[+]?[\d\s\-()]+$/;
 
-        // First name
-        if (!editForm.first_name?.trim()) {
-            errors.first_name = 'First name is required';
-        } else if (editForm.first_name.trim().length < 2) {
-            errors.first_name = 'First name must be at least 2 characters';
-        } else if (!nameRegex.test(editForm.first_name.trim())) {
-            errors.first_name = 'First name must only contain letters, spaces, hyphens, or apostrophes';
-        }
+        if (!editForm.first_name?.trim()) errors.first_name = 'First name is required';
+        else if (editForm.first_name.trim().length < 2) errors.first_name = 'First name must be at least 2 characters';
+        else if (!nameRegex.test(editForm.first_name.trim())) errors.first_name = 'First name must only contain letters';
 
-        // Last name
-        if (!editForm.last_name?.trim()) {
-            errors.last_name = 'Last name is required';
-        } else if (editForm.last_name.trim().length < 2) {
-            errors.last_name = 'Last name must be at least 2 characters';
-        } else if (!nameRegex.test(editForm.last_name.trim())) {
-            errors.last_name = 'Last name must only contain letters, spaces, hyphens, or apostrophes';
-        }
+        if (!editForm.last_name?.trim()) errors.last_name = 'Last name is required';
+        else if (editForm.last_name.trim().length < 2) errors.last_name = 'Last name must be at least 2 characters';
+        else if (!nameRegex.test(editForm.last_name.trim())) errors.last_name = 'Last name must only contain letters';
 
-        // Phone (optional but must be valid if provided)
         if (editForm.phone?.trim()) {
-            if (editForm.phone.trim().length < 7) {
-                errors.phone = 'Phone number must be at least 7 characters';
-            } else if (!phoneRegex.test(editForm.phone.trim())) {
-                errors.phone = 'Phone number must contain only digits, spaces, dashes, or parentheses';
-            }
+            if (editForm.phone.trim().length < 7) errors.phone = 'Phone must be at least 7 characters';
+            else if (!phoneRegex.test(editForm.phone.trim())) errors.phone = 'Invalid phone format';
         }
-
-        // Address (optional but must be meaningful if provided)
-        if (editForm.address?.trim() && editForm.address.trim().length < 5) {
-            errors.address = 'Address must be at least 5 characters';
-        }
-
 
         if (Object.keys(errors).length) { setEditErrors(errors); return; }
 
@@ -119,19 +115,45 @@ function ProfilePage() {
                 Object.entries(serverErrors).forEach(([key, msgs]) => { mapped[key] = msgs[0]; });
                 setEditErrors(mapped);
             } else {
-                setEditServerError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+                setEditServerError(err.response?.data?.message || 'Failed to update profile.');
             }
         } finally {
             setEditLoading(false);
         }
     };
 
-    const openPasswordModal = () => {
-        setPasswordForm({
-            current_password: '',
-            password: '',
-            password_confirmation: '',
+    /* Address */
+    const openAddressModal = () => {
+        setAddressForm({
+            address: user?.address || '',
+            delivery_instructions: user?.delivery_instructions || '',
         });
+        setAddressErrors({});
+        setShowAddressModal(true);
+    };
+
+    const handleAddressSubmit = async (e) => {
+        e.preventDefault();
+        const errors = {};
+        if (addressForm.address?.trim() && addressForm.address.trim().length < 5) {
+            errors.address = 'Address must be at least 5 characters';
+        }
+        if (Object.keys(errors).length) { setAddressErrors(errors); return; }
+
+        setAddressLoading(true);
+        try {
+            await updateProfile(addressForm);
+            setShowAddressModal(false);
+        } catch (err) {
+            console.error('Failed to update address:', err);
+        } finally {
+            setAddressLoading(false);
+        }
+    };
+
+    /* Change Password */
+    const openPasswordModal = () => {
+        setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
         setPasswordErrors({});
         setPasswordServerError('');
         setPasswordSuccess('');
@@ -148,19 +170,10 @@ function ProfilePage() {
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
-
-        if (!passwordForm.current_password) {
-            errors.current_password = 'Current password is required';
-        }
-        if (!passwordForm.password) {
-            errors.password = 'New password is required';
-        } else if (passwordForm.password.length < 8) {
-            errors.password = 'New password must be at least 8 characters';
-        }
-        if (passwordForm.password !== passwordForm.password_confirmation) {
-            errors.password_confirmation = 'Passwords do not match';
-        }
-
+        if (!passwordForm.current_password) errors.current_password = 'Current password is required';
+        if (!passwordForm.password) errors.password = 'New password is required';
+        else if (passwordForm.password.length < 8) errors.password = 'Must be at least 8 characters';
+        if (passwordForm.password !== passwordForm.password_confirmation) errors.password_confirmation = 'Passwords do not match';
         if (Object.keys(errors).length) { setPasswordErrors(errors); return; }
 
         setPasswordLoading(true);
@@ -168,11 +181,10 @@ function ProfilePage() {
         setPasswordSuccess('');
         try {
             await changePassword(passwordForm.current_password, passwordForm.password, passwordForm.password_confirmation);
-            setPasswordSuccess('Password updated successfully! Redirecting to login...');
+            setPasswordSuccess('Password updated! Redirecting to login...');
             setTimeout(async () => {
                 setShowPasswordModal(false);
                 setPasswordSuccess('');
-                setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
                 await logout();
                 navigate('/login');
             }, 2000);
@@ -183,33 +195,17 @@ function ProfilePage() {
                 Object.entries(serverErrors).forEach(([key, msgs]) => { mapped[key] = msgs[0]; });
                 setPasswordErrors(mapped);
             } else {
-                setPasswordServerError(err.response?.data?.message || 'Failed to change password. Please try again.');
+                setPasswordServerError(err.response?.data?.message || 'Failed to change password.');
             }
         } finally {
             setPasswordLoading(false);
         }
     };
 
-    const getInitials = (name) => {
-        if (!name) return 'U';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    };
-
-    const Field = ({ label, value }) => (
-        <div className={styles.fieldItem}>
-            <span className={styles.fieldLabel}>{label}</span>
-            {value
-                ? <span className={styles.fieldValue}>{value}</span>
-                : <span className={styles.fieldEmpty}>Not provided</span>
-            }
-        </div>
-    );
-
     const memberSince = user?.created_at
         ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
         : 'Recently joined';
 
-    /* CSS Modules: compose dark variant by toggling a separate class */
     const pageClass = [styles.profilePage, isDarkMode ? styles.profilePageDark : ''].join(' ');
 
     return (
@@ -217,18 +213,14 @@ function ProfilePage() {
             <Navbar />
 
             <div className={pageClass}>
-
-                {/* ── Page body ── */}
                 <div className={styles.profileBody}>
 
-                    {/* ── Identity row ── */}
-                    <div className={styles.identityRow}>
-
+                    {/* ── Profile Header ── */}
+                    <div className={styles.profileHeader}>
                         <div className={styles.avatarCircle}>
                             {getInitials(user?.name)}
                         </div>
-
-                        <div className={styles.identityMeta}>
+                        <div className={styles.headerInfo}>
                             <h1 className={styles.userName}>{user?.name || 'User'}</h1>
                             <p className={styles.userEmail}>{user?.email}</p>
                             <div className={styles.badgeRow}>
@@ -238,187 +230,163 @@ function ProfilePage() {
                                 </span>
                                 {user?.email_verified_at && (
                                     <span className={`${styles.badge} ${styles.badgeVerified}`}>
-                                        <i className="bi bi-patch-check-fill" />
-                                        &nbsp;Verified
+                                        <CheckCircle2 size={12} /> Verified
                                     </span>
                                 )}
                                 <span className={`${styles.badge} ${styles.badgeMember}`}>
-                                    <i className="bi bi-calendar2-check" />
-                                    &nbsp;{memberSince}
+                                    <CalendarDays size={12} /> {memberSince}
                                 </span>
                             </div>
                         </div>
-
-                        <div className={styles.identityActions}>
+                        <div className={styles.headerActions}>
                             <button className={styles.btnOutline} onClick={openEditModal}>
-                                <i className="bi bi-pencil-square" /> Edit Profile
+                                <Pencil size={15} /> Edit Profile
                             </button>
-                            <button className={styles.btnOutline} onClick={openPasswordModal}>
-                                <i className="bi bi-shield-lock" /> Change Password
-                            </button>
-                            <button className={styles.btnRed} onClick={() => setShowLogoutModal(true)}>
-                                <i className="bi bi-box-arrow-right" /> Logout
+                            <button className={styles.btnOutlineRed} onClick={() => setShowLogoutModal(true)}>
+                                <LogOut size={15} /> Logout
                             </button>
                         </div>
                     </div>
 
-                    <div className={styles.divider} />
+                    {/* ── Home Address Card (Prominent) ── */}
+                    <div className={styles.addressCard}>
+                        <div className={styles.addressCardHeader}>
+                            <div className={styles.addressCardIcon}>
+                                <Home size={20} />
+                            </div>
+                            <div className={styles.addressCardMeta}>
+                                <h3 className={styles.addressCardTitle}>Home Address</h3>
+                                <p className={styles.addressCardSub}>Your default delivery location</p>
+                            </div>
+                            <button className={styles.addressChangeBtn} onClick={openAddressModal}>
+                                {user?.address ? 'Change' : 'Add Address'}
+                            </button>
+                        </div>
+                        <div className={styles.addressCardBody}>
+                            {user?.address ? (
+                                <>
+                                    <div className={styles.addressDisplay}>
+                                        <MapPin size={16} className={styles.addressPinIcon} />
+                                        <span>{user.address}</span>
+                                    </div>
+                                    {user.delivery_instructions && (
+                                        <div className={styles.deliveryNote}>
+                                            <FileText size={14} />
+                                            <span>{user.delivery_instructions}</span>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className={styles.addressEmpty}>
+                                    <MapPin size={18} />
+                                    <span>No home address set. Add one for faster checkout.</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-                    {/* ── Card grid ── */}
-                    <div className={styles.cardsGrid}>
+                    {/* ── Info Grid ── */}
+                    <div className={styles.infoGrid}>
 
-                        {/* Personal Info */}
+                        {/* Personal Information */}
                         <div className={styles.infoCard}>
                             <div className={styles.cardHeader}>
-                                <div className={styles.cardIcon}><i className="bi bi-person-badge" /></div>
+                                <div className={styles.cardIcon}><User size={18} /></div>
                                 <div>
                                     <h3 className={styles.cardTitle}>Personal Information</h3>
-                                    <p className={styles.cardSubtitle}>Your basic account details</p>
+                                    <p className={styles.cardSub}>Your account details</p>
                                 </div>
                             </div>
                             <div className={styles.fieldList}>
-                                <Field label="Full Name" value={user?.name} />
-                                <Field label="Email Address" value={user?.email} />
-                                <Field label="Contact Number" value={user?.phone} />
-                                <Field label="Account Role" value={user?.role || 'Customer'} />
+                                <InfoField icon={<User size={15} />} label="Full Name" value={user?.name} />
+                                <InfoField icon={<Mail size={15} />} label="Email Address" value={user?.email} />
+                                <InfoField icon={<Phone size={15} />} label="Contact Number" value={user?.phone} />
                             </div>
                         </div>
 
                         {/* Account Security */}
                         <div className={styles.infoCard}>
                             <div className={styles.cardHeader}>
-                                <div className={styles.cardIcon}><i className="bi bi-shield-check" /></div>
+                                <div className={styles.cardIcon}><Shield size={18} /></div>
                                 <div>
                                     <h3 className={styles.cardTitle}>Account Security</h3>
-                                    <p className={styles.cardSubtitle}>Privacy and login settings</p>
-                                </div>
-                            </div>
-                            <div className={`${styles.fieldList} ${styles.fieldListSingle}`}>
-                                <Field label="Password" value="••••••••••" />
-                                <Field
-                                    label="Email Verified"
-                                    value={user?.email_verified_at ? 'Verified ✓' : 'Not verified'}
-                                />
-                                <Field
-                                    label="Member Since"
-                                    value={memberSince}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Delivery Information */}
-                        <div className={`${styles.infoCard} ${styles.cardFull}`}>
-                            <div className={styles.cardHeader}>
-                                <div className={styles.cardIcon}><i className="bi bi-geo-alt" /></div>
-                                <div>
-                                    <h3 className={styles.cardTitle}>Delivery Information</h3>
-                                    <p className={styles.cardSubtitle}>Where your orders will be sent</p>
+                                    <p className={styles.cardSub}>Privacy and login settings</p>
                                 </div>
                             </div>
                             <div className={styles.fieldList}>
-                                <Field label="Default Address" value={user?.address} />
-                                <Field label="Delivery Instructions" value={user?.delivery_instructions} />
+                                <InfoField icon={<Lock size={15} />} label="Password" value="••••••••••" />
+                                <InfoField
+                                    icon={<CheckCircle2 size={15} />}
+                                    label="Email Verified"
+                                    value={user?.email_verified_at ? 'Verified ✓' : 'Not verified'}
+                                />
+                                <InfoField icon={<CalendarDays size={15} />} label="Member Since" value={memberSince} />
                             </div>
+                            <button className={styles.changePasswordBtn} onClick={openPasswordModal}>
+                                <Lock size={14} />
+                                Change Password
+                                <ChevronRight size={14} />
+                            </button>
                         </div>
-
                     </div>
+
                 </div>
             </div>
 
             <Footer />
 
+            {/* ── Logout Modal ── */}
             {showLogoutModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowLogoutModal(false)}>
                     <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
-                        <div className={styles.modalIcon}>
-                            <i className="bi bi-box-arrow-right" />
+                        <div className={styles.modalIconWrap}>
+                            <LogOut size={28} />
                         </div>
                         <h3 className={styles.modalTitle}>Confirm Logout</h3>
                         <p className={styles.modalText}>Are you sure you want to log out of your account?</p>
                         <div className={styles.modalActions}>
-                            <button className={styles.btnOutline} onClick={() => setShowLogoutModal(false)}>
-                                Cancel
-                            </button>
-                            <button className={styles.btnRed} onClick={handleLogout}>
-                                Logout
-                            </button>
+                            <button className={styles.btnOutline} onClick={() => setShowLogoutModal(false)}>Cancel</button>
+                            <button className={styles.btnRed} onClick={handleLogout}>Logout</button>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* ── Edit Profile Modal ── */}
             {showEditModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
                     <div className={styles.editModalBox} onClick={e => e.stopPropagation()}>
                         <div className={styles.editModalHeader}>
-                            <div className={styles.editModalIcon}>
-                                <i className="bi bi-pencil-square" />
-                            </div>
+                            <div className={styles.editModalIcon}><Pencil size={18} /></div>
                             <div>
                                 <h3 className={styles.editModalTitle}>Edit Profile</h3>
-                                <p className={styles.editModalSubtitle}>Update your personal information</p>
+                                <p className={styles.editModalSub}>Update your personal information</p>
                             </div>
+                            <button className={styles.modalCloseBtn} onClick={() => setShowEditModal(false)}><X size={18} /></button>
                         </div>
 
-                        {editServerError && (
-                            <div className={styles.editServerError}>{editServerError}</div>
-                        )}
+                        {editServerError && <div className={styles.serverError}>{editServerError}</div>}
 
                         <form onSubmit={handleEditSubmit}>
-                            <div className={styles.editFormGrid}>
-                                <div className={styles.editFormGroup}>
-                                    <label className={styles.editLabel}>First Name</label>
-                                    <input
-                                        className={styles.editInput}
-                                        value={editForm.first_name || ''}
-                                        onChange={e => handleEditChange('first_name', e.target.value)}
-                                    />
-                                    {editErrors.first_name && <span className={styles.editError}>{editErrors.first_name}</span>}
+                            <div className={styles.formGrid}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.formLabel}>First Name</label>
+                                    <input className={styles.formInput} value={editForm.first_name || ''} onChange={e => handleEditChange('first_name', e.target.value)} />
+                                    {editErrors.first_name && <span className={styles.formError}>{editErrors.first_name}</span>}
                                 </div>
-                                <div className={styles.editFormGroup}>
-                                    <label className={styles.editLabel}>Last Name</label>
-                                    <input
-                                        className={styles.editInput}
-                                        value={editForm.last_name || ''}
-                                        onChange={e => handleEditChange('last_name', e.target.value)}
-                                    />
-                                    {editErrors.last_name && <span className={styles.editError}>{editErrors.last_name}</span>}
+                                <div className={styles.formGroup}>
+                                    <label className={styles.formLabel}>Last Name</label>
+                                    <input className={styles.formInput} value={editForm.last_name || ''} onChange={e => handleEditChange('last_name', e.target.value)} />
+                                    {editErrors.last_name && <span className={styles.formError}>{editErrors.last_name}</span>}
                                 </div>
-                                <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                    <label className={styles.editLabel}>Phone Number</label>
-                                    <input
-                                        className={styles.editInput}
-                                        value={editForm.phone || ''}
-                                        onChange={e => handleEditChange('phone', e.target.value.replace(/\D/g, ''))}
-                                    />
-                                    {editErrors.phone && <span className={styles.editError}>{editErrors.phone}</span>}
+                                <div className={`${styles.formGroup} ${styles.formFull}`}>
+                                    <label className={styles.formLabel}>Phone Number</label>
+                                    <input className={styles.formInput} value={editForm.phone || ''} onChange={e => handleEditChange('phone', e.target.value.replace(/\D/g, ''))} />
+                                    {editErrors.phone && <span className={styles.formError}>{editErrors.phone}</span>}
                                 </div>
-
-                                    <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                        <label className={styles.editLabel}>Address</label>
-                                        <input
-                                            className={styles.editInput}
-                                            value={editForm.address || ''}
-                                            onChange={e => handleEditChange('address', e.target.value)}
-                                        />
-                                        {editErrors.address && <span className={styles.editError}>{editErrors.address}</span>}
-                                    </div>
-                                    <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                        <label className={styles.editLabel}>Delivery Instructions</label>
-                                        <textarea
-                                            className={`${styles.editInput} ${styles.editTextarea}`}
-                                            value={editForm.delivery_instructions || ''}
-                                            onChange={e => handleEditChange('delivery_instructions', e.target.value)}
-                                        />
-                                        {editErrors.delivery_instructions && <span className={styles.editError}>{editErrors.delivery_instructions}</span>}
-                                    </div>
-
                             </div>
-
-                            <div className={styles.editActions}>
-                                <button type="button" className={styles.btnOutline} onClick={() => setShowEditModal(false)}>
-                                    Cancel
-                                </button>
+                            <div className={styles.modalFooter}>
+                                <button type="button" className={styles.btnOutline} onClick={() => setShowEditModal(false)}>Cancel</button>
                                 <button type="submit" className={styles.btnSave} disabled={editLoading}>
                                     {editLoading ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -428,69 +396,91 @@ function ProfilePage() {
                 </div>
             )}
 
+            {/* ── Address Modal ── */}
+            {showAddressModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowAddressModal(false)}>
+                    <div className={styles.editModalBox} onClick={e => e.stopPropagation()}>
+                        <div className={styles.editModalHeader}>
+                            <div className={styles.editModalIcon}><Home size={18} /></div>
+                            <div>
+                                <h3 className={styles.editModalTitle}>Home Address</h3>
+                                <p className={styles.editModalSub}>Set your default delivery location</p>
+                            </div>
+                            <button className={styles.modalCloseBtn} onClick={() => setShowAddressModal(false)}><X size={18} /></button>
+                        </div>
+
+                        <form onSubmit={handleAddressSubmit}>
+                            <div className={styles.formGrid}>
+                                <div className={`${styles.formGroup} ${styles.formFull}`}>
+                                    <label className={styles.formLabel}>Home Address</label>
+                                    <input
+                                        className={styles.formInput}
+                                        placeholder="e.g. 123 Quezon Avenue, Unit 4B, Brgy. South Triangle"
+                                        value={addressForm.address || ''}
+                                        onChange={e => setAddressForm(prev => ({ ...prev, address: e.target.value }))}
+                                    />
+                                    {addressErrors.address && <span className={styles.formError}>{addressErrors.address}</span>}
+                                </div>
+                                <div className={`${styles.formGroup} ${styles.formFull}`}>
+                                    <label className={styles.formLabel}>Delivery Instructions</label>
+                                    <textarea
+                                        className={`${styles.formInput} ${styles.formTextarea}`}
+                                        placeholder="e.g. Gate code is 1234, leave at the lobby table..."
+                                        value={addressForm.delivery_instructions || ''}
+                                        onChange={e => setAddressForm(prev => ({ ...prev, delivery_instructions: e.target.value }))}
+                                        rows={3}
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.modalFooter}>
+                                <button type="button" className={styles.btnOutline} onClick={() => setShowAddressModal(false)}>Cancel</button>
+                                <button type="submit" className={styles.btnSave} disabled={addressLoading}>
+                                    {addressLoading ? 'Saving...' : 'Save Address'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Change Password Modal ── */}
             {showPasswordModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowPasswordModal(false)}>
                     <div className={styles.editModalBox} onClick={e => e.stopPropagation()}>
                         <div className={styles.editModalHeader}>
-                            <div className={styles.editModalIcon}>
-                                <i className="bi bi-shield-lock" />
-                            </div>
+                            <div className={styles.editModalIcon}><Lock size={18} /></div>
                             <div>
                                 <h3 className={styles.editModalTitle}>Change Password</h3>
-                                <p className={styles.editModalSubtitle}>Update your account security</p>
+                                <p className={styles.editModalSub}>Update your account security</p>
                             </div>
+                            <button className={styles.modalCloseBtn} onClick={() => setShowPasswordModal(false)}><X size={18} /></button>
                         </div>
 
-                        {passwordServerError && (
-                            <div className={styles.editServerError}>{passwordServerError}</div>
-                        )}
+                        {passwordServerError && <div className={styles.serverError}>{passwordServerError}</div>}
                         {passwordSuccess && (
-                            <div className="alert alert-success" style={{ padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem', backgroundColor: 'rgba(25, 135, 84, 0.1)', color: '#198754', border: '1px solid rgba(25, 135, 84, 0.2)' }}>
-                                {passwordSuccess}
-                            </div>
+                            <div className={styles.successMsg}>{passwordSuccess}</div>
                         )}
 
                         <form onSubmit={handlePasswordSubmit}>
-                            <div className={styles.editFormGrid}>
-                                <div className={`${styles.editFormGroup} ${styles.editFormFull}`}>
-                                    <label className={styles.editLabel}>Current Password</label>
-                                    <input
-                                        type="password"
-                                        className={styles.editInput}
-                                        value={passwordForm.current_password || ''}
-                                        onChange={e => handlePasswordChange('current_password', e.target.value)}
-                                        disabled={passwordLoading || passwordSuccess}
-                                    />
-                                    {passwordErrors.current_password && <span className={styles.editError}>{passwordErrors.current_password}</span>}
+                            <div className={styles.formGrid}>
+                                <div className={`${styles.formGroup} ${styles.formFull}`}>
+                                    <label className={styles.formLabel}>Current Password</label>
+                                    <input type="password" className={styles.formInput} value={passwordForm.current_password || ''} onChange={e => handlePasswordChange('current_password', e.target.value)} disabled={passwordLoading || passwordSuccess} />
+                                    {passwordErrors.current_password && <span className={styles.formError}>{passwordErrors.current_password}</span>}
                                 </div>
-                                <div className={styles.editFormGroup}>
-                                    <label className={styles.editLabel}>New Password</label>
-                                    <input
-                                        type="password"
-                                        className={styles.editInput}
-                                        value={passwordForm.password || ''}
-                                        onChange={e => handlePasswordChange('password', e.target.value)}
-                                        disabled={passwordLoading || passwordSuccess}
-                                    />
-                                    {passwordErrors.password && <span className={styles.editError}>{passwordErrors.password}</span>}
+                                <div className={styles.formGroup}>
+                                    <label className={styles.formLabel}>New Password</label>
+                                    <input type="password" className={styles.formInput} value={passwordForm.password || ''} onChange={e => handlePasswordChange('password', e.target.value)} disabled={passwordLoading || passwordSuccess} />
+                                    {passwordErrors.password && <span className={styles.formError}>{passwordErrors.password}</span>}
                                 </div>
-                                <div className={styles.editFormGroup}>
-                                    <label className={styles.editLabel}>Confirm New Password</label>
-                                    <input
-                                        type="password"
-                                        className={styles.editInput}
-                                        value={passwordForm.password_confirmation || ''}
-                                        onChange={e => handlePasswordChange('password_confirmation', e.target.value)}
-                                        disabled={passwordLoading || passwordSuccess}
-                                    />
-                                    {passwordErrors.password_confirmation && <span className={styles.editError}>{passwordErrors.password_confirmation}</span>}
+                                <div className={styles.formGroup}>
+                                    <label className={styles.formLabel}>Confirm New Password</label>
+                                    <input type="password" className={styles.formInput} value={passwordForm.password_confirmation || ''} onChange={e => handlePasswordChange('password_confirmation', e.target.value)} disabled={passwordLoading || passwordSuccess} />
+                                    {passwordErrors.password_confirmation && <span className={styles.formError}>{passwordErrors.password_confirmation}</span>}
                                 </div>
                             </div>
-
-                            <div className={styles.editActions}>
-                                <button type="button" className={styles.btnOutline} onClick={() => setShowPasswordModal(false)} disabled={passwordLoading}>
-                                    Cancel
-                                </button>
+                            <div className={styles.modalFooter}>
+                                <button type="button" className={styles.btnOutline} onClick={() => setShowPasswordModal(false)} disabled={passwordLoading}>Cancel</button>
                                 <button type="submit" className={styles.btnSave} disabled={passwordLoading || passwordSuccess}>
                                     {passwordLoading ? 'Saving...' : 'Update Password'}
                                 </button>
@@ -500,6 +490,22 @@ function ProfilePage() {
                 </div>
             )}
         </>
+    );
+}
+
+/* ── Helper Component ── */
+function InfoField({ icon, label, value }) {
+    return (
+        <div className={styles.fieldItem}>
+            <div className={styles.fieldIcon}>{icon}</div>
+            <div className={styles.fieldContent}>
+                <span className={styles.fieldLabel}>{label}</span>
+                {value
+                    ? <span className={styles.fieldValue}>{value}</span>
+                    : <span className={styles.fieldEmpty}>Not provided</span>
+                }
+            </div>
+        </div>
     );
 }
 

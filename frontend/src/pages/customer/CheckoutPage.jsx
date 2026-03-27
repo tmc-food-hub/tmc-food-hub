@@ -164,9 +164,9 @@ function CheckoutPage() {
                                                 <MapPin size={20} />
                                             </div>
                                             <div>
-                                                <div className={styles.addressLabel}>Delivery Address</div>
+                                                <div className={styles.addressLabel}>Home Address</div>
                                                 <div className={styles.addressText}>
-                                                    {deliveryAddress || 'No address set. Please update your profile.'}
+                                                    {deliveryAddress || 'No address set. Add one in your profile for faster checkout.'}
                                                 </div>
                                             </div>
                                         </div>
