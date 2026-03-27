@@ -190,6 +190,7 @@ function OrderTrackingPage() {
     } : null;
 
     const [cancelTimer, setCancelTimer] = useState(120);
+    const [showCancelModal, setShowCancelModal] = useState(false);
     const timerRef = useRef(null);
 
     useEffect(() => {
@@ -531,12 +532,7 @@ function OrderTrackingPage() {
                                         <button
                                             className={styles.cancelBtn}
                                             disabled={cancelTimer === 0 || order.status === 'Cancelled' || order.status === 'Out for Delivery'}
-                                            onClick={async () => {
-                                                if (contextOrder && cancelTimer > 0) {
-                                                    await cancelOrder(contextOrder.id);
-                                                    navigate('/my-orders');
-                                                }
-                                            }}
+                                            onClick={() => setShowCancelModal(true)}
                                         >
                                             <X size={16} />
                                             Cancel Order
@@ -565,6 +561,68 @@ function OrderTrackingPage() {
                 <Footer />
             </div>
             <BackToTop />
+
+            {/* Cancel Order Confirmation Modal */}
+            {showCancelModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 1060,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+                    animation: 'fadeIn 0.2s ease'
+                }} onClick={() => setShowCancelModal(false)}>
+                    <div style={{
+                        background: '#fff', borderRadius: '20px', padding: '2rem',
+                        maxWidth: '400px', width: '90%', textAlign: 'center',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                        animation: 'scaleIn 0.2s ease'
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{
+                            width: '56px', height: '56px', borderRadius: '50%',
+                            background: '#FEE2E2', color: '#DC2626',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 1rem'
+                        }}>
+                            <X size={28} />
+                        </div>
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#111827', margin: '0 0 0.4rem' }}>
+                            Cancel This Order?
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: '#6B7280', margin: '0 0 1.5rem' }}>
+                            This action cannot be undone. Your order will be cancelled and any charges will be refunded.
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.65rem' }}>
+                            <button
+                                onClick={() => setShowCancelModal(false)}
+                                style={{
+                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                    border: '1.5px solid #D1D5DB', background: '#fff',
+                                    color: '#374151', fontSize: '0.88rem', fontWeight: 600,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Keep Order
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowCancelModal(false);
+                                    if (contextOrder && cancelTimer > 0) {
+                                        await cancelOrder(contextOrder.id);
+                                        navigate('/my-orders');
+                                    }
+                                }}
+                                style={{
+                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                    border: 'none', background: '#991B1B',
+                                    color: '#fff', fontSize: '0.88rem', fontWeight: 600,
+                                    cursor: 'pointer', boxShadow: '0 2px 6px rgba(153,27,27,0.3)'
+                                }}
+                            >
+                                Yes, Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
