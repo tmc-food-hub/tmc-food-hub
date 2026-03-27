@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
@@ -28,5 +29,10 @@ class OrderItem extends Model
     public function menuItem()
     {
         return $this->belongsTo(MenuItem::class, 'menu_item_id');
+    }
+
+    public function getImageAttribute($value)
+    {
+        return MediaPath::toPublicUrl($value);
     }
 }

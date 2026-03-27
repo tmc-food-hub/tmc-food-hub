@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, MessageSquareText, Send, Star } from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 
 function StarRow({ rating, size = 14 }) {
     return (
@@ -192,7 +193,7 @@ export default function ReviewsSection() {
                                 {review.photos?.length > 0 && (
                                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.95rem' }}>
                                         {review.photos.map((photo, index) => (
-                                            <img key={photo + index} src={photo} alt="Review" style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '14px', border: '1px solid #E5E7EB' }} />
+                                            <img key={photo + index} src={resolveMediaUrl(photo)} alt="Review" style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '14px', border: '1px solid #E5E7EB' }} />
                                         ))}
                                     </div>
                                 )}

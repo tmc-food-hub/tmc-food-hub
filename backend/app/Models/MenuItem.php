@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class MenuItem extends Model
 {
@@ -41,19 +41,6 @@ class MenuItem extends Model
 
     private function normalizeMediaPath($value)
     {
-        if (!$value || !is_string($value)) {
-            return $value;
-        }
-
-        if (preg_match('/^https?:\/\//i', $value)) {
-            $path = parse_url($value, PHP_URL_PATH);
-            return $path ?: $value;
-        }
-
-        if (str_starts_with($value, 'storage/')) {
-            return '/' . $value;
-        }
-
-        return $value;
+        return MediaPath::toPublicUrl($value);
     }
 }

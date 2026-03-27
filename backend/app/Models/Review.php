@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Model;
 
 class Review extends Model
@@ -22,7 +23,6 @@ class Review extends Model
     protected function casts(): array
     {
         return [
-            'photos' => 'array',
             'is_verified' => 'boolean',
             'owner_replied_at' => 'datetime',
         ];
@@ -46,5 +46,19 @@ class Review extends Model
     public function helpfulVotes()
     {
         return $this->hasMany(ReviewHelpfulVote::class);
+    }
+
+    public function getPhotosAttribute($value): array
+    {
+        $photos = is_array($value) ? $value : json_decode($value ?? '[]', true);
+
+        if (!is_array($photos)) {
+            return [];
+        }
+
+        return array_values(array_map(
+            fn ($photo) => MediaPath::toPublicUrl($photo),
+            array_filter($photos, fn ($photo) => is_string($photo) && trim($photo) !== '')
+        ));
     }
 }

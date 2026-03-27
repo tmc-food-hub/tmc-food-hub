@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Mail\OtpVerificationMail;
 use App\Models\EmailVerification;
 use App\Models\RestaurantOwner;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -232,12 +232,12 @@ class OwnerAuthController extends Controller
 
         if ($request->hasFile('logo_file')) {
             $path = $request->file('logo_file')->store('restaurants/logos', 'public');
-            $data['logo'] = Storage::url($path);
+            $data['logo'] = MediaPath::normalizeStoredPath($path);
         }
 
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('restaurants/covers', 'public');
-            $data['cover_image'] = Storage::url($path);
+            $data['cover_image'] = MediaPath::normalizeStoredPath($path);
         }
 
         $owner->update($data);

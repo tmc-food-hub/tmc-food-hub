@@ -707,7 +707,7 @@ class AdminController extends Controller
                     'netPayout' => (int) round($netPayout),
                     'status' => $status,
                     'lastUpdated' => $lastUpdated,
-                    'logo' => $owner->logo ? asset('storage/' . $owner->logo) : null,
+                    'logo' => $owner->logo,
                     'details' => [
                         'payoutId' => $payoutId,
                         'pendingPayout' => round($netPayout, 2),

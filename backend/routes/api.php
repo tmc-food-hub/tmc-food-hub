@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,7 @@ Route::post('/owner/register', [OwnerAuthController::class, 'register']);
 Route::post('/owner/send-otp', [OwnerAuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
 Route::post('/admin/login', [AdminController::class, 'login']);
+Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*');
 
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────
 Route::get('/restaurants', [MenuController::class, 'index']);

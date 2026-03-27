@@ -9,6 +9,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styles from './SettingsSection.module.css';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -127,7 +128,7 @@ function AccountTab({ store, refreshOwner }) {
                 <div className={styles.profileHeader}>
                     <div className={styles.avatarUploadWrapper} onClick={() => avatarRef.current?.click()}>
                         {store.logo ? (
-                            <img src={store.logo} alt={fullName} className={styles.avatar} loading="lazy" decoding="async" />
+                            <img src={resolveMediaUrl(store.logo)} alt={fullName} className={styles.avatar} loading="lazy" decoding="async" />
                         ) : (
                             <div className={styles.avatar}>{fullName.charAt(0)}</div>
                         )}
@@ -521,7 +522,7 @@ function StoreOperationsTab({ store, items = [], refreshInventory }) {
                                                 return (
                                                     <div key={item.id} className={styles.blacklistItemRow}>
                                                         <div className={styles.blacklistItemInfo}>
-                                                            <img src={item.image} alt={item.title} className={styles.blacklistItemImage} />
+                                                            <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.blacklistItemImage} />
                                                             <span className={styles.blacklistItemName}>{item.title}</span>
                                                         </div>
                                                         <button
@@ -1116,7 +1117,7 @@ function RestaurantProfileTab({ store, refreshOwner }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                     {store.logo ? (
                         <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '0.2rem', border: '1px solid #e5e7eb', backgroundColor: 'white' }}>
-                            <img src={store.logo} alt={store.branchName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={resolveMediaUrl(store.logo)} alt={store.branchName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                         </div>
                     ) : (
                         <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
@@ -1222,7 +1223,7 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
         newCuisine: ''
     });
     const [logoFile, setLogoFile] = useState(null);
-    const [previewLogo, setPreviewLogo] = useState(store.logo);
+    const [previewLogo, setPreviewLogo] = useState(resolveMediaUrl(store.logo));
     const [saving, setSaving] = useState(false);
     const [mapPosition, setMapPosition] = useState(DEFAULT_CENTER);
     const fileRef = useRef(null);

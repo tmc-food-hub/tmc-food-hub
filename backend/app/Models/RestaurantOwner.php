@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaPath;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -102,19 +103,6 @@ class RestaurantOwner extends Authenticatable
 
     private function normalizeMediaPath($value)
     {
-        if (!$value || !is_string($value)) {
-            return $value;
-        }
-
-        if (preg_match('/^https?:\/\//i', $value)) {
-            $path = parse_url($value, PHP_URL_PATH);
-            return $path ?: $value;
-        }
-
-        if (str_starts_with($value, 'storage/')) {
-            return '/' . $value;
-        }
-
-        return $value;
+        return MediaPath::toPublicUrl($value);
     }
 }

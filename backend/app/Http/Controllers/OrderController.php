@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\RestaurantOwner;
 use App\Models\MenuItem;
+use App\Support\MediaPath;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -115,7 +116,7 @@ class OrderController extends Controller
                     'item_name'    => $item['name'],
                     'quantity'     => $item['quantity'],
                     'price'        => $item['price'],
-                    'image'        => $item['image'] ?? null,
+                    'image'        => MediaPath::normalizeStoredPath($item['image'] ?? null),
                     'variations'   => isset($item['variations']) ? json_encode($item['variations']) : null,
                 ]);
 

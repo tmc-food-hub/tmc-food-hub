@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ShoppingBag, Package, DollarSign, AlertCircle, Star, Check, ChevronRight } from 'lucide-react';
 import api from '../../../api/axios';
+import { resolveMediaUrl } from '../../../utils/media';
 import { statusMeta } from './shared';
 import styles from '../OwnerDashboard.module.css';
 
@@ -336,7 +337,7 @@ export default function OverviewSection({ store, orders, items = [], onNavigate 
                         ) : (
                             popularItems.map((item) => (
                                 <div key={item.id} className={styles.popularMenuItemRow}>
-                                    <img src={item.image} alt={item.title} className={styles.popularMenuImg} />
+                                    <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.popularMenuImg} />
                                     <div className={styles.popularMenuInfo}>
                                         <div className={styles.popularMenuTitle}>{item.title}</div>
                                         <div className={styles.popularMenuOrders}>{item.count} sold across customer orders</div>

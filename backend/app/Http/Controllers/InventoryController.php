@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\MediaPath;
 use Illuminate\Http\Request;
 
 use App\Models\Category;
 use App\Models\MenuItem;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class InventoryController extends Controller
 {
@@ -64,11 +64,11 @@ class InventoryController extends Controller
         ]);
 
         $owner = Auth::user();
-        $imagePath = $request->image;
+        $imagePath = MediaPath::normalizeStoredPath($request->image);
 
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $imagePath = Storage::url($path);
+            $imagePath = MediaPath::normalizeStoredPath($path);
         }
 
         $item = MenuItem::create([
@@ -108,10 +108,14 @@ class InventoryController extends Controller
         ]);
 
         $data = $request->except(['image_file']);
+
+        if (array_key_exists('image', $data)) {
+            $data['image'] = MediaPath::normalizeStoredPath($data['image']);
+        }
         
         if ($request->hasFile('image_file')) {
             $path = $request->file('image_file')->store('menu_items', 'public');
-            $data['image'] = Storage::url($path);
+            $data['image'] = MediaPath::normalizeStoredPath($path);
         }
 
         if ($request->has('stock_level') && $request->auto_toggle) {
