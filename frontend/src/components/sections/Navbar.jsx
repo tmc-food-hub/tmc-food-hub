@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { ThemeContext } from '../ui/ThemeContext';
 import { CartContext } from '../ui/CartContext';
-import { Sun, Moon, Menu, ShoppingCart, ClipboardList, User, LogOut, X } from 'lucide-react';
+import { Sun, Moon, Menu, ShoppingCart, ClipboardList, User, LogOut, X, Bell } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { navigationItems } from '../../constants/navigation';
 import { useNavbarLogic } from '../../hooks/useNavbarLogic';
@@ -21,6 +21,49 @@ function Navbar() {
   const isHomePage = location.pathname === '/';
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
+
+  // Build order notifications from real order data
+  const orderNotifications = (activeOrders || []).map(order => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    time: order.placedAt,
+    restaurant: order.restaurant,
+  }));
+
+  const formatTimeAgo = (dateStr) => {
+    const now = new Date();
+    const d = new Date(dateStr);
+    const mins = Math.floor((now - d) / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  const statusMessage = (status) => {
+    switch (status) {
+      case 'Pending': return 'Your order is being reviewed';
+      case 'Order Confirmed': return 'Your order has been confirmed!';
+      case 'Out for Delivery': return 'Your order is on its way!';
+      case 'Delivered': return 'Your order has been delivered';
+      case 'Cancelled': return 'Your order was cancelled';
+      default: return `Status: ${status}`;
+    }
+  };
+
+  const statusColor = (status) => {
+    switch (status) {
+      case 'Pending': return '#F59E0B';
+      case 'Order Confirmed': return '#3B82F6';
+      case 'Out for Delivery': return '#8B5CF6';
+      case 'Delivered': return '#10B981';
+      case 'Cancelled': return '#EF4444';
+      default: return '#6B7280';
+    }
+  };
 
   const closeMobileMenu = () => {
     const offcanvasElement = document.getElementById('fbs__net-navbars');
@@ -296,6 +339,75 @@ function Navbar() {
             )}
             {isAuthenticated && (
               <>
+                {/* Notification Bell */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    className="custom-nav-btn d-flex align-items-center justify-content-center"
+                    onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                    style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', position: 'relative', border: '1px solid #D1D5DB', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}
+                  >
+                    <Bell size={20} />
+                    {orderNotifications.length > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: 'var(--bs-primary)', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{orderNotifications.length}</span>}
+                  </button>
+                  {showNotifDropdown && (
+                    <>
+                      <div style={{ position: 'fixed', inset: 0, zIndex: 1049 }} onClick={() => setShowNotifDropdown(false)} />
+                      <div style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '360px', maxHeight: '420px',
+                        background: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#E5E7EB'}`,
+                        borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.12)', zIndex: 1050,
+                        display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeIn 0.15s ease-out'
+                      }}>
+                        <div style={{ padding: '1rem 1.25rem 0.75rem', borderBottom: `1px solid ${isDarkMode ? '#374151' : '#F3F4F6'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: isDarkMode ? '#F9FAFB' : '#111827', margin: 0 }}>Notifications</h3>
+                          <button onClick={() => setShowNotifDropdown(false)} style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '2px', display: 'flex', borderRadius: '6px' }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '0.25rem 0' }}>
+                          {orderNotifications.length === 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2.5rem 1rem', color: '#9CA3AF', gap: '0.5rem' }}>
+                              <Bell size={32} style={{ color: '#D1D5DB' }} />
+                              <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>No active orders</span>
+                            </div>
+                          ) : (
+                            orderNotifications.map(notif => (
+                              <div
+                                key={notif.id}
+                                onClick={() => { setShowNotifDropdown(false); navigate(`/order-tracking?id=${notif.id}`); }}
+                                style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.8rem 1.25rem', cursor: 'pointer', transition: 'background 0.15s' }}
+                                onMouseOver={e => e.currentTarget.style.background = isDarkMode ? '#374151' : '#FAFAFA'}
+                                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${statusColor(notif.status)}15`, color: statusColor(notif.status), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                  <ClipboardList size={16} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <p style={{ fontSize: '0.84rem', fontWeight: 700, color: isDarkMode ? '#F9FAFB' : '#111827', margin: '0 0 2px' }}>Order {notif.orderNumber}</p>
+                                  <p style={{ fontSize: '0.78rem', color: statusColor(notif.status), margin: '0 0 2px', fontWeight: 600 }}>{statusMessage(notif.status)}</p>
+                                  <span style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>{formatTimeAgo(notif.time)}</span>
+                                </div>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.status === 'Pending' || notif.status === 'Order Confirmed' || notif.status === 'Out for Delivery' ? statusColor(notif.status) : 'transparent', flexShrink: 0, marginTop: '6px' }} />
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {orderNotifications.length > 0 && (
+                          <div style={{ padding: '0.65rem 1.25rem', borderTop: `1px solid ${isDarkMode ? '#374151' : '#F3F4F6'}` }}>
+                            <button
+                              onClick={() => { setShowNotifDropdown(false); navigate('/my-orders'); }}
+                              style={{ width: '100%', background: 'none', border: 'none', color: 'var(--bs-primary)', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', padding: '0.35rem', borderRadius: '8px', transition: 'background 0.15s' }}
+                              onMouseOver={e => e.currentTarget.style.background = isDarkMode ? '#374151' : '#FEF2F2'}
+                              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              View All Orders
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
                 <button className="custom-nav-btn d-flex align-items-center justify-content-center" onClick={() => navigate('/my-orders')} style={{ backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', position: 'relative', border: '1px solid #D1D5DB', height: '42px', width: '42px', borderRadius: '8px', cursor: 'pointer', padding: 0, boxSizing: 'border-box' }}>
                   <ClipboardList size={20} />
                   {activeOrders.length > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: 'var(--bs-primary)', color: 'white', borderRadius: '50%', width: '22px', height: '22px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{activeOrders.length}</span>}
@@ -404,6 +516,9 @@ function Navbar() {
                 )}
                 {isAuthenticated && (
                   <>
+                    <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box', position: 'relative' }} onClick={() => { closeMobileMenu(); navigate('/my-orders'); }}>
+                      <Bell size={20} /> Notifications{orderNotifications.length > 0 ? ` (${orderNotifications.length})` : ''}
+                    </button>
                     <button className="btn custom-nav-btn w-100 d-flex align-items-center justify-content-center gap-2" style={{ border: '1px solid #D1D5DB', backgroundColor: 'transparent', color: isDarkMode ? '#FFF' : '#111827', padding: '0.6rem', borderRadius: '8px', fontSize: '15px', fontWeight: 500, boxSizing: 'border-box', position: 'relative' }} onClick={() => { closeMobileMenu(); navigate('/my-orders'); }}>
                       <ClipboardList size={20} /> My Orders{activeOrders.length > 0 ? ` (${activeOrders.length})` : ''}
                     </button>

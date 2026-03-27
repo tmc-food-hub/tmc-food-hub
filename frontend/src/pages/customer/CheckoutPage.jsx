@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, Banknote, CalendarDays, Clock } from 'lucide-react';
+import { MapPin, Banknote, CalendarDays, Clock, Smartphone, Building2, Upload, Image as ImageIcon, CreditCard } from 'lucide-react';
+import api from '../../api/axios';
 import { CartContext } from '../../components/ui/CartContext';
 import { useOrders } from '../../context/OrderContext';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +33,11 @@ function CheckoutPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [placedOrderId, setPlacedOrderId] = useState(null);
 
+    // Payment methods from restaurant
+    const [acceptedMethods, setAcceptedMethods] = useState(['cod']);
+    const [restaurantPaymentInfo, setRestaurantPaymentInfo] = useState({});
+    const [loadingMethods, setLoadingMethods] = useState(true);
+
     useEffect(() => {
         window.scrollTo(0, 0);
         if (cartItems.length === 0 && !showSuccessModal) {
@@ -52,9 +58,27 @@ function CheckoutPage() {
         }
     }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
 
+    // Fetch accepted payment methods from restaurant
+    useEffect(() => {
+        const restaurantId = cartItems[0]?.restaurantId || urlRestaurantId;
+        if (restaurantId) {
+            api.get(`/restaurants/${restaurantId}/payment-methods`)
+                .then(res => {
+                    const data = res.data;
+                    setAcceptedMethods(data.accepted_payment_methods || ['cod']);
+                    setRestaurantPaymentInfo(data);
+                    // Default to first accepted method
+                    setPaymentMethod((data.accepted_payment_methods || ['cod'])[0]);
+                })
+                .catch(() => {})
+                .finally(() => setLoadingMethods(false));
+        } else {
+            setLoadingMethods(false);
+        }
+    }, [cartItems, urlRestaurantId]);
+
     const deliveryFee = 3.00;
-    const discount = 5.00;
-    const totalAmount = cartSubtotal + deliveryFee - discount;
+    const totalAmount = cartSubtotal + deliveryFee;
 
     // Compute min/max dates for the schedule picker (today to +7 days)
     const { minDate, maxDate } = useMemo(() => {
@@ -103,7 +127,7 @@ function CheckoutPage() {
                 restaurantId,
                 subtotal: cartSubtotal,
                 deliveryFee,
-                discount,
+                discount: 0,
                 total: totalAmount,
                 paymentMethod,
                 deliveryAddress,
@@ -119,7 +143,12 @@ function CheckoutPage() {
             setPlacedOrderId(order.id);
             clearCart();
             showNotification('Order placed successfully!', 'success');
-            setShowSuccessModal(true);
+            
+            if (paymentMethod !== 'cod') {
+                navigate(`/payment-upload?orderId=${order.id}`);
+            } else {
+                setShowSuccessModal(true);
+            }
         } catch (error) {
             showNotification('Failed to place order. Please try again.', 'error');
         }
@@ -164,9 +193,9 @@ function CheckoutPage() {
                                                 <MapPin size={20} />
                                             </div>
                                             <div>
-                                                <div className={styles.addressLabel}>Delivery Address</div>
+                                                <div className={styles.addressLabel}>Home Address</div>
                                                 <div className={styles.addressText}>
-                                                    {deliveryAddress || 'No address set. Please update your profile.'}
+                                                    {deliveryAddress || 'No address set. Add one in your profile for faster checkout.'}
                                                 </div>
                                             </div>
                                         </div>
@@ -273,20 +302,40 @@ function CheckoutPage() {
                                 <div className={styles.card}>
                                     <h2 className={styles.cardTitle}>Payment Method</h2>
                                     <div className={styles.paymentGrid}>
-                                        <label className={`${styles.paymentOption} ${styles.paymentActive}`}>
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                className={styles.paymentRadio}
-                                                checked={true}
-                                                readOnly
-                                            />
-                                            <span className={styles.paymentIcon}>
-                                                <Banknote size={18} />
-                                            </span>
-                                            <span className={styles.paymentLabelText}>Cash on Delivery</span>
-                                        </label>
+                                        {acceptedMethods.includes('cod') && (
+                                            <label className={`${styles.paymentOption} ${paymentMethod === 'cod' ? styles.paymentActive : ''}`} onClick={() => setPaymentMethod('cod')}>
+                                                <input type="radio" name="payment" className={styles.paymentRadio} checked={paymentMethod === 'cod'} readOnly />
+                                                <span className={styles.paymentIcon}><Banknote size={18} /></span>
+                                                <span className={styles.paymentLabelText}>Cash on Delivery</span>
+                                            </label>
+                                        )}
+                                        {acceptedMethods.includes('gcash') && (
+                                            <label className={`${styles.paymentOption} ${paymentMethod === 'gcash' ? styles.paymentActive : ''}`} onClick={() => setPaymentMethod('gcash')}>
+                                                <input type="radio" name="payment" className={styles.paymentRadio} checked={paymentMethod === 'gcash'} readOnly />
+                                                <span className={styles.paymentIcon}><Smartphone size={18} /></span>
+                                                <span className={styles.paymentLabelText}>GCash</span>
+                                            </label>
+                                        )}
+                                        {acceptedMethods.includes('maya') && (
+                                            <label className={`${styles.paymentOption} ${paymentMethod === 'maya' ? styles.paymentActive : ''}`} onClick={() => setPaymentMethod('maya')}>
+                                                <input type="radio" name="payment" className={styles.paymentRadio} checked={paymentMethod === 'maya'} readOnly />
+                                                <span className={styles.paymentIcon}><CreditCard size={18} /></span>
+                                                <span className={styles.paymentLabelText}>Maya</span>
+                                            </label>
+                                        )}
+                                        {acceptedMethods.includes('bank_transfer') && (
+                                            <label className={`${styles.paymentOption} ${paymentMethod === 'bank_transfer' ? styles.paymentActive : ''}`} onClick={() => setPaymentMethod('bank_transfer')}>
+                                                <input type="radio" name="payment" className={styles.paymentRadio} checked={paymentMethod === 'bank_transfer'} readOnly />
+                                                <span className={styles.paymentIcon}><Building2 size={18} /></span>
+                                                <span className={styles.paymentLabelText}>Bank Transfer</span>
+                                            </label>
+                                        )}
                                     </div>
+                                    {paymentMethod !== 'cod' && (
+                                        <p style={{ fontSize: '0.78rem', color: '#6B7280', marginTop: '0.75rem', background: '#FEF2F2', padding: '0.6rem 0.85rem', borderRadius: '8px' }}>
+                                            After placing your order, you’ll see the payment details and can upload your payment screenshot.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -298,7 +347,18 @@ function CheckoutPage() {
                                     <div className={styles.summaryItems}>
                                         {cartItems.map(item => (
                                             <div key={item.cartItemId} className={styles.summaryItem}>
-                                                <img src={item.image} alt={item.title} className={styles.summaryItemImg} />
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.title}
+                                                    className={styles.summaryItemImg}
+                                                    onError={e => {
+                                                        e.target.onerror = null;
+                                                        e.target.style.background = '#F3F4F6';
+                                                        e.target.style.objectFit = 'contain';
+                                                        e.target.style.padding = '4px';
+                                                        e.target.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>');
+                                                    }}
+                                                />
                                                 <div>
                                                     <div className={styles.summaryItemName}>{item.title}</div>
                                                     {(item.variation || (item.addOns && item.addOns.length > 0)) && (
@@ -321,10 +381,6 @@ function CheckoutPage() {
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
                                             <span>${Number(deliveryFee).toFixed(2)}</span>
-                                        </div>
-                                        <div className={styles.summaryRow}>
-                                            <span>Discount (PROMO5)</span>
-                                            <span className={styles.discountValue}>-${Number(discount).toFixed(2)}</span>
                                         </div>
                                     </div>
 

@@ -1,5 +1,5 @@
 /* ══════════════════
-   ProfilePage.module.css
+   ProfilePage.module.css — Modern Redesign
    ══════════════════ */
 
 /* ─── Outer page wrapper ─── */
@@ -16,41 +16,34 @@
 
 /* ─── Main body content ─── */
 .profileBody {
-    max-width: 1100px;
+    max-width: 860px;
     margin: 0 auto;
-    padding: 7rem 2rem 5rem;
+    padding: 6.5rem 1.5rem 5rem;
 }
 
-/* ─── Identity row: avatar + name + actions ─── */
-.identityRow {
+/* ─── Profile Header ─── */
+.profileHeader {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #E5E7EB;
-}
-
-.profilePageDark .identityRow {
-    border-bottom-color: #21262D;
+    margin-bottom: 1.75rem;
 }
 
 .avatarCircle {
-    width: 120px;
-    height: 120px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: linear-gradient(135deg, #FEE2E2, #FECACA);
-    border: 5px solid #ffffff;
+    border: 4px solid #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #991B1B;
     letter-spacing: -1px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profilePageDark .avatarCircle {
@@ -58,51 +51,42 @@
     background: linear-gradient(135deg, rgba(153, 27, 27, 0.3), rgba(153, 27, 27, 0.15));
 }
 
-.avatarCircle:hover {
-    transform: scale(1.06);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-}
-
-.identityMeta {
+.headerInfo {
     flex: 1;
-    padding-bottom: 0.5rem;
+    min-width: 0;
 }
 
 .userName {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #111827;
-    margin: 0 0 0.2rem;
+    margin: 0 0 0.15rem;
     letter-spacing: -0.5px;
 }
 
-.profilePageDark .userName {
-    color: #F9FAFB;
-}
+.profilePageDark .userName { color: #F9FAFB; }
 
 .userEmail {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: #6B7280;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.6rem;
 }
 
-.profilePageDark .userEmail {
-    color: #9CA3AF;
-}
+.profilePageDark .userEmail { color: #9CA3AF; }
 
 .badgeRow {
     display: flex;
-    gap: 0.6rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 0.28rem 0.75rem;
+    gap: 4px;
+    padding: 0.22rem 0.65rem;
     border-radius: 999px;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 600;
 }
 
@@ -118,23 +102,16 @@
 }
 
 .badgePulse {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: #10B981;
     animation: blink 2s ease infinite;
 }
 
 @keyframes blink {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.35;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
 }
 
 .badgeMember {
@@ -161,26 +138,25 @@
     color: #60A5FA;
 }
 
-.identityActions {
+.headerActions {
     display: flex;
-    gap: 0.65rem;
-    align-self: flex-end;
-    padding-bottom: 0.5rem;
+    gap: 0.55rem;
+    flex-shrink: 0;
 }
 
+/* ─── Buttons ─── */
 .btnOutline {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 0.55rem 1.2rem;
+    padding: 0.5rem 1.1rem;
     border-radius: 10px;
     border: 1.5px solid #D1D5DB;
     background: #fff;
     color: #374151;
-    font-size: 0.875rem;
+    font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
     transition: all 0.2s ease;
     white-space: nowrap;
 }
@@ -188,8 +164,6 @@
 .btnOutline:hover {
     border-color: #9CA3AF;
     background: #F9FAFB;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .profilePageDark .btnOutline {
@@ -198,20 +172,37 @@
     color: #E5E7EB;
 }
 
-.profilePageDark .btnOutline:hover {
-    background: #253343;
+.btnOutlineRed {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1.1rem;
+    border-radius: 10px;
+    border: 1.5px solid #FECACA;
+    background: #FEF2F2;
+    color: #991B1B;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btnOutlineRed:hover {
+    background: #FEE2E2;
+    border-color: #FCA5A5;
 }
 
 .btnRed {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 0.55rem 1.2rem;
+    padding: 0.5rem 1.2rem;
     border-radius: 10px;
     border: none;
     background: #991B1B;
     color: #fff;
-    font-size: 0.875rem;
+    font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
@@ -221,45 +212,47 @@
 
 .btnRed:hover {
     background: #7F1D1D;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(153, 27, 27, 0.38);
 }
 
-/* ─── Horizontal rule ─── */
-.divider {
-    height: 1px;
-    background: #E5E7EB;
-    margin-bottom: 2rem;
+.btnSave {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1.3rem;
+    border-radius: 10px;
+    border: none;
+    background: #991B1B;
+    color: #fff;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 110px;
+    justify-content: center;
 }
 
-.profilePageDark .divider {
-    background: #21262D;
+.btnSave:hover:not(:disabled) {
+    background: #7F1D1D;
 }
 
-/* ─── Card grid ─── */
-.cardsGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+.btnSave:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.cardFull {
-    grid-column: 1 / -1;
-}
-
-/* ─── Single card ─── */
-.infoCard {
+/* ─── Home Address Card ─── */
+.addressCard {
     background: #ffffff;
     border: 1px solid #E5E7EB;
     border-radius: 16px;
-    padding: 1.75rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     position: relative;
     overflow: hidden;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-.infoCard::before {
+.addressCard::before {
     content: '';
     position: absolute;
     top: 0;
@@ -267,17 +260,143 @@
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, #991B1B, #DC2626);
-    opacity: 0;
-    transition: opacity 0.25s ease;
 }
 
-.infoCard:hover::before {
-    opacity: 1;
+.profilePageDark .addressCard {
+    background: #161B22;
+    border-color: #21262D;
+}
+
+.addressCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.addressCardIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #FEF2F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #991B1B;
+    flex-shrink: 0;
+}
+
+.profilePageDark .addressCardIcon {
+    background: rgba(153, 27, 27, 0.15);
+}
+
+.addressCardMeta {
+    flex: 1;
+}
+
+.addressCardTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.profilePageDark .addressCardTitle { color: #F9FAFB; }
+
+.addressCardSub {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    margin: 2px 0 0;
+}
+
+.addressChangeBtn {
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: #991B1B;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.addressChangeBtn:hover {
+    background: #FEF2F2;
+}
+
+.addressCardBody {
+    padding: 1rem 1.25rem;
+    background: #F9FAFB;
+    border-radius: 12px;
+    border: 1px solid #F3F4F6;
+}
+
+.profilePageDark .addressCardBody {
+    background: #0D1117;
+    border-color: #21262D;
+}
+
+.addressDisplay {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.profilePageDark .addressDisplay { color: #E5E7EB; }
+
+.addressPinIcon {
+    color: #991B1B;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.deliveryNote {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+    padding-top: 0.65rem;
+    border-top: 1px dashed #E5E7EB;
+    font-size: 0.82rem;
+    color: #6B7280;
+}
+
+.profilePageDark .deliveryNote {
+    border-top-color: #21262D;
+    color: #9CA3AF;
+}
+
+.addressEmpty {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #9CA3AF;
+    font-size: 0.85rem;
+}
+
+/* ─── Info Grid ─── */
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* ─── Info Card ─── */
+.infoCard {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s;
 }
 
 .infoCard:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .profilePageDark .infoCard {
@@ -285,16 +404,12 @@
     border-color: #21262D;
 }
 
-.profilePageDark .infoCard:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
 .cardHeader {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.85rem;
     border-bottom: 1px solid #F3F4F6;
 }
 
@@ -303,15 +418,14 @@
 }
 
 .cardIcon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #FEE2E2, #FED7AA);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #991B1B;
-    font-size: 1.15rem;
     flex-shrink: 0;
 }
 
@@ -320,47 +434,40 @@
 }
 
 .cardTitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: #111827;
     margin: 0;
 }
 
-.profilePageDark .cardTitle {
-    color: #F9FAFB;
-}
+.profilePageDark .cardTitle { color: #F9FAFB; }
 
-.cardSubtitle {
-    font-size: 0.78rem;
+.cardSub {
+    font-size: 0.75rem;
     color: #9CA3AF;
-    margin: 2px 0 0;
+    margin: 1px 0 0;
 }
 
-/* ─── Field grid inside cards ─── */
+/* ─── Field Items (with icon) ─── */
 .fieldList {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.fieldListSingle {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
 .fieldItem {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 0.8rem 1rem;
-    background: #F8F9FF;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    background: #F9FAFB;
     border-radius: 10px;
-    border: 1px solid #EEF0F8;
-    transition: background 0.2s, border-color 0.2s;
+    border: 1px solid #F3F4F6;
+    transition: background 0.15s;
 }
 
 .fieldItem:hover {
-    background: #EFF0FA;
-    border-color: #D8DAEE;
+    background: #F3F4F6;
 }
 
 .profilePageDark .fieldItem {
@@ -370,76 +477,82 @@
 
 .profilePageDark .fieldItem:hover {
     background: #161B22;
-    border-color: #30363D;
+}
+
+.fieldIcon {
+    color: #9CA3AF;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.fieldContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
 }
 
 .fieldLabel {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: #9CA3AF;
     text-transform: uppercase;
-    letter-spacing: 0.9px;
+    letter-spacing: 0.8px;
 }
 
 .fieldValue {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 500;
     color: #111827;
     word-break: break-word;
 }
 
-.profilePageDark .fieldValue {
-    color: #E5E7EB;
-}
+.profilePageDark .fieldValue { color: #E5E7EB; }
 
 .fieldEmpty {
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     color: #D1D5DB;
     font-style: italic;
 }
 
-.profilePageDark .fieldEmpty {
-    color: #374151;
+.profilePageDark .fieldEmpty { color: #374151; }
+
+/* ─── Change Password Button ─── */
+.changePasswordBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.85rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    border: 1px dashed #D1D5DB;
+    background: none;
+    color: #6B7280;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 768px) {
-    .heroBanner {
-        height: 150px;
-    }
-
-    .profileBody {
-        padding: 0 1rem 4rem;
-    }
-
-    .identityRow {
-        flex-wrap: wrap;
-        margin-top: -40px;
-        gap: 1rem;
-    }
-
-    .identityActions {
-        width: 100%;
-        padding-bottom: 0;
-    }
-
-    .btnOutline,
-    .btnRed {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .cardsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .fieldList {
-        grid-template-columns: 1fr;
-    }
+.changePasswordBtn:hover {
+    border-color: #991B1B;
+    color: #991B1B;
+    background: #FEF2F2;
 }
 
-/* ── Logout Confirmation Modal ── */
+.profilePageDark .changePasswordBtn {
+    border-color: #30363D;
+    color: #9CA3AF;
+}
 
+.profilePageDark .changePasswordBtn:hover {
+    border-color: #991B1B;
+    color: #991B1B;
+    background: rgba(153, 27, 27, 0.08);
+}
+
+/* ─── Modals ─── */
 .modalOverlay {
     position: fixed;
     inset: 0;
@@ -455,8 +568,8 @@
 .modalBox {
     background: #fff;
     border-radius: 16px;
-    padding: 2rem 2.25rem;
-    max-width: 400px;
+    padding: 2rem;
+    max-width: 380px;
     width: 90%;
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
@@ -465,45 +578,216 @@
 
 .profilePageDark .modalBox {
     background: #1e1e2e;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
-.modalIcon {
-    font-size: 2rem;
-    color: #dc3545;
-    margin-bottom: 0.75rem;
+.modalIconWrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #FEE2E2;
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
 }
 
 .modalTitle {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    margin: 0 0 0.5rem;
-    color: #1a1a2e;
+    margin: 0 0 0.4rem;
+    color: #111827;
 }
 
-.profilePageDark .modalTitle {
-    color: #f0f0f0;
-}
+.profilePageDark .modalTitle { color: #F9FAFB; }
 
 .modalText {
-    font-size: 0.95rem;
-    color: #666;
+    font-size: 0.9rem;
+    color: #6B7280;
     margin: 0 0 1.5rem;
 }
 
-.profilePageDark .modalText {
-    color: #aaa;
-}
+.profilePageDark .modalText { color: #9CA3AF; }
 
 .modalActions {
     display: flex;
-    gap: 0.75rem;
-    justify-content: center;
+    gap: 0.65rem;
 }
 
 .modalActions .btnOutline,
 .modalActions .btnRed {
     flex: 1;
+    justify-content: center;
+}
+
+/* ─── Edit Modal ─── */
+.editModalBox {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.75rem;
+    max-width: 520px;
+    width: 92%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: scaleIn 0.2s ease;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.profilePageDark .editModalBox {
+    background: #1e1e2e;
+}
+
+.editModalHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.profilePageDark .editModalHeader {
+    border-bottom-color: #30363D;
+}
+
+.editModalIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #FEE2E2, #FED7AA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #991B1B;
+    flex-shrink: 0;
+}
+
+.profilePageDark .editModalIcon {
+    background: rgba(153, 27, 27, 0.15);
+}
+
+.editModalTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.profilePageDark .editModalTitle { color: #F9FAFB; }
+
+.editModalSub {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    margin: 1px 0 0;
+}
+
+.modalCloseBtn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #9CA3AF;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    transition: 0.15s;
+}
+
+.modalCloseBtn:hover {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+/* ─── Form Elements ─── */
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.formFull {
+    grid-column: 1 / -1;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.formLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.profilePageDark .formLabel { color: #9CA3AF; }
+
+.formInput {
+    padding: 0.55rem 0.8rem;
+    border-radius: 10px;
+    border: 1.5px solid #D1D5DB;
+    background: #F9FAFB;
+    font-size: 0.88rem;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+.formInput:focus {
+    border-color: #991B1B;
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
+}
+
+.profilePageDark .formInput {
+    background: #0D1117;
+    border-color: #30363D;
+    color: #E5E7EB;
+}
+
+.formTextarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.formError {
+    font-size: 0.73rem;
+    color: #DC2626;
+    margin-top: 2px;
+}
+
+.serverError {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+    padding: 0.55rem 0.8rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.82rem;
+    color: #991B1B;
+}
+
+.successMsg {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 10px;
+    padding: 0.55rem 0.8rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.82rem;
+    color: #059669;
+}
+
+.modalFooter {
+    display: flex;
+    gap: 0.65rem;
+    justify-content: flex-end;
+}
+
+.modalFooter .btnOutline {
+    min-width: 90px;
     justify-content: center;
 }
 
@@ -517,202 +801,40 @@
     to   { opacity: 1; transform: scale(1); }
 }
 
-/* ── Edit Profile Modal ── */
-
-.editModalBox {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem 2.25rem;
-    max-width: 560px;
-    width: 92%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    animation: scaleIn 0.2s ease;
-    max-height: 85vh;
-    overflow-y: auto;
-}
-
-.profilePageDark .editModalBox {
-    background: #1e1e2e;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}
-
-.editModalHeader {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #E5E7EB;
-}
-
-.profilePageDark .editModalHeader {
-    border-bottom-color: #30363D;
-}
-
-.editModalIcon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #FEE2E2, #FED7AA);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #991B1B;
-    font-size: 1.15rem;
-    flex-shrink: 0;
-}
-
-.profilePageDark .editModalIcon {
-    background: rgba(153, 27, 27, 0.15);
-}
-
-.editModalTitle {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0;
-}
-
-.profilePageDark .editModalTitle {
-    color: #F9FAFB;
-}
-
-.editModalSubtitle {
-    font-size: 0.78rem;
-    color: #9CA3AF;
-    margin: 2px 0 0;
-}
-
-.editFormGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.editFormFull {
-    grid-column: 1 / -1;
-}
-
-.editFormGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.editLabel {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #6B7280;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-}
-
-.profilePageDark .editLabel {
-    color: #9CA3AF;
-}
-
-.editInput {
-    padding: 0.6rem 0.85rem;
-    border-radius: 10px;
-    border: 1.5px solid #D1D5DB;
-    background: #F9FAFB;
-    font-size: 0.9rem;
-    color: #111827;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: inherit;
-}
-
-.editInput:focus {
-    border-color: #991B1B;
-    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
-}
-
-.profilePageDark .editInput {
-    background: #0D1117;
-    border-color: #30363D;
-    color: #E5E7EB;
-}
-
-.profilePageDark .editInput:focus {
-    border-color: #991B1B;
-    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.2);
-}
-
-.editTextarea {
-    resize: vertical;
-    min-height: 70px;
-}
-
-.editError {
-    font-size: 0.75rem;
-    color: #DC2626;
-    margin-top: 2px;
-}
-
-.editServerError {
-    background: #FEF2F2;
-    border: 1px solid #FECACA;
-    border-radius: 10px;
-    padding: 0.6rem 0.85rem;
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-    color: #991B1B;
-}
-
-.profilePageDark .editServerError {
-    background: rgba(153, 27, 27, 0.1);
-    border-color: rgba(153, 27, 27, 0.25);
-}
-
-.editActions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-}
-
-.editActions .btnOutline {
-    min-width: 100px;
-    justify-content: center;
-}
-
-.btnSave {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0.55rem 1.5rem;
-    border-radius: 10px;
-    border: none;
-    background: #991B1B;
-    color: #fff;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
-    transition: all 0.2s ease;
-    min-width: 120px;
-    justify-content: center;
-}
-
-.btnSave:hover:not(:disabled) {
-    background: #7F1D1D;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(153, 27, 27, 0.38);
-}
-
-.btnSave:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
-    .editFormGrid {
+    .profileBody {
+        padding: 5.5rem 1rem 3rem;
+    }
+
+    .profileHeader {
+        flex-wrap: wrap;
+    }
+
+    .headerActions {
+        width: 100%;
+    }
+
+    .btnOutline,
+    .btnOutlineRed {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .infoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .formGrid {
         grid-template-columns: 1fr;
     }
 
     .editModalBox {
         width: 95%;
-        padding: 1.5rem;
+        padding: 1.25rem;
+    }
+
+    .addressCardHeader {
+        flex-wrap: wrap;
     }
 }

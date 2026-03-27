@@ -4,8 +4,10 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import L from 'leaflet';
 import {
     Check, Clock, Circle, Phone, PhoneOff,
-    Star, X, MessageCircle, ChevronRight, Package
+    Star, X, MessageCircle, ChevronRight, Package,
+    Upload, ImageIcon, Smartphone, CreditCard
 } from 'lucide-react';
+import api from '../../api/axios';
 import { useOrders } from '../../context/OrderContext';
 import { CartContext } from '../../components/ui/CartContext';
 import { useContext } from 'react';
@@ -13,6 +15,7 @@ import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import styles from './OrderTrackingPage.module.css';
+import Swal from 'sweetalert2';
 
 /* ------------------------------------------------
    Fix Leaflet default marker icons in bundlers
@@ -187,10 +190,54 @@ function OrderTrackingPage() {
         status: contextOrder.status,
         deliveryAddress: contextOrder.deliveryAddress,
         restaurantId: contextOrder.restaurantId,
+        paymentMethod: contextOrder.paymentMethod || 'cod',
+        paymentStatus: contextOrder.paymentStatus || 'paid',
+        paymentReceipt: contextOrder.paymentReceipt || null,
     } : null;
 
     const [cancelTimer, setCancelTimer] = useState(120);
+    const [showCancelModal, setShowCancelModal] = useState(false);
     const timerRef = useRef(null);
+    const prevPaymentStatusRef = useRef(order?.paymentStatus);
+
+    // New receipt upload states
+    const [receiptFile, setReceiptFile] = useState(null);
+    const [receiptPreview, setReceiptPreview] = useState(null);
+    const [uploadingReceipt, setUploadingReceipt] = useState(false);
+    const [paymentSenderName, setPaymentSenderName] = useState('');
+    const [restaurantPaymentInfo, setRestaurantPaymentInfo] = useState({});
+
+    // Fetch restaurant payment info if order is online payment
+    useEffect(() => {
+        if (order && order.paymentMethod !== 'cod' && !order.paymentReceipt) {
+            const fetchPaymentInfo = async () => {
+                try {
+                    const res = await api.get(`/restaurants/${order.restaurantId}/payment-methods`);
+                    setRestaurantPaymentInfo(res.data);
+                } catch (err) {
+                    console.error("Failed to load payment info", err);
+                }
+            };
+            fetchPaymentInfo();
+        }
+    }, [order?.id, order?.paymentMethod, order?.paymentReceipt, order?.restaurantId]);
+
+    // Watch for payment confirmation updates
+    useEffect(() => {
+        if (!order) return;
+        if (prevPaymentStatusRef.current === 'pending_verification' && order.paymentStatus === 'paid') {
+            Swal.fire({
+                title: 'Payment Confirmed!',
+                text: 'The restaurant has verified your payment. Your order is now processing.',
+                icon: 'success',
+                confirmButtonText: 'Great',
+                confirmButtonColor: '#B91C1C'
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+        prevPaymentStatusRef.current = order.paymentStatus;
+    }, [order?.paymentStatus]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -361,6 +408,36 @@ function OrderTrackingPage() {
                                         />
                                     </MapContainer>
                                 </div>
+                                
+                                {/* Order Status */}
+                                <div className={`${styles.statusCard} mt-4`}>
+                                    <h2 className={styles.statusCardTitle}>Order Status</h2>
+
+                                    <div className={styles.timeline}>
+                                        {order.statuses.map((status, index) => (
+                                            <div
+                                                key={index}
+                                                className={`${styles.timelineStep} ${styles[`timeline${status.state.charAt(0).toUpperCase() + status.state.slice(1)}`]}`}
+                                            >
+                                                {renderStatusIcon(status.state)}
+                                                <div className={styles.timelineContent}>
+                                                    <div className={styles.timelineLabel}>
+                                                        {status.label}
+                                                    </div>
+                                                    <div className={styles.timelineDesc}>
+                                                        {status.time && (
+                                                            <span className={styles.timelineTime}>
+                                                                {status.time}
+                                                            </span>
+                                                        )}
+                                                        {status.time && ' • '}
+                                                        {status.description}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right Column — Order Summary */}
@@ -424,48 +501,50 @@ function OrderTrackingPage() {
                                             ${Number(order.totalAmount).toFixed(2)}
                                         </span>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Order Status + Rider Info Row */}
-                        <div className="row mt-4" data-aos="fade-up" data-aos-delay="200">
-
-                            {/* Left Column — Order Status */}
-                            <div className="col-lg-7 mb-4 mb-lg-0">
-                                <div className={styles.statusCard}>
-                                    <h2 className={styles.statusCardTitle}>Order Status</h2>
-
-                                    <div className={styles.timeline}>
-                                        {order.statuses.map((status, index) => (
-                                            <div
-                                                key={index}
-                                                className={`${styles.timelineStep} ${styles[`timeline${status.state.charAt(0).toUpperCase() + status.state.slice(1)}`]}`}
-                                            >
-                                                {renderStatusIcon(status.state)}
-                                                <div className={styles.timelineContent}>
-                                                    <div className={styles.timelineLabel}>
-                                                        {status.label}
-                                                    </div>
-                                                    <div className={styles.timelineDesc}>
-                                                        {status.time && (
-                                                            <span className={styles.timelineTime}>
-                                                                {status.time}
-                                                            </span>
-                                                        )}
-                                                        {status.time && ' • '}
-                                                        {status.description}
-                                                    </div>
-                                                </div>
+                                    {/* Payment Status / Upload Receipt */}
+                                    {order.paymentMethod && order.paymentMethod !== 'cod' && (
+                                        <div style={{ marginTop: '1rem', padding: '1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: order.paymentReceipt ? '0.75rem' : '1rem' }}>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111827' }}>
+                                                    Payment: {order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Bank Transfer'}
+                                                </span>
+                                                {order.paymentReceipt && (
+                                                    <span style={{
+                                                        fontSize: '0.75rem', fontWeight: 700, padding: '4px 12px', borderRadius: '99px',
+                                                        background: order.paymentStatus === 'paid' ? '#D1FAE5' : order.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                                                        color: order.paymentStatus === 'paid' ? '#065F46' : order.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
+                                                    }}>
+                                                        {order.paymentStatus === 'paid' ? '✓ Confirmed' : order.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting Confirmation'}
+                                                    </span>
+                                                )}
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Right Column — Rider Info */}
-                            <div className="col-lg-5">
-                                <div className={styles.riderCard}>
+                                            {order.paymentReceipt ? (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <img src={order.paymentReceipt} alt="Payment receipt" style={{ maxHeight: '160px', borderRadius: '8px', objectFit: 'contain', cursor: 'pointer', border: '1px solid #E5E7EB' }} onClick={() => window.open(order.paymentReceipt, '_blank')} />
+                                                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '8px', fontWeight: 500 }}>Click to view full receipt</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+                                                    <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '1rem' }}>
+                                                        Please upload your proof of payment to proceed with your order.
+                                                    </p>
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        style={{ backgroundColor: '#B91C1C', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontSize: '0.95rem', fontWeight: 600 }}
+                                                        onClick={() => navigate(`/payment-upload?orderId=${order.id}`)}
+                                                    >
+                                                        Upload Payment Receipt
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Rider Info */}
+                                <div className={`${styles.riderCard} mt-4`}>
                                     <div className={styles.riderHeader}>
                                         <img
                                             src={order.rider_info.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop'}
@@ -531,12 +610,7 @@ function OrderTrackingPage() {
                                         <button
                                             className={styles.cancelBtn}
                                             disabled={cancelTimer === 0 || order.status === 'Cancelled' || order.status === 'Out for Delivery'}
-                                            onClick={async () => {
-                                                if (contextOrder && cancelTimer > 0) {
-                                                    await cancelOrder(contextOrder.id);
-                                                    navigate('/my-orders');
-                                                }
-                                            }}
+                                            onClick={() => setShowCancelModal(true)}
                                         >
                                             <X size={16} />
                                             Cancel Order
@@ -565,6 +639,68 @@ function OrderTrackingPage() {
                 <Footer />
             </div>
             <BackToTop />
+
+            {/* Cancel Order Confirmation Modal */}
+            {showCancelModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 1060,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+                    animation: 'fadeIn 0.2s ease'
+                }} onClick={() => setShowCancelModal(false)}>
+                    <div style={{
+                        background: '#fff', borderRadius: '20px', padding: '2rem',
+                        maxWidth: '400px', width: '90%', textAlign: 'center',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                        animation: 'scaleIn 0.2s ease'
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{
+                            width: '56px', height: '56px', borderRadius: '50%',
+                            background: '#FEE2E2', color: '#DC2626',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 1rem'
+                        }}>
+                            <X size={28} />
+                        </div>
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#111827', margin: '0 0 0.4rem' }}>
+                            Cancel This Order?
+                        </h3>
+                        <p style={{ fontSize: '0.9rem', color: '#6B7280', margin: '0 0 1.5rem' }}>
+                            This action cannot be undone. Your order will be cancelled and any charges will be refunded.
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.65rem' }}>
+                            <button
+                                onClick={() => setShowCancelModal(false)}
+                                style={{
+                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                    border: '1.5px solid #D1D5DB', background: '#fff',
+                                    color: '#374151', fontSize: '0.88rem', fontWeight: 600,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Keep Order
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowCancelModal(false);
+                                    if (contextOrder && cancelTimer > 0) {
+                                        await cancelOrder(contextOrder.id);
+                                        navigate('/my-orders');
+                                    }
+                                }}
+                                style={{
+                                    flex: 1, padding: '0.7rem', borderRadius: '10px',
+                                    border: 'none', background: '#991B1B',
+                                    color: '#fff', fontSize: '0.88rem', fontWeight: 600,
+                                    cursor: 'pointer', boxShadow: '0 2px 6px rgba(153,27,27,0.3)'
+                                }}
+                            >
+                                Yes, Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

@@ -81,4 +81,21 @@ class MenuController extends Controller
             'menu' => $menuByCategories
         ]);
     }
+
+    /**
+     * Return accepted payment methods for a restaurant (public, used at checkout).
+     */
+    public function paymentMethods($restaurantId)
+    {
+        $owner = RestaurantOwner::findOrFail($restaurantId);
+
+        return response()->json([
+            'accepted_payment_methods' => $owner->accepted_payment_methods ?? ['cod'],
+            'gcash_number' => $owner->gcash_number,
+            'maya_number' => $owner->maya_number,
+            'bank_name' => $owner->bank_name,
+            'bank_account_name' => $owner->bank_account_name,
+            'bank_account_number' => $owner->bank_account_number,
+        ]);
+    }
 }

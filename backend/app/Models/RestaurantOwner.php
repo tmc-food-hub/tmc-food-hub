@@ -39,6 +39,12 @@ class RestaurantOwner extends Authenticatable
         'auto_accept_orders',
         'manual_confirmation',
         'default_prep_time',
+        'accepted_payment_methods',
+        'gcash_number',
+        'maya_number',
+        'bank_name',
+        'bank_account_name',
+        'bank_account_number',
     ];
 
     /**
@@ -65,6 +71,7 @@ class RestaurantOwner extends Authenticatable
             'auto_accept_orders' => 'boolean',
             'manual_confirmation' => 'boolean',
             'default_prep_time' => 'integer',
+            'accepted_payment_methods' => 'array',
         ];
     }
 

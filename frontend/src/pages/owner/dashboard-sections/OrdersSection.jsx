@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Layers, X, AlertCircle, Check, Bell, RefreshCw } from 'lucide-react';
+import { MapPin, Layers, X, AlertCircle, Check, Bell, RefreshCw, Eye } from 'lucide-react';
+import api from '../../../api/axios';
 import { STATUS_ORDER, statusMeta } from './shared';
 import { useOrders } from '../../../context/OrderContext';
 import styles from '../OwnerDashboard.module.css';
@@ -16,6 +17,7 @@ export default function OrdersSection({ store }) {
 
     const [filt, setFilt] = useState('All');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [detailTab, setDetailTab] = useState('order'); // 'order' or 'payment'
 
     const STATUS_TABS = [
         { key: 'All', label: 'All' },
@@ -259,12 +261,46 @@ export default function OrdersSection({ store }) {
                                 <h2 className={styles.panelTitle}>Order Details</h2>
                                 <p className={styles.panelSubtitle}>{selectedOrder.orderNumber}</p>
                             </div>
-                            <button className={styles.closePanelBtn} onClick={() => setSelectedOrder(null)}>
+                            <button className={styles.closePanelBtn} onClick={() => { setSelectedOrder(null); setDetailTab('order'); }}>
                                 <X size={20} />
                             </button>
                         </div>
 
+                        {/* Tabs: Order Details / Proof of Payment */}
+                        {selectedOrder.paymentMethod && selectedOrder.paymentMethod !== 'cod' && (
+                            <div style={{ display: 'flex', borderBottom: '2px solid #F3F4F6', padding: '0 1.25rem' }}>
+                                <button
+                                    onClick={() => setDetailTab('order')}
+                                    style={{
+                                        padding: '0.7rem 1.25rem', fontSize: '0.85rem', fontWeight: 600, border: 'none', background: 'none', cursor: 'pointer',
+                                        color: detailTab === 'order' ? '#B91C1C' : '#6B7280',
+                                        borderBottom: detailTab === 'order' ? '2px solid #B91C1C' : '2px solid transparent',
+                                        marginBottom: '-2px',
+                                    }}
+                                >
+                                    Order Details
+                                </button>
+                                <button
+                                    onClick={() => setDetailTab('payment')}
+                                    style={{
+                                        padding: '0.7rem 1.25rem', fontSize: '0.85rem', fontWeight: 600, border: 'none', background: 'none', cursor: 'pointer',
+                                        color: detailTab === 'payment' ? '#B91C1C' : '#6B7280',
+                                        borderBottom: detailTab === 'payment' ? '2px solid #B91C1C' : '2px solid transparent',
+                                        marginBottom: '-2px', display: 'flex', alignItems: 'center', gap: '6px',
+                                    }}
+                                >
+                                    Proof of Payment
+                                    {selectedOrder.paymentStatus !== 'paid' && selectedOrder.paymentReceipt && (
+                                        <span style={{ background: '#FEF3C7', color: '#92400E', fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: '99px' }}>!</span>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+
                         <div className={styles.panelContent}>
+                            {/* ─── ORDER DETAILS TAB ─── */}
+                            {detailTab === 'order' && (
+                                <>
                             {selectedOrder.status !== 'Delivered' && selectedOrder.status !== 'Cancelled' && (
                                 <div className={styles.statusAlert}>
                                     <AlertCircle size={16} />
@@ -365,7 +401,138 @@ export default function OrdersSection({ store }) {
                                     <span>Total Amount</span>
                                     <span className={styles.breakdownTotalValue}>₱{Number(selectedOrder.total).toFixed(2)}</span>
                                 </div>
+                                {/* Payment Method badge */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #E5E7EB' }}>
+                                    <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Payment Method</span>
+                                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#111827' }}>
+                                        {selectedOrder.paymentMethod === 'cod' ? '💵 Cash on Delivery' : selectedOrder.paymentMethod === 'gcash' ? '📱 GCash' : selectedOrder.paymentMethod === 'maya' ? '💳 Maya' : '🏦 Bank Transfer'}
+                                    </span>
+                                </div>
                             </div>
+                                </>
+                            )}
+
+                            {/* ─── PROOF OF PAYMENT TAB ─── */}
+                            {detailTab === 'payment' && (
+                                <div style={{ padding: '0.5rem 0' }}>
+                                    {/* Payment Method Info */}
+                                    <div style={{ padding: '1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <div style={{
+                                                    background: selectedOrder.paymentMethod === 'gcash' ? '#0066FF' : selectedOrder.paymentMethod === 'maya' ? '#00B900' : '#0F2C82',
+                                                    color: 'white', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold'
+                                                }}>
+                                                    {selectedOrder.paymentMethod === 'gcash' ? 'G' : selectedOrder.paymentMethod === 'maya' ? 'M' : '🏦'}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#111827' }}>
+                                                        {selectedOrder.paymentMethod === 'gcash' ? 'GCash' : selectedOrder.paymentMethod === 'maya' ? 'Maya' : 'Bank Transfer'}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.78rem', color: '#6B7280' }}>Online Payment</div>
+                                                </div>
+                                            </div>
+                                            <span style={{
+                                                fontSize: '0.75rem', fontWeight: 700, padding: '4px 12px', borderRadius: '99px',
+                                                background: selectedOrder.paymentStatus === 'paid' ? '#D1FAE5' : selectedOrder.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                                                color: selectedOrder.paymentStatus === 'paid' ? '#065F46' : selectedOrder.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
+                                            }}>
+                                                {selectedOrder.paymentStatus === 'paid' ? '✓ Confirmed' : selectedOrder.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting Confirmation'}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #E5E7EB' }}>
+                                            <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Amount</span>
+                                            <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#111827' }}>₱{Number(selectedOrder.total).toFixed(2)}</span>
+                                        </div>
+                                        {selectedOrder.paymentSenderName && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                                                <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Sender Name</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{selectedOrder.paymentSenderName}</span>
+                                            </div>
+                                        )}
+                                        {selectedOrder.paymentTransactionId && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                                                <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Reference No.</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827', wordBreak: 'break-all', textAlign: 'right', maxWidth: '60%' }}>{selectedOrder.paymentTransactionId}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Receipt Image */}
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <h4 className={styles.sectionHeading} style={{ marginBottom: '0.75rem' }}>Payment Receipt</h4>
+                                        {selectedOrder.paymentReceipt ? (
+                                            <div style={{ textAlign: 'center', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '1.25rem' }}>
+                                                <img
+                                                    src={selectedOrder.paymentReceipt}
+                                                    alt="Payment receipt"
+                                                    style={{ maxHeight: '320px', maxWidth: '100%', borderRadius: '10px', objectFit: 'contain', cursor: 'pointer', border: '1px solid #E5E7EB' }}
+                                                    onClick={() => window.open(selectedOrder.paymentReceipt, '_blank')}
+                                                />
+                                                <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '0.5rem', marginBottom: 0 }}>
+                                                    <Eye size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                                    Click image to view full size
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', background: '#F9FAFB', borderRadius: '12px', border: '2px dashed #D1D5DB' }}>
+                                                <div style={{ background: '#FEF2F2', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                                                    <Eye size={20} color="#B91C1C" />
+                                                </div>
+                                                <p style={{ fontWeight: 600, color: '#374151', margin: '0 0 0.25rem' }}>No receipt uploaded yet</p>
+                                                <p style={{ fontSize: '0.78rem', color: '#9CA3AF', margin: 0 }}>The customer has not uploaded a payment screenshot.</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Confirm / Reject Buttons */}
+                                    {selectedOrder.paymentReceipt && selectedOrder.paymentStatus !== 'paid' && selectedOrder.paymentStatus !== 'rejected' && (
+                                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                            <button
+                                                className={styles.btnAcceptOrder}
+                                                style={{ flex: 1, fontSize: '0.85rem', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                                onClick={async () => {
+                                                    try {
+                                                        await api.put(`/owner/orders/${selectedOrder.id}/confirm-payment`, { action: 'confirm' });
+                                                        fetchOrders();
+                                                        setSelectedOrder(prev => ({ ...prev, paymentStatus: 'paid' }));
+                                                    } catch (err) { console.error(err); }
+                                                }}
+                                            >
+                                                <Check size={16} /> Confirm Payment
+                                            </button>
+                                            <button
+                                                className={styles.btnPrint}
+                                                style={{ flex: 1, fontSize: '0.85rem', padding: '0.75rem', color: '#991B1B', borderColor: '#FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                                onClick={async () => {
+                                                    try {
+                                                        await api.put(`/owner/orders/${selectedOrder.id}/confirm-payment`, { action: 'reject' });
+                                                        fetchOrders();
+                                                        setSelectedOrder(prev => ({ ...prev, paymentStatus: 'rejected' }));
+                                                    } catch (err) { console.error(err); }
+                                                }}
+                                            >
+                                                <X size={16} /> Reject Payment
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {selectedOrder.paymentStatus === 'paid' && (
+                                        <div style={{ textAlign: 'center', padding: '1rem', background: '#D1FAE5', borderRadius: '12px', marginTop: '0.5rem' }}>
+                                            <Check size={20} color="#065F46" style={{ marginBottom: '0.25rem' }} />
+                                            <p style={{ fontWeight: 700, color: '#065F46', margin: '0 0 0.25rem', fontSize: '0.9rem' }}>Payment Confirmed</p>
+                                            <p style={{ fontSize: '0.78rem', color: '#065F46', margin: 0, opacity: 0.8 }}>This order's payment has been verified.</p>
+                                        </div>
+                                    )}
+                                    {selectedOrder.paymentStatus === 'rejected' && (
+                                        <div style={{ textAlign: 'center', padding: '1rem', background: '#FEE2E2', borderRadius: '12px', marginTop: '0.5rem' }}>
+                                            <X size={20} color="#991B1B" style={{ marginBottom: '0.25rem' }} />
+                                            <p style={{ fontWeight: 700, color: '#991B1B', margin: '0 0 0.25rem', fontSize: '0.9rem' }}>Payment Rejected</p>
+                                            <p style={{ fontSize: '0.78rem', color: '#991B1B', margin: 0, opacity: 0.8 }}>This order's payment was rejected.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Footer Actions */}

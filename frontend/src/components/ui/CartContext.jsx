@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPlus, X } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { resolveMediaUrl } from '../../utils/media';
 
 export const CartContext = createContext();
 
@@ -100,7 +101,7 @@ export function CartProvider({ children }) {
       payload: {
         id: item.id,
         title: item.title,
-        image: item.image,
+        image: resolveMediaUrl(item.image),
         price: item.price,
         originalPrice: item.originalPrice,
         storeName: item.storeName,
@@ -150,7 +151,7 @@ export function CartProvider({ children }) {
         payload: {
           id: item.id || item.productId,
           title: item.name || item.title,
-          image: item.image,
+          image: resolveMediaUrl(item.image),
           price: item.price,
           originalPrice: item.originalPrice || item.price,
           storeName: restaurantName,
