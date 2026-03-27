@@ -15,12 +15,39 @@ class MediaController extends Controller
             abort(404);
         }
 
-        if (!Storage::disk('public')->exists($path)) {
+        $resolvedPath = $this->resolveExistingPath($path);
+
+        if ($resolvedPath === null) {
             abort(404);
         }
 
-        return Storage::disk('public')->response($path, null, [
+        return Storage::disk('public')->response($resolvedPath, null, [
             'Cache-Control' => 'public, max-age=31536000',
         ]);
+    }
+
+    private function resolveExistingPath(string $path): ?string
+    {
+        $disk = Storage::disk('public');
+        $candidates = [$path];
+
+        // Support legacy production records that stored only the filename
+        // while the file itself lives under a media subdirectory.
+        if (!str_contains($path, '/')) {
+            $candidates = array_merge($candidates, [
+                'restaurants/logos/' . $path,
+                'restaurants/covers/' . $path,
+                'menu_items/' . $path,
+                'reviews/' . $path,
+            ]);
+        }
+
+        foreach (array_unique($candidates) as $candidate) {
+            if ($disk->exists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class OwnerAuthController extends Controller
@@ -464,12 +465,12 @@ class OwnerAuthController extends Controller
         $owner = $request->user();
 
         return response()->json([
-            'accepted_payment_methods' => $owner->accepted_payment_methods ?? ['cod'],
-            'gcash_number' => $owner->gcash_number,
-            'maya_number' => $owner->maya_number,
-            'bank_name' => $owner->bank_name,
-            'bank_account_name' => $owner->bank_account_name,
-            'bank_account_number' => $owner->bank_account_number,
+            'accepted_payment_methods' => $this->resolveAcceptedPaymentMethods($owner),
+            'gcash_number' => $this->ownerPaymentColumnExists('gcash_number') ? $owner->gcash_number : null,
+            'maya_number' => $this->ownerPaymentColumnExists('maya_number') ? $owner->maya_number : null,
+            'bank_name' => $this->ownerPaymentColumnExists('bank_name') ? $owner->bank_name : null,
+            'bank_account_name' => $this->ownerPaymentColumnExists('bank_account_name') ? $owner->bank_account_name : null,
+            'bank_account_number' => $this->ownerPaymentColumnExists('bank_account_number') ? $owner->bank_account_number : null,
         ]);
     }
 
@@ -490,8 +491,60 @@ class OwnerAuthController extends Controller
             'bank_account_number' => 'nullable|string|max:50',
         ]);
 
-        $owner->update($validated);
+        $updatable = [];
+
+        if ($this->ownerPaymentColumnExists('accepted_payment_methods')) {
+            $updatable['accepted_payment_methods'] = array_values(array_unique($validated['accepted_payment_methods']));
+        }
+
+        foreach ([
+            'gcash_number',
+            'maya_number',
+            'bank_name',
+            'bank_account_name',
+            'bank_account_number',
+        ] as $column) {
+            if ($this->ownerPaymentColumnExists($column) && array_key_exists($column, $validated)) {
+                $updatable[$column] = $validated[$column];
+            }
+        }
+
+        if ($updatable === []) {
+            return response()->json([
+                'message' => 'Payment settings are unavailable until the latest database migration is applied.',
+            ], 503);
+        }
+
+        $owner->update($updatable);
 
         return response()->json(['message' => 'Payment settings updated successfully']);
+    }
+
+    private function ownerPaymentColumnExists(string $column): bool
+    {
+        return Schema::hasColumn('restaurant_owners', $column);
+    }
+
+    private function resolveAcceptedPaymentMethods(RestaurantOwner $owner): array
+    {
+        $methods = ['cod'];
+
+        if ($this->ownerPaymentColumnExists('accepted_payment_methods') && is_array($owner->accepted_payment_methods)) {
+            $methods = array_merge($methods, $owner->accepted_payment_methods);
+        }
+
+        if ($this->ownerPaymentColumnExists('gcash_number') && filled($owner->gcash_number)) {
+            $methods[] = 'gcash';
+        }
+
+        if ($this->ownerPaymentColumnExists('maya_number') && filled($owner->maya_number)) {
+            $methods[] = 'maya';
+        }
+
+        if ($this->ownerPaymentColumnExists('bank_account_number') && filled($owner->bank_account_number)) {
+            $methods[] = 'bank_transfer';
+        }
+
+        return array_values(array_unique($methods));
     }
 }

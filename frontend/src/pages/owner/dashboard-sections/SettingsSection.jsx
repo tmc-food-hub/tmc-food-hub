@@ -29,6 +29,53 @@ const SETTINGS_TABS = [
     { key: 'payment', label: 'Payment', icon: <CreditCard size={16} /> },
 ];
 
+function getRestaurantFallbackImage(restaurantName = '') {
+    if (restaurantName.includes('Jollibee')) return '/assets/images/service/resturant_logo/jollibee.svg';
+    if (restaurantName.includes("McDonald's") || restaurantName.includes('McDonald')) return '/assets/images/service/resturant_logo/mcdonald-s-7.svg';
+    if (restaurantName.includes('Sushi Nori')) return '/assets/images/service/resturant_logo/sushi-nori.svg';
+    if (restaurantName.includes('Mang Inasal')) return '/assets/images/service/resturant_logo/Mang_Inasal.svg';
+    if (restaurantName.includes('KFC')) return '/assets/images/service/resturant_logo/KFC.svg';
+    if (restaurantName.includes('Chowking')) return '/assets/images/service/resturant_logo/chowking.svg';
+
+    return '/assets/images/service/placeholder.svg';
+}
+
+function RestaurantLogo({ src, name, className, style, size = 64 }) {
+    const fallbackSrc = getRestaurantFallbackImage(name);
+    const [logoSrc, setLogoSrc] = useState(resolveMediaUrl(src) || fallbackSrc);
+
+    useEffect(() => {
+        setLogoSrc(resolveMediaUrl(src) || fallbackSrc);
+    }, [src, fallbackSrc]);
+
+    return (
+        <div
+            style={{
+                width: size,
+                height: size,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                flexShrink: 0,
+                ...style,
+            }}
+        >
+            <img
+                src={logoSrc}
+                alt={name}
+                className={className}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                loading="lazy"
+                decoding="async"
+                onError={() => {
+                    if (logoSrc !== fallbackSrc) {
+                        setLogoSrc(fallbackSrc);
+                    }
+                }}
+            />
+        </div>
+    );
+}
+
 export default function SettingsSection({ store, refreshOwner, items = [], refreshInventory, activeSubTab }) {
     const [activeTab, setActiveTab] = useState(activeSubTab || 'account');
 
@@ -126,7 +173,7 @@ function AccountTab({ store, refreshOwner }) {
                 <div className={styles.profileHeader}>
                     <div className={styles.avatarUploadWrapper} onClick={() => avatarRef.current?.click()}>
                         {store.logo ? (
-                            <img src={resolveMediaUrl(store.logo)} alt={fullName} className={styles.avatar} loading="lazy" decoding="async" />
+                            <RestaurantLogo src={store.logo} name={store.branchName || fullName} className={styles.avatar} size={72} />
                         ) : (
                             <div className={styles.avatar}>{fullName.charAt(0)}</div>
                         )}
@@ -1114,9 +1161,12 @@ function RestaurantProfileTab({ store, refreshOwner }) {
             <div className={styles.card} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                     {store.logo ? (
-                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', padding: '0.2rem', border: '1px solid #e5e7eb', backgroundColor: 'white' }}>
-                            <img src={resolveMediaUrl(store.logo)} alt={store.branchName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                        </div>
+                        <RestaurantLogo
+                            src={store.logo}
+                            name={store.branchName}
+                            size={64}
+                            style={{ padding: '0.2rem', border: '1px solid #e5e7eb', backgroundColor: 'white' }}
+                        />
                     ) : (
                         <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
                             {(store.branchName || 'P').charAt(0)}
