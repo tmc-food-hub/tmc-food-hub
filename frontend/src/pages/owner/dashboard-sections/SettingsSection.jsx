@@ -905,6 +905,7 @@ function PaymentConfigTab() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [error, setError] = useState('');
     const [methods, setMethods] = useState(['cod']);
     const [gcashNumber, setGcashNumber] = useState('');
     const [mayaNumber, setMayaNumber] = useState('');
@@ -921,7 +922,10 @@ function PaymentConfigTab() {
             setBankName(d.bank_name || '');
             setBankAccountName(d.bank_account_name || '');
             setBankAccountNumber(d.bank_account_number || '');
-        }).catch(() => {}).finally(() => setLoading(false));
+            setError('');
+        }).catch((err) => {
+            setError(err?.response?.data?.message || 'Failed to load payment settings.');
+        }).finally(() => setLoading(false));
     }, []);
 
     const toggleMethod = (m) => {
@@ -936,6 +940,7 @@ function PaymentConfigTab() {
 
     const handleSave = async () => {
         setSaving(true);
+        setError('');
         try {
             await api.put('/owner/payment-settings', {
                 accepted_payment_methods: methods,
@@ -949,6 +954,7 @@ function PaymentConfigTab() {
             setTimeout(() => setSaved(false), 2500);
         } catch (err) {
             console.error(err);
+            setError(err?.response?.data?.message || 'Failed to save payment settings.');
         } finally {
             setSaving(false);
         }
@@ -969,6 +975,13 @@ function PaymentConfigTab() {
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem', color: '#111827' }}>Payment Settings</h2>
                 <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Configure which payment methods your customers can use at checkout.</p>
             </div>
+
+            {error && (
+                <div style={{ background: '#FEF2F2', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start', border: '1px solid #FECACA' }}>
+                    <AlertCircle size={18} color="#991B1B" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ fontSize: '0.82rem', color: '#7F1D1D' }}>{error}</div>
+                </div>
+            )}
 
             {/* Accepted Payment Methods */}
             <div className={styles.card} style={{ padding: '1.5rem' }}>

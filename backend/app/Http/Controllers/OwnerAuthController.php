@@ -511,7 +511,7 @@ class OwnerAuthController extends Controller
 
         if ($updatable === []) {
             return response()->json([
-                'message' => 'Payment settings are unavailable until the latest database migration is applied.',
+                'message' => 'Payment settings are unavailable until the latest database migration is applied on the server. Please run php artisan migrate in production.',
             ], 503);
         }
 

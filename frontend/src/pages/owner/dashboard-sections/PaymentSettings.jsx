@@ -7,6 +7,7 @@ function PaymentSettings() {
     const [loading, setLoading] = useState(true);
     const [paymentData, setPaymentData] = useState(null);
     const [showMethodModal, setShowMethodModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Modal wizard states
     const [modalStep, setModalStep] = useState(1); // 1: select type, 2: select wallet / enter bank, 3: enter details, 4: success
@@ -19,11 +20,22 @@ function PaymentSettings() {
     const [saving, setSaving] = useState(false);
     const [isLinking, setIsLinking] = useState(false);
 
+    const getApiErrorMessage = (error, fallback) => (
+        error?.response?.data?.message
+        || error?.message
+        || fallback
+    );
+
     // Fetch current payment settings
     useEffect(() => {
         api.get('/owner/payment-settings')
-            .then(res => setPaymentData(res.data))
-            .catch(() => {})
+            .then(res => {
+                setPaymentData(res.data);
+                setErrorMessage('');
+            })
+            .catch((error) => {
+                setErrorMessage(getApiErrorMessage(error, 'Unable to load payment settings right now.'));
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -75,6 +87,7 @@ function PaymentSettings() {
     const handleLinkMethod = async () => {
         setSaving(true);
         setIsLinking(true);
+        setErrorMessage('');
 
         const currentMethods = paymentData?.accepted_payment_methods || ['cod'];
         let updates = {};
@@ -113,16 +126,19 @@ function PaymentSettings() {
                 // Refresh data
                 const res = await api.get('/owner/payment-settings');
                 setPaymentData(res.data);
+                setErrorMessage('');
                 setSaving(false);
             }, 1500);
         } catch (err) {
             console.error(err);
+            setErrorMessage(getApiErrorMessage(err, 'We could not save your payment method.'));
             setSaving(false);
             setIsLinking(false);
         }
     };
 
     const handleRemoveMethod = async (type) => {
+        setErrorMessage('');
         const currentMethods = paymentData?.accepted_payment_methods || ['cod'];
         const updates = {
             accepted_payment_methods: currentMethods.filter(m => m !== type),
@@ -143,8 +159,10 @@ function PaymentSettings() {
             await api.put('/owner/payment-settings', updates);
             const res = await api.get('/owner/payment-settings');
             setPaymentData(res.data);
+            setErrorMessage('');
         } catch (err) {
             console.error(err);
+            setErrorMessage(getApiErrorMessage(err, 'We could not remove that payment method.'));
         }
     };
 
@@ -174,6 +192,24 @@ function PaymentSettings() {
                 <h2 className={styles.psTitle}>Payment Settings</h2>
                 <p className={styles.psSub}>Manage how you receive payments and configure your tax compliance details.</p>
             </div>
+
+            {errorMessage && (
+                <div style={{
+                    marginBottom: '1rem',
+                    background: '#FEF2F2',
+                    border: '1px solid #FECACA',
+                    color: '#991B1B',
+                    borderRadius: '12px',
+                    padding: '0.9rem 1rem',
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.6rem',
+                }}>
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div>{errorMessage}</div>
+                </div>
+            )}
 
             <div className={styles.psMainBox}>
                 <h3 className={styles.psSectionTitle}>Payment Method</h3>
