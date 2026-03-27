@@ -23,7 +23,10 @@ class Review extends Model
     protected function casts(): array
     {
         return [
+            'rating' => 'integer',
+            'photos' => 'array',
             'is_verified' => 'boolean',
+            'helpful_count' => 'integer',
             'owner_replied_at' => 'datetime',
         ];
     }
