@@ -211,20 +211,20 @@ class OwnerAuthController extends Controller
         $owner = $request->user();
 
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'min:2', 'max:255'],
-            'last_name' => ['required', 'string', 'min:2', 'max:255'],
-            'phone' => ['nullable', 'string', 'min:7', 'max:20'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
-            'restaurant_name' => ['required', 'string', 'min:2', 'max:255'],
-            'business_address' => 'required|string|min:5|max:500',
-            'business_contact_number' => ['required', 'string', 'min:7', 'max:20'],
+            'restaurant_name' => ['required', 'string', 'max:255'],
+            'business_address' => 'required|string|max:500',
+            'business_contact_number' => ['required', 'string', 'max:20'],
             'business_permit' => 'nullable|string|max:255',
             'business_registration_number' => 'nullable|string|max:255',
             'cuisine_type' => 'nullable|array',
             'cuisine_type.*' => 'string|max:50',
             'price_range' => 'nullable|string|max:10',
-            'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'cover_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
+            'cover_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10240',
         ]);
 
         $data = $request->except(['logo_file', 'cover_file']);

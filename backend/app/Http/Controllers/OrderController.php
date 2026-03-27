@@ -214,7 +214,7 @@ class OrderController extends Controller
         }
 
         $request->validate([
-            'receipt' => 'required|file|image|max:5120', // Max 5MB
+            'receipt' => 'required|file|image|max:10240', // Max 10MB
             'payment_sender_name' => 'required|string|max:255',
             'payment_transaction_id' => 'required|string|max:255',
         ]);
