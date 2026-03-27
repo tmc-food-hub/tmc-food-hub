@@ -38,17 +38,9 @@ function CheckoutPage() {
     const [restaurantPaymentInfo, setRestaurantPaymentInfo] = useState({});
     const [loadingMethods, setLoadingMethods] = useState(true);
 
-    // Receipt upload modal
-    const [showReceiptModal, setShowReceiptModal] = useState(false);
-    const [receiptFile, setReceiptFile] = useState(null);
-    const [receiptPreview, setReceiptPreview] = useState(null);
-    const [uploadingReceipt, setUploadingReceipt] = useState(false);
-    const [receiptUploaded, setReceiptUploaded] = useState(false);
-    const [paymentSenderName, setPaymentSenderName] = useState('');
-
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (cartItems.length === 0 && !showSuccessModal && !showReceiptModal) {
+        if (cartItems.length === 0 && !showSuccessModal) {
             navigate('/cart');
         }
         if (!loading) {
@@ -64,7 +56,7 @@ function CheckoutPage() {
                 }
             }
         }
-    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, showReceiptModal, user, setShowLoginPrompt]);
+    }, [cartItems.length, isAuthenticated, loading, navigate, showSuccessModal, user, setShowLoginPrompt]);
 
     // Fetch accepted payment methods from restaurant
     useEffect(() => {
@@ -151,10 +143,9 @@ function CheckoutPage() {
             setPlacedOrderId(order.id);
             clearCart();
             showNotification('Order placed successfully!', 'success');
-
-            // For online payments, show receipt upload modal
+            
             if (paymentMethod !== 'cod') {
-                setShowReceiptModal(true);
+                navigate(`/payment-upload?orderId=${order.id}`);
             } else {
                 setShowSuccessModal(true);
             }
@@ -163,7 +154,7 @@ function CheckoutPage() {
         }
     };
 
-    if (loading || !isAuthenticated || (cartItems.length === 0 && !showSuccessModal && !showReceiptModal)) return null;
+    if (loading || !isAuthenticated || (cartItems.length === 0 && !showSuccessModal)) return null;
 
     return (
         <>
@@ -444,161 +435,6 @@ function CheckoutPage() {
                                             Browse More Menu
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Receipt Upload Modal — shown after order with online payment */}
-            {showReceiptModal && (
-                <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1060 }} tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content" style={{ borderRadius: '16px', border: 'none', overflow: 'hidden' }}>
-                            <div className="modal-body p-0">
-                                <div style={{ backgroundColor: '#B91C1C', padding: '2rem', textAlign: 'center', color: 'white' }}>
-                                    <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                                        <Upload size={28} />
-                                    </div>
-                                    <h3 className="fw-bold mb-1">Upload Payment Receipt</h3>
-                                    <p className="mb-0 opacity-75" style={{ fontSize: '0.85rem' }}>Send your payment and upload the screenshot</p>
-                                </div>
-                                <div style={{ padding: '1.5rem' }}>
-                                    {/* Payment Details */}
-                                    <div style={{ background: '#F9FAFB', borderRadius: '12px', padding: '1rem', marginBottom: '1.25rem' }}>
-                                        <p style={{ fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.5rem', color: '#111827' }}>Send payment to:</p>
-                                        {paymentMethod === 'gcash' && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <Smartphone size={16} color="#0066FF" />
-                                                <span style={{ fontWeight: 600, color: '#111827' }}>GCash: {restaurantPaymentInfo.gcash_number || 'Not set'}</span>
-                                            </div>
-                                        )}
-                                        {paymentMethod === 'maya' && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <CreditCard size={16} color="#00B900" />
-                                                <span style={{ fontWeight: 600, color: '#111827' }}>Maya: {restaurantPaymentInfo.maya_number || 'Not set'}</span>
-                                            </div>
-                                        )}
-                                        {paymentMethod === 'bank_transfer' && (
-                                            <div style={{ fontSize: '0.85rem', color: '#374151' }}>
-                                                <div><strong>Bank:</strong> {restaurantPaymentInfo.bank_name || '—'}</div>
-                                                <div><strong>Account Name:</strong> {restaurantPaymentInfo.bank_account_name || '—'}</div>
-                                                <div><strong>Account No:</strong> {restaurantPaymentInfo.bank_account_number || '—'}</div>
-                                            </div>
-                                        )}
-                                        <p style={{ fontSize: '0.78rem', color: '#6B7280', margin: '0.5rem 0 0' }}>Amount: <strong>${Number(totalAmount).toFixed(2)}</strong></p>
-                                    </div>
-
-                                    {/* Upload Area */}
-                                    {!receiptUploaded ? (
-                                        <>
-                                            <label
-                                                style={{
-                                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                                    border: '2px dashed #D1D5DB', borderRadius: '12px', padding: '2rem', cursor: 'pointer',
-                                                    background: receiptPreview ? '#F9FAFB' : 'white', transition: 'border-color 0.2s',
-                                                }}
-                                                onDragOver={e => e.preventDefault()}
-                                                onDrop={e => {
-                                                    e.preventDefault();
-                                                    const file = e.dataTransfer.files[0];
-                                                    if (file && file.type.startsWith('image/')) {
-                                                        setReceiptFile(file);
-                                                        setReceiptPreview(URL.createObjectURL(file));
-                                                    }
-                                                }}
-                                            >
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    style={{ display: 'none' }}
-                                                    onChange={e => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            setReceiptFile(file);
-                                                            setReceiptPreview(URL.createObjectURL(file));
-                                                        }
-                                                    }}
-                                                />
-                                                {receiptPreview ? (
-                                                    <img src={receiptPreview} alt="Receipt" style={{ maxHeight: '200px', borderRadius: '8px', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <>
-                                                        <ImageIcon size={32} color="#9CA3AF" />
-                                                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#6B7280' }}>Click or drag to upload receipt</p>
-                                                    </>
-                                                )}
-                                            </label>
-
-                                            <div className="mt-3">
-                                                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', marginBottom: '0.35rem', display: 'block' }}>
-                                                    Sender Name / Account Name
-                                                </label>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Enter exact name used for payment"
-                                                    value={paymentSenderName}
-                                                    onChange={e => setPaymentSenderName(e.target.value)}
-                                                    className="form-control"
-                                                    style={{ borderRadius: '8px', padding: '0.6rem 0.8rem', fontSize: '0.9rem' }}
-                                                />
-                                            </div>
-
-                                            <div className="d-grid gap-2 mt-4">
-                                                <button
-                                                    className="btn btn-primary py-2 fw-bold"
-                                                    style={{ backgroundColor: '#B91C1C', border: 'none', borderRadius: '12px' }}
-                                                    disabled={!receiptFile || uploadingReceipt || !paymentSenderName.trim()}
-                                                    onClick={async () => {
-                                                        setUploadingReceipt(true);
-                                                        try {
-                                                            const formData = new FormData();
-                                                            formData.append('receipt', receiptFile);
-                                                            formData.append('payment_sender_name', paymentSenderName);
-                                                            await api.post(`/orders/${placedOrderId}/upload-receipt`, formData, {
-                                                                headers: { 'Content-Type': 'multipart/form-data' }
-                                                            });
-                                                            setReceiptUploaded(true);
-                                                            showNotification('Receipt uploaded! Waiting for confirmation.', 'success');
-                                                        } catch (err) {
-                                                            showNotification('Failed to upload receipt. Try again.', 'error');
-                                                        } finally {
-                                                            setUploadingReceipt(false);
-                                                        }
-                                                    }}
-                                                >
-                                                    {uploadingReceipt ? 'Uploading...' : 'Upload Receipt'}
-                                                </button>
-                                                <button
-                                                    className="btn btn-outline-secondary py-2"
-                                                    style={{ borderRadius: '12px' }}
-                                                    onClick={() => {
-                                                        setShowReceiptModal(false);
-                                                        setShowSuccessModal(true);
-                                                    }}
-                                                >
-                                                    Upload Later
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                                            <div style={{ background: '#D1FAE5', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                                                <ShoppingBag size={28} color="#059669" />
-                                            </div>
-                                            <h5 className="fw-bold">Receipt Uploaded!</h5>
-                                            <p style={{ color: '#6B7280', fontSize: '0.85rem' }}>Waiting for the restaurant to confirm your payment.</p>
-                                            <div className="d-grid gap-2 mt-3">
-                                                <button
-                                                    className="btn btn-primary py-2 fw-bold"
-                                                    style={{ backgroundColor: '#B91C1C', border: 'none', borderRadius: '12px' }}
-                                                    onClick={() => navigate(`/order-tracking?id=${placedOrderId}`)}
-                                                >
-                                                    Track My Order
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>

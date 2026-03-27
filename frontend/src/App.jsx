@@ -18,6 +18,7 @@ const LoginPage = lazy(() => import('./pages/customer/LoginPage'));
 const SignupPage = lazy(() => import('./pages/customer/SignupPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/customer/ForgotPasswordPage'));
 const OrderTrackingPage = lazy(() => import('./pages/customer/OrderTrackingPage'));
+const PaymentUploadPage = lazy(() => import('./pages/customer/PaymentUploadPage'));
 const MyOrdersPage = lazy(() => import('./pages/customer/MyOrdersPage'));
 const ProfilePage = lazy(() => import('./pages/customer/ProfilePage'));
 
@@ -68,6 +69,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-tracking" element={<OrderTrackingPage />} />
+        <Route path="/payment-upload" element={<PaymentUploadPage />} />
         <Route path="/my-orders" element={<MyOrdersPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />

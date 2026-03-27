@@ -136,6 +136,7 @@ export function OrderProvider({ children }) {
                     paymentStatus: o.payment_status || 'paid',
                     paymentReceipt: o.payment_receipt || null,
                     paymentSenderName: o.payment_sender_name || '',
+                    paymentTransactionId: o.payment_transaction_id || '',
                     // Status & timing
                     status: currentStatus,
                     placedAt: o.created_at,

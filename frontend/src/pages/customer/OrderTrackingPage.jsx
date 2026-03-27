@@ -4,8 +4,10 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import L from 'leaflet';
 import {
     Check, Clock, Circle, Phone, PhoneOff,
-    Star, X, MessageCircle, ChevronRight, Package
+    Star, X, MessageCircle, ChevronRight, Package,
+    Upload, ImageIcon, Smartphone, CreditCard
 } from 'lucide-react';
+import api from '../../api/axios';
 import { useOrders } from '../../context/OrderContext';
 import { CartContext } from '../../components/ui/CartContext';
 import { useContext } from 'react';
@@ -197,6 +199,28 @@ function OrderTrackingPage() {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const timerRef = useRef(null);
     const prevPaymentStatusRef = useRef(order?.paymentStatus);
+
+    // New receipt upload states
+    const [receiptFile, setReceiptFile] = useState(null);
+    const [receiptPreview, setReceiptPreview] = useState(null);
+    const [uploadingReceipt, setUploadingReceipt] = useState(false);
+    const [paymentSenderName, setPaymentSenderName] = useState('');
+    const [restaurantPaymentInfo, setRestaurantPaymentInfo] = useState({});
+
+    // Fetch restaurant payment info if order is online payment
+    useEffect(() => {
+        if (order && order.paymentMethod !== 'cod' && !order.paymentReceipt) {
+            const fetchPaymentInfo = async () => {
+                try {
+                    const res = await api.get(`/restaurants/${order.restaurantId}/payment-methods`);
+                    setRestaurantPaymentInfo(res.data);
+                } catch (err) {
+                    console.error("Failed to load payment info", err);
+                }
+            };
+            fetchPaymentInfo();
+        }
+    }, [order?.id, order?.paymentMethod, order?.paymentReceipt, order?.restaurantId]);
 
     // Watch for payment confirmation updates
     useEffect(() => {
@@ -448,25 +472,41 @@ function OrderTrackingPage() {
                                         </span>
                                     </div>
 
-                                    {/* Payment Status */}
+                                    {/* Payment Status / Upload Receipt */}
                                     {order.paymentMethod && order.paymentMethod !== 'cod' && (
-                                        <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', background: '#F9FAFB', borderRadius: '10px', border: '1px solid #E5E7EB' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: order.paymentReceipt ? '0.75rem' : 0 }}>
-                                                <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>
-                                                    Payment ({order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Bank Transfer'})
+                                        <div style={{ marginTop: '1rem', padding: '1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: order.paymentReceipt ? '0.75rem' : '1rem' }}>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111827' }}>
+                                                    Payment: {order.paymentMethod === 'gcash' ? 'GCash' : order.paymentMethod === 'maya' ? 'Maya' : 'Bank Transfer'}
                                                 </span>
-                                                <span style={{
-                                                    fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: '99px',
-                                                    background: order.paymentStatus === 'paid' ? '#D1FAE5' : order.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
-                                                    color: order.paymentStatus === 'paid' ? '#065F46' : order.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
-                                                }}>
-                                                    {order.paymentStatus === 'paid' ? '✓ Confirmed' : order.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting Confirmation'}
-                                                </span>
+                                                {order.paymentReceipt && (
+                                                    <span style={{
+                                                        fontSize: '0.75rem', fontWeight: 700, padding: '4px 12px', borderRadius: '99px',
+                                                        background: order.paymentStatus === 'paid' ? '#D1FAE5' : order.paymentStatus === 'rejected' ? '#FEE2E2' : '#FEF3C7',
+                                                        color: order.paymentStatus === 'paid' ? '#065F46' : order.paymentStatus === 'rejected' ? '#991B1B' : '#92400E',
+                                                    }}>
+                                                        {order.paymentStatus === 'paid' ? '✓ Confirmed' : order.paymentStatus === 'rejected' ? '✗ Rejected' : '⏳ Awaiting Confirmation'}
+                                                    </span>
+                                                )}
                                             </div>
-                                            {order.paymentReceipt && (
+
+                                            {order.paymentReceipt ? (
                                                 <div style={{ textAlign: 'center' }}>
-                                                    <img src={order.paymentReceipt} alt="Payment receipt" style={{ maxHeight: '120px', borderRadius: '8px', objectFit: 'contain', cursor: 'pointer' }} onClick={() => window.open(order.paymentReceipt, '_blank')} />
-                                                    <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '4px' }}>Click to view full receipt</p>
+                                                    <img src={order.paymentReceipt} alt="Payment receipt" style={{ maxHeight: '160px', borderRadius: '8px', objectFit: 'contain', cursor: 'pointer', border: '1px solid #E5E7EB' }} onClick={() => window.open(order.paymentReceipt, '_blank')} />
+                                                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '8px', fontWeight: 500 }}>Click to view full receipt</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ padding: '1rem 0', textAlign: 'center' }}>
+                                                    <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '1rem' }}>
+                                                        Please upload your proof of payment to proceed with your order.
+                                                    </p>
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        style={{ backgroundColor: '#B91C1C', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontSize: '0.95rem', fontWeight: 600 }}
+                                                        onClick={() => navigate(`/payment-upload?orderId=${order.id}`)}
+                                                    >
+                                                        Upload Payment Receipt
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>

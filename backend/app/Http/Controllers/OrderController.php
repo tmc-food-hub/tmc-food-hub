@@ -216,6 +216,7 @@ class OrderController extends Controller
         $request->validate([
             'receipt' => 'required|file|image|max:5120', // Max 5MB
             'payment_sender_name' => 'required|string|max:255',
+            'payment_transaction_id' => 'required|string|max:255',
         ]);
 
         $file = $request->file('receipt');
@@ -224,6 +225,7 @@ class OrderController extends Controller
         $order->update([
             'payment_receipt' => $base64,
             'payment_sender_name' => $request->payment_sender_name,
+            'payment_transaction_id' => $request->payment_transaction_id,
             'payment_status' => 'pending_verification',
         ]);
 

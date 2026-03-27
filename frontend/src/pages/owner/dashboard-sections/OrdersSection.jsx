@@ -450,6 +450,12 @@ export default function OrdersSection({ store }) {
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{selectedOrder.paymentSenderName}</span>
                                             </div>
                                         )}
+                                        {selectedOrder.paymentTransactionId && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                                                <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Reference No.</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827', wordBreak: 'break-all', textAlign: 'right', maxWidth: '60%' }}>{selectedOrder.paymentTransactionId}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Receipt Image */}
