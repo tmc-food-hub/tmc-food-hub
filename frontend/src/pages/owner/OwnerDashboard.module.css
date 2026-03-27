@@ -6495,3 +6495,161 @@
         grid-column: span 1;
     }
 }
+
+/* ─── Onboarding Checklist ─────────────────────────────────────────────────── */
+.onboardingCard {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.onboardingCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #DC2626;
+}
+
+.onboardingHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.onboardingTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 0.25rem 0;
+}
+
+.onboardingSubtitle {
+    font-size: 0.9rem;
+    color: #6B7280;
+    margin: 0;
+}
+
+.progressCircleContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.circularChart {
+    width: 48px;
+    height: 48px;
+    transform: rotate(180deg);
+}
+
+.circleBg {
+    fill: none;
+    stroke: #E5E7EB;
+    stroke-width: 3.8;
+}
+
+.circleFill {
+    fill: none;
+    stroke: #DC2626;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out;
+}
+
+.onboardingSteps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.onboardingStep {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.onboardingStep:not(.stepCompleted):hover {
+    background: #FEF2F2;
+    border-color: #FCA5A5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
+}
+
+.stepCompleted {
+    opacity: 0.7;
+    background: #F3F4F6;
+    cursor: default;
+}
+
+.stepIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+    background: #fff;
+    border: 2px solid #D1D5DB;
+    color: #6B7280;
+    transition: all 0.3s ease;
+}
+
+.stepCompleted .stepIcon {
+    background: #059669;
+    border-color: #059669;
+    color: #fff;
+}
+
+.onboardingStep:not(.stepCompleted):hover .stepIcon {
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+.stepContent {
+    flex: 1;
+}
+
+.stepLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.stepCompleted .stepLabel {
+    text-decoration: line-through;
+    color: #9CA3AF;
+}
+
+.stepArrow {
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.onboardingStep:not(.stepCompleted):hover .stepArrow {
+    transform: translateX(4px);
+    color: #DC2626;
+}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ShoppingBag, Package, DollarSign, AlertCircle, Star } from 'lucide-react';
+import { ShoppingBag, Package, DollarSign, AlertCircle, Star, Check, ChevronRight } from 'lucide-react';
 import api from '../../../api/axios';
 import { statusMeta } from './shared';
 import styles from '../OwnerDashboard.module.css';
@@ -62,6 +62,23 @@ export default function OverviewSection({ store, orders, items = [], onNavigate 
         distribution: [],
     });
     const [recentReviews, setRecentReviews] = useState([]);
+
+    // Onboarding checklist config
+    const hasLogo = !!store?.logo;
+    const hasPaymentMethod = store?.accepted_payment_methods?.length > 0 || !!store?.gcash_number || !!store?.maya_number || !!store?.bank_account_number;
+    const hasMenuAndStocks = items.length > 0;
+    const isStoreOpen = store?.operating_status === 'open';
+
+    const checklistSteps = [
+        { label: 'Add a restaurant logo', completed: hasLogo, action: () => onNavigate('settings') },
+        { label: 'Add payment methods', completed: hasPaymentMethod, action: () => onNavigate('payment-settings') },
+        { label: 'Add menu items and stocks', completed: hasMenuAndStocks, action: () => onNavigate('inventory') },
+        { label: 'Open your store', completed: isStoreOpen, action: () => onNavigate('hours') }
+    ];
+
+    const completedStepsCount = checklistSteps.filter(s => s.completed).length;
+    const allStepsCompleted = completedStepsCount === checklistSteps.length;
+    const showOnboarding = !allStepsCompleted;
 
     useEffect(() => {
         let active = true;
@@ -196,6 +213,39 @@ export default function OverviewSection({ store, orders, items = [], onNavigate 
 
     return (
         <div className={styles.overviewContainer}>
+            {showOnboarding && (
+                <div className={styles.onboardingCard}>
+                    <div className={styles.onboardingHeader}>
+                        <div>
+                            <h2 className={styles.onboardingTitle}>Welcome to TMC FoodHub! Let's get your store ready.</h2>
+                            <p className={styles.onboardingSubtitle}>Complete these steps to start accepting orders from customers.</p>
+                        </div>
+                        <div className={styles.onboardingProgress}>
+                            <div className={styles.progressCircleContainer}>
+                                <svg viewBox="0 0 36 36" className={styles.circularChart}>
+                                    <path className={styles.circleBg} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path className={styles.circleFill} strokeDasharray={`${(completedStepsCount / checklistSteps.length) * 100}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span>{completedStepsCount}/{checklistSteps.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={styles.onboardingSteps}>
+                        {checklistSteps.map((step, idx) => (
+                            <div key={idx} className={`${styles.onboardingStep} ${step.completed ? styles.stepCompleted : ''}`} onClick={() => !step.completed && step.action()}>
+                                <div className={styles.stepIcon}>
+                                    {step.completed ? <Check size={16} strokeWidth={3} /> : <span>{idx + 1}</span>}
+                                </div>
+                                <div className={styles.stepContent}>
+                                    <span className={styles.stepLabel}>{step.label}</span>
+                                </div>
+                                {!step.completed && <div className={styles.stepArrow}><ChevronRight size={16} color="#9CA3AF" /></div>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className={styles.statsGrid}>
                 {stats.map((stat) => (
                     <div key={stat.label} className={styles.statCardNew}>

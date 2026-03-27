@@ -24,7 +24,6 @@ import CategoriesSection from './dashboard-sections/CategoriesSection';
 import AnalyticsSection from './dashboard-sections/AnalyticsSection';
 import EarningsSection from './dashboard-sections/EarningsSection';
 import PaymentSettings from './dashboard-sections/PaymentSettings';
-import PayoutSection from './dashboard-sections/PayoutSection';
 import ReviewsSection from './dashboard-sections/ReviewsSection';
 import NotificationPanel from './dashboard-sections/NotificationPanel';
 import { useOrders } from '../../context/OrderContext';
@@ -63,8 +62,7 @@ const NAV_GROUPS = [
                 icon: <Wallet size={18} />,
                 subItems: [
                     { key: 'transactions', label: 'Transactions', icon: <Receipt size={14} /> },
-                    { key: 'payout', label: 'Payout', icon: <Wallet size={14} /> },
-                    { key: 'payment-settings', label: 'Payment Settings', icon: <CreditCard size={14} /> }
+                    { key: 'payment-settings', label: 'Payment Methods', icon: <CreditCard size={14} /> }
                 ]
             },
         ]
@@ -87,7 +85,6 @@ function OwnerDashboard() {
     const [profileOpen, setProfileOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [payoutViewData, setPayoutViewData] = useState(null);
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [welcomeBanner, setWelcomeBanner] = useState(location.state?.signupSuccess || false);
     const [inventoryItems, setInventoryItems] = useState([]);
@@ -175,9 +172,9 @@ function OwnerDashboard() {
         });
     });
 
-    if (active === 'earnings' || active === 'transactions' || active === 'payout' || active === 'payment-settings') {
+    if (active === 'earnings' || active === 'transactions' || active === 'payment-settings') {
         activeLabel = 'Earnings';
-        subTitle = 'Track your revenue, payouts, and financial performance over time.';
+        subTitle = 'Track your revenue, transactions, and payment methods over time.';
     } else if (active === 'reviews') {
         activeLabel = 'Reviews';
         subTitle = 'Monitor customer ratings, feedback, and restaurant replies in one place.';
@@ -395,9 +392,8 @@ function OwnerDashboard() {
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'reviews' && <ReviewsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
-                    {active === 'earnings' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
-                    {active === 'transactions' && <EarningsSection onViewPayoutDetails={(payout) => { setPayoutViewData(payout); setActive('payout'); }} />}
-                    {active === 'payout' && <PayoutSection initialViewData={payoutViewData} clearInitViewData={() => setPayoutViewData(null)} />}
+                    {active === 'earnings' && <EarningsSection />}
+                    {active === 'transactions' && <EarningsSection />}
                     {active === 'payment-settings' && <PaymentSettings />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && (
