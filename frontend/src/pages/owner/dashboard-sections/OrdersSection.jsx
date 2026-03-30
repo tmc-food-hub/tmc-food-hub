@@ -1,9 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Layers, X, AlertCircle, Check, Bell, RefreshCw, Eye } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import api from '../../../api/axios';
 import { STATUS_ORDER, statusMeta } from './shared';
 import { useOrders } from '../../../context/OrderContext';
 import styles from '../OwnerDashboard.module.css';
+
+function formatCurrency(amount) {
+    return `PHP ${Number(amount || 0).toFixed(2)}`;
+}
+
+function getPaymentMethodLabel(method) {
+    if (method === 'cod') return 'Cash on Delivery';
+    if (method === 'gcash') return 'GCash';
+    if (method === 'maya') return 'Maya';
+    if (method === 'bank_transfer') return 'Bank Transfer';
+    return 'Unknown';
+}
+
+function getPaymentStatusLabel(status) {
+    if (status === 'paid') return 'Confirmed';
+    if (status === 'rejected') return 'Rejected';
+    if (status === 'awaiting_confirmation') return 'Awaiting Confirmation';
+    return status || 'N/A';
+}
+
+async function loadImageAsDataUrl(url) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+async function getImageDimensions(dataUrl) {
+    return await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve({ width: image.width, height: image.height });
+        image.onerror = reject;
+        image.src = dataUrl;
+    });
+}
 
 export default function OrdersSection({ store }) {
     const { orders: allOrders, loading, fetchOrders, updateStatus } = useOrders();
@@ -38,6 +79,220 @@ export default function OrdersSection({ store }) {
         if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     };
+
+    const hasProofOfPaymentTab = Boolean(selectedOrder?.paymentMethod && selectedOrder.paymentMethod !== 'cod');
+
+    useEffect(() => {
+        if (!selectedOrder) {
+            setDetailTab('order');
+            return;
+        }
+
+        if (selectedOrder.paymentMethod === 'cod' && detailTab !== 'order') {
+            setDetailTab('order');
+        }
+    }, [selectedOrder, detailTab]);
+
+    function openOrderDetails(order) {
+        setSelectedOrder(order);
+        setDetailTab('order');
+    }
+
+    async function handlePrintReceipt() {
+        if (!selectedOrder) return;
+
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 40;
+        const contentWidth = pageWidth - margin * 2;
+        let y = 46;
+
+        const ensureSpace = (height = 24) => {
+            if (y + height > pageHeight - 50) {
+                doc.addPage();
+                y = 46;
+            }
+        };
+
+        const addDivider = () => {
+            ensureSpace(20);
+            doc.setDrawColor(229, 231, 235);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 18;
+        };
+
+        const addSectionTitle = (title) => {
+            ensureSpace(24);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(17, 24, 39);
+            doc.text(title.toUpperCase(), margin, y);
+            y += 16;
+        };
+
+        const addKeyValue = (label, value) => {
+            ensureSpace(18);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128);
+            doc.text(label, margin, y);
+            doc.setTextColor(17, 24, 39);
+            doc.text(String(value || 'N/A'), pageWidth - margin, y, { align: 'right' });
+            y += 16;
+        };
+
+        const addParagraph = (label, value) => {
+            const lines = doc.splitTextToSize(String(value || 'N/A'), contentWidth);
+            ensureSpace(18 + lines.length * 12);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(17, 24, 39);
+            doc.text(label, margin, y);
+            y += 14;
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(75, 85, 99);
+            doc.text(lines, margin, y);
+            y += lines.length * 12 + 8;
+        };
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(17, 24, 39);
+        doc.text(store?.name || selectedOrder.restaurant || 'Restaurant Receipt', margin, y);
+        y += 18;
+
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Order Receipt • ${selectedOrder.orderNumber}`, margin, y);
+        y += 24;
+
+        addDivider();
+
+        addSectionTitle('Order Summary');
+        addKeyValue('Order ID', selectedOrder.orderNumber);
+        addKeyValue('Status', selectedOrder.status);
+        addKeyValue('Placed', selectedOrder.placedAt ? new Date(selectedOrder.placedAt).toLocaleString() : selectedOrder.time);
+        addKeyValue('Payment Method', getPaymentMethodLabel(selectedOrder.paymentMethod));
+        addKeyValue('Payment Status', getPaymentStatusLabel(selectedOrder.paymentStatus));
+
+        addDivider();
+
+        addSectionTitle('Customer');
+        addKeyValue('Name', selectedOrder.customerName || selectedOrder.customer);
+        addKeyValue('Phone', selectedOrder.contactNumber || selectedOrder.customerPhone || 'N/A');
+        addParagraph('Delivery Address', selectedOrder.deliveryAddress || selectedOrder.customerAddress || 'N/A');
+
+        if (selectedOrder.specialInstructions || selectedOrder.note) {
+            addParagraph('Special Instructions', selectedOrder.specialInstructions || selectedOrder.note);
+        }
+
+        addDivider();
+
+        addSectionTitle(`Items (${selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0)})`);
+        selectedOrder.items.forEach((item) => {
+            const itemLines = doc.splitTextToSize(
+                `${item.quantity} x ${item.name}${item.variations?.name ? ` • ${item.variations.name}` : ''}`,
+                contentWidth - 90
+            );
+
+            ensureSpace(24 + itemLines.length * 12);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(17, 24, 39);
+            doc.text(itemLines, margin, y);
+            doc.text(formatCurrency(item.quantity * item.price), pageWidth - margin, y, { align: 'right' });
+            y += itemLines.length * 12;
+
+            if (item.variations?.addOns?.length) {
+                const addOnLines = doc.splitTextToSize(
+                    `Add-ons: ${item.variations.addOns.map((addOn) => addOn.name).join(', ')}`,
+                    contentWidth - 20
+                );
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(107, 114, 128);
+                doc.text(addOnLines, margin + 12, y);
+                y += addOnLines.length * 11;
+            }
+
+            y += 8;
+        });
+
+        addDivider();
+
+        addSectionTitle('Totals');
+        addKeyValue('Subtotal', formatCurrency(selectedOrder.subtotal));
+        addKeyValue('Delivery Fee', formatCurrency(selectedOrder.deliveryFee));
+        if (Number(selectedOrder.discount) > 0) {
+            addKeyValue('Discount', `- ${formatCurrency(selectedOrder.discount)}`);
+        }
+
+        ensureSpace(22);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Total Amount', margin, y);
+        doc.text(formatCurrency(selectedOrder.total), pageWidth - margin, y, { align: 'right' });
+        y += 20;
+
+        if (hasProofOfPaymentTab) {
+            addDivider();
+            addSectionTitle('Online Payment');
+            addKeyValue('Method', getPaymentMethodLabel(selectedOrder.paymentMethod));
+            addKeyValue('Status', getPaymentStatusLabel(selectedOrder.paymentStatus));
+
+            if (selectedOrder.paymentSenderName) {
+                addKeyValue('Sender Name', selectedOrder.paymentSenderName);
+            }
+
+            if (selectedOrder.paymentTransactionId) {
+                addParagraph('Reference Number', selectedOrder.paymentTransactionId);
+            }
+
+            if (selectedOrder.paymentReceipt) {
+                try {
+                    const imageDataUrl = await loadImageAsDataUrl(selectedOrder.paymentReceipt);
+                    const imageDimensions = await getImageDimensions(imageDataUrl);
+                    const imageFormat = imageDataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+                    doc.addPage();
+                    y = 46;
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(16);
+                    doc.setTextColor(17, 24, 39);
+                    doc.text('Proof of Payment', margin, y);
+                    y += 24;
+
+                    const imageMaxWidth = contentWidth;
+                    const imageMaxHeight = pageHeight - y - 60;
+                    const scale = Math.min(
+                        imageMaxWidth / imageDimensions.width,
+                        imageMaxHeight / imageDimensions.height
+                    );
+                    const renderWidth = imageDimensions.width * scale;
+                    const renderHeight = imageDimensions.height * scale;
+                    const imageX = margin + ((imageMaxWidth - renderWidth) / 2);
+
+                    doc.addImage(
+                        imageDataUrl,
+                        imageFormat,
+                        imageX,
+                        y,
+                        renderWidth,
+                        renderHeight,
+                        undefined,
+                        'FAST'
+                    );
+                } catch (error) {
+                    console.error('Failed to attach payment receipt image to PDF', error);
+                }
+            }
+        }
+
+        doc.save(`${selectedOrder.orderNumber}-receipt.pdf`);
+    }
 
     return (
         <div className={styles.ordersContainer}>
@@ -130,7 +385,7 @@ export default function OrdersSection({ store }) {
                                             ) : null;
 
                                             return (
-                                                <tr key={o.id} className={styles.ordersTableRow} onClick={() => setSelectedOrder(o)} style={{ cursor: 'pointer' }}>
+                                                <tr key={o.id} className={styles.ordersTableRow} onClick={() => openOrderDetails(o)} style={{ cursor: 'pointer' }}>
                                                     <td className={styles.orderIdCell}>{o.orderNumber}</td>
                                                     <td>
                                                         <div className={styles.customerCell}>
@@ -194,7 +449,7 @@ export default function OrdersSection({ store }) {
                             {displayed.map(o => {
                                 const meta = statusMeta(o.status);
                                 return (
-                                    <div key={o.id} className={styles.orderMobileCard} onClick={() => setSelectedOrder(o)}>
+                                    <div key={o.id} className={styles.orderMobileCard} onClick={() => openOrderDetails(o)}>
                                         <div className={styles.orderCardHeader}>
                                             <div className={styles.orderCardCustomer}>
                                                 <div className={styles.customerAvatarInitials}>
@@ -267,7 +522,7 @@ export default function OrdersSection({ store }) {
                         </div>
 
                         {/* Tabs: Order Details / Proof of Payment */}
-                        {selectedOrder.paymentMethod && selectedOrder.paymentMethod !== 'cod' && (
+                        {hasProofOfPaymentTab && (
                             <div style={{ display: 'flex', borderBottom: '2px solid #F3F4F6', padding: '0 1.25rem' }}>
                                 <button
                                     onClick={() => setDetailTab('order')}
@@ -413,7 +668,7 @@ export default function OrdersSection({ store }) {
                             )}
 
                             {/* ─── PROOF OF PAYMENT TAB ─── */}
-                            {detailTab === 'payment' && (
+                            {hasProofOfPaymentTab && detailTab === 'payment' && (
                                 <div style={{ padding: '0.5rem 0' }}>
                                     {/* Payment Method Info */}
                                     <div style={{ padding: '1rem', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '1rem' }}>
@@ -537,7 +792,7 @@ export default function OrdersSection({ store }) {
 
                         {/* Footer Actions */}
                         <div className={styles.panelFooter}>
-                            <button className={styles.btnPrint}>Print</button>
+                            <button className={styles.btnPrint} onClick={handlePrintReceipt}>Print</button>
                             {statusMeta(selectedOrder.status).next && (
                                 <button 
                                     className={styles.btnAcceptOrder}
