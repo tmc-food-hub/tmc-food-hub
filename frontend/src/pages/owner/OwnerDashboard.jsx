@@ -388,13 +388,20 @@ function OwnerDashboard() {
                             refreshInventory={refreshInventory}
                         />
                     )}
-                    {active === 'categories' && <CategoriesSection />}
+                    {active === 'categories' && (
+                        <CategoriesSection
+                            items={inventoryItems}
+                            categories={inventoryCategories}
+                            refreshInventory={refreshInventory}
+                            loading={inventoryLoading}
+                        />
+                    )}
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'reviews' && <ReviewsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
                     {active === 'earnings' && <EarningsSection />}
                     {active === 'transactions' && <EarningsSection />}
-                    {active === 'payment-settings' && <PaymentSettings />}
+                    {active === 'payment-settings' && <PaymentSettings refreshOwner={refreshOwner} />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && (
                         <SettingsSection

@@ -103,8 +103,8 @@ export default function SettingsSection({ store, refreshOwner, items = [], refre
                 {activeTab === 'security' && <SecuritySettingsTab />}
                 {activeTab === 'notifications' && <NotificationsTab />}
                 {activeTab === 'restaurant-profile' && <RestaurantProfileTab store={store} refreshOwner={refreshOwner} />}
-                {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} />}
-                {activeTab === 'payment' && <PaymentConfigTab />}
+                {activeTab === 'store-operations' && <StoreOperationsTab store={store} items={items} refreshInventory={refreshInventory} refreshOwner={refreshOwner} />}
+                {activeTab === 'payment' && <PaymentConfigTab refreshOwner={refreshOwner} />}
             </div>
         </div>
     );
@@ -284,7 +284,7 @@ function AccountTab({ store, refreshOwner }) {
     );
 }
 
-function StoreOperationsTab({ store, items = [], refreshInventory }) {
+function StoreOperationsTab({ store, items = [], refreshInventory, refreshOwner }) {
     const [restaurantStatus, setRestaurantStatus] = useState(store.operatingStatus || 'open');
     const [autoAcceptOrders, setAutoAcceptOrders] = useState(store.autoAcceptOrders ?? true);
     const [manualConfirmation, setManualConfirmation] = useState(store.manualConfirmation ?? false);
@@ -327,6 +327,7 @@ function StoreOperationsTab({ store, items = [], refreshInventory }) {
         setSavingControls(true);
         try {
             await api.put('/owner/store-operations', nextState);
+            await refreshOwner?.();
         } catch (error) {
             console.error('Failed to save store operations:', error);
             setDialog({
@@ -901,7 +902,7 @@ function NotificationsTab() {
 }
 
 /* ── Payment Config Tab ─────────────────────────── */
-function PaymentConfigTab() {
+function PaymentConfigTab({ refreshOwner }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -950,6 +951,7 @@ function PaymentConfigTab() {
                 bank_account_name: bankAccountName || null,
                 bank_account_number: bankAccountNumber || null,
             });
+            await refreshOwner?.();
             setSaved(true);
             setTimeout(() => setSaved(false), 2500);
         } catch (err) {

@@ -76,6 +76,8 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     // Inventory Management — Categories
     Route::get('/inventory/categories', [InventoryController::class, 'getCategories']);
     Route::post('/inventory/categories', [InventoryController::class, 'storeCategory']);
+    Route::patch('/inventory/categories/reorder', [InventoryController::class, 'reorderCategories']);
+    Route::put('/inventory/categories/{id}', [InventoryController::class, 'updateCategory']);
     Route::delete('/inventory/categories/{id}', [InventoryController::class, 'destroyCategory']);
 
     // Inventory Management — Menu Items

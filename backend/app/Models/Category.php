@@ -13,6 +13,11 @@ class Category extends Model
     protected $fillable = [
         'restaurant_owner_id',
         'name',
+        'display_order',
+    ];
+
+    protected $casts = [
+        'display_order' => 'integer',
     ];
 
     public function owner()

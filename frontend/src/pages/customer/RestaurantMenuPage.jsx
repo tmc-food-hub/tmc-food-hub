@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight, PenLine, ThumbsUp, X, UploadCloud, CheckCircle2, ShoppingCart } from 'lucide-react';
+import { Search, MapPin, Clock, Star, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
@@ -12,19 +12,6 @@ import styles from './RestaurantMenuPage.module.css';
 import api from '../../api/axios';
 import { resolveMediaUrl } from '../../utils/media';
 
-function StarRow({ rating, size = 14 }) {
-    return (
-        <span style={{ display: 'inline-flex', gap: '2px', color: '#F5A623' }}>
-            {[1, 2, 3, 4, 5].map(n => (
-                <Star key={n} size={size}
-                    fill={n <= Math.round(rating) ? '#F5A623' : 'none'}
-                    color={n <= Math.round(rating) ? '#F5A623' : '#D1D5DB'}
-                />
-            ))}
-        </span>
-    );
-}
-
 function RestaurantMenuPage() {
     const { storeId } = useParams();
     const navigate = useNavigate();
@@ -33,8 +20,8 @@ function RestaurantMenuPage() {
     const [store, setStore] = useState(null);
     const [allStores, setAllStores] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
+    const [menuCategories, setMenuCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('All');
     const [activeCategory, setActiveCategory] = useState('All');
     const [activeDietary, setActiveDietary] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -43,7 +30,7 @@ function RestaurantMenuPage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, activeCategory, activeDietary, activeTab]);
+    }, [searchQuery, activeCategory, activeDietary]);
 
     // Modal state for Add To Cart Variations
     const [selectedItemForModal, setSelectedItemForModal] = useState(null);
@@ -51,6 +38,8 @@ function RestaurantMenuPage() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        setLoading(true);
+        setActiveCategory('All');
         fetchMenu();
     }, [storeId]);
 
@@ -62,6 +51,7 @@ function RestaurantMenuPage() {
             ]);
 
             const storeData = menuRes.data.restaurant;
+            const categoryData = Array.isArray(menuRes.data.categories) ? menuRes.data.categories : [];
             const groupedMenu = menuRes.data.menu;
 
             // Flatten menu items and add category field for matching
@@ -105,6 +95,7 @@ function RestaurantMenuPage() {
 
             setStore(formattedStore);
             setMenuItems(flattened);
+            setMenuCategories(categoryData);
             setAllStores(storesRes);
         } catch (error) {
             console.error('Failed to fetch menu:', error);
@@ -118,37 +109,27 @@ function RestaurantMenuPage() {
     if (!store) return null;
 
     // Extract categories
-    const allCategories = ['All', ...new Set(menuItems.map(i => i.categoryName))];
-    const tabs = ['All', 'Popular', 'Group Meals', 'Drinks', 'Desserts'];
+    const menuItemCategoryNames = [...new Set(menuItems.map((item) => item.categoryName).filter(Boolean))];
+    const apiCategoryNames = menuCategories.map((category) => category.name);
+    const dynamicCategoryNames = [...apiCategoryNames];
+
+    menuItemCategoryNames.forEach((categoryName) => {
+        if (!dynamicCategoryNames.includes(categoryName)) {
+            dynamicCategoryNames.push(categoryName);
+        }
+    });
+
+    const allCategories = ['All', ...dynamicCategoryNames];
 
     // Filter menu items
     const filteredItems = menuItems.filter(item => {
         const matchCat = activeCategory === 'All' || item.categoryName === activeCategory;
         const matchSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-            
-        let matchTab = true;
-        if (activeTab === 'Popular') {
-            matchTab = item.isBestSeller || (item.categoryName && item.categoryName.toLowerCase().includes('popular'));
-        } else if (activeTab === 'Group Meals') {
-            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('group') || 
-                       item.categoryName.toLowerCase().includes('bucket') || 
-                       item.categoryName.toLowerCase().includes('family') ||
-                       item.categoryName.toLowerCase().includes('platter'));
-        } else if (activeTab === 'Drinks') {
-            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('drink') || 
-                       item.categoryName.toLowerCase().includes('beverage'));
-        } else if (activeTab === 'Desserts') {
-            matchTab = item.categoryName && (item.categoryName.toLowerCase().includes('dessert') || 
-                       item.categoryName.toLowerCase().includes('sweet') ||
-                       item.categoryName.toLowerCase().includes('ice cream'));
-        } else if (activeTab === 'All') {
-            matchTab = true;
-        }
 
         let matchDiet = activeDietary === 'All' || item.dietary === activeDietary;
 
-        return matchCat && matchSearch && matchTab && matchDiet;
+        return matchCat && matchSearch && matchDiet;
     });
 
     const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
@@ -205,11 +186,11 @@ function RestaurantMenuPage() {
                         {/* Menu Navigation Tabs */}
                         <div className={styles.menuNav}>
                             <div className={styles.menuTabs}>
-                                {tabs.map(tab => (
+                                {allCategories.map(tab => (
                                     <button
                                         key={tab}
-                                        className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
-                                        onClick={() => setActiveTab(tab)}
+                                        className={`${styles.tab} ${activeCategory === tab ? styles.tabActive : ''}`}
+                                        onClick={() => setActiveCategory(tab)}
                                     >
                                         {tab}
                                     </button>
@@ -229,7 +210,7 @@ function RestaurantMenuPage() {
                         <div className="row mt-4">
                             {/* Sidebar Options (Popular/Filters) */}
                             <div className="col-lg-3">
-                                <h4 className="mb-4 fw-bold">Popular</h4>
+                                <h4 className="mb-4 fw-bold">Categories</h4>
                                 <div className={styles.sidebar}>
                                     <div className={styles.filterGroupTitle}>Filters</div>
 
@@ -320,6 +301,12 @@ function RestaurantMenuPage() {
                                         );
                                     })}
                                 </div>
+
+                                {paginatedItems.length === 0 && (
+                                    <div className={styles.loadingWrapper}>
+                                        No items found for this category and filter combination.
+                                    </div>
+                                )}
 
                                 {totalPages > 1 && (
                                     <div className={styles.pagination}>

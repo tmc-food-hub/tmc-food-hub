@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Bell, AlertCircle, CheckCircle2, LayoutDashboard, Layers, Plus, Pencil, Trash2, Package, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Bell, AlertCircle, CheckCircle2, LayoutDashboard, Layers, Plus, Pencil, Trash2, Package, X, ChevronDown, Check } from 'lucide-react';
 import { IMAGES } from './shared';
 import styles from '../OwnerDashboard.module.css';
 import api from '../../../api/axios';
 import { resolveMediaUrl } from '../../../utils/media';
 import { prepareImageUpload, revokeObjectUrl } from '../../../utils/imageUpload';
+import CategoryCreateModal from './CategoryCreateModal';
 
 const createBlankForm = () => ({
     title: '',
@@ -37,6 +38,94 @@ function getFirstApiError(error, fallback) {
     return error?.response?.data?.message || fallback;
 }
 
+function CategoryDropdown({
+    categories = [],
+    value = '',
+    onChange,
+    placeholder = 'Select Category',
+}) {
+    const [open, setOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    const selectedCategory = categories.find((category) => String(category.id) === String(value));
+
+    useEffect(() => {
+        function handlePointerDown(event) {
+            if (!dropdownRef.current?.contains(event.target)) {
+                setOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', handlePointerDown);
+        return () => document.removeEventListener('mousedown', handlePointerDown);
+    }, []);
+
+    function handleSelect(categoryId) {
+        onChange?.(categoryId);
+        setOpen(false);
+    }
+
+    return (
+        <div className={styles.menuCategoryDropdownWrap} ref={dropdownRef}>
+            <button
+                type="button"
+                className={`${styles.menuCategoryTrigger} ${selectedCategory ? styles.menuCategoryTriggerFilled : ''} ${open ? styles.menuCategoryTriggerOpen : ''}`}
+                onClick={() => setOpen((prev) => !prev)}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+            >
+                <div className={styles.menuCategoryTriggerCopy}>
+                    <span className={styles.menuCategoryTriggerLabel}>
+                        {selectedCategory?.name || placeholder}
+                    </span>
+                    <span className={styles.menuCategoryTriggerMeta}>
+                        {selectedCategory ? 'Selected category' : `${categories.length} categories available`}
+                    </span>
+                </div>
+                <ChevronDown
+                    size={18}
+                    className={`${styles.menuCategoryTriggerChevron} ${open ? styles.menuCategoryTriggerChevronOpen : ''}`}
+                />
+            </button>
+
+            {open && (
+                <div className={styles.menuCategoryDropdown} role="listbox">
+                    {categories.length > 0 ? (
+                        categories.map((category) => {
+                            const isActive = String(category.id) === String(value);
+
+                            return (
+                                <button
+                                    key={category.id}
+                                    type="button"
+                                    className={`${styles.menuCategoryOption} ${isActive ? styles.menuCategoryOptionActive : ''}`}
+                                    onClick={() => handleSelect(category.id)}
+                                    role="option"
+                                    aria-selected={isActive}
+                                >
+                                    <div className={styles.menuCategoryOptionCopy}>
+                                        <span className={styles.menuCategoryOptionName}>{category.name}</span>
+                                        <span className={styles.menuCategoryOptionMeta}>Tap to assign this item</span>
+                                    </div>
+                                    {isActive && (
+                                        <span className={styles.menuCategoryOptionCheck}>
+                                            <Check size={15} />
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })
+                    ) : (
+                        <div className={styles.menuCategoryEmptyState}>
+                            No categories yet. Use the plus button to create one.
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 
 export default function MenuSection({
     items = [],
@@ -54,6 +143,8 @@ export default function MenuSection({
     const [activeCategory, setActiveCategory] = useState('All Items');
     const [dialog, setDialog] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
+    const [categoryModalTarget, setCategoryModalTarget] = useState(null);
+    const [isCategorySaving, setIsCategorySaving] = useState(false);
     useEffect(() => {
         return () => {
             revokeObjectUrl(form.preview);
@@ -74,19 +165,76 @@ export default function MenuSection({
         return matchesSearch && matchesCategory;
     });
 
+    function handleCategorySelect(target, categoryId) {
+        const selectedCategory = categories.find((category) => String(category.id) === String(categoryId));
+
+        if (target === 'add') {
+            setForm((prev) => ({
+                ...prev,
+                category_id: categoryId,
+                category_name: selectedCategory?.name || '',
+            }));
+            return;
+        }
+
+        setEditForm((prev) => ({
+            ...prev,
+            category_id: categoryId,
+            category_name: selectedCategory?.name || '',
+        }));
+    }
+
+    async function handleCreateCategory({ name }) {
+        setIsCategorySaving(true);
+
+        try {
+            const response = await api.post('/owner/inventory/categories', { name });
+            const createdCategory = response.data;
+
+            setCategories((prev) => [...prev, createdCategory]);
+
+            if (categoryModalTarget === 'add') {
+                setForm((prev) => ({
+                    ...prev,
+                    category_id: createdCategory.id,
+                    category_name: createdCategory.name,
+                }));
+            }
+
+            if (categoryModalTarget === 'edit') {
+                setEditForm((prev) => ({
+                    ...prev,
+                    category_id: createdCategory.id,
+                    category_name: createdCategory.name,
+                }));
+            }
+
+            await refreshInventory?.();
+            setCategoryModalTarget(null);
+        } catch (err) {
+            console.error(err);
+            setDialog({
+                type: 'error',
+                title: 'Failed to Create Category',
+                desc: getFirstApiError(err, `We couldn't create ${name}. Please try again.`),
+            });
+        } finally {
+            setIsCategorySaving(false);
+        }
+    }
+
     async function handleAdd(e) {
         e.preventDefault();
-        if (!form.title || !form.price || !form.category_name) {
+        if (!form.title || !form.price || !form.category_id) {
             setError('Title, category and price are required.');
             return;
         }
 
         try {
-            let cat = categories.find(c => c.name === form.category_name);
+            const cat = categories.find((category) => String(category.id) === String(form.category_id));
             if (!cat) {
-                const newCatRes = await api.post('/owner/inventory/categories', { name: form.category_name });
-                cat = newCatRes.data;
-                setCategories(prev => [...prev, cat]);
+                setError('Please select a valid category.');
+                return;
             }
 
             const formData = new FormData();
@@ -175,12 +323,25 @@ export default function MenuSection({
 
     async function saveEdit(e) {
         e.preventDefault();
+
+        if (!editForm.title || !editForm.price || !editForm.category_id) {
+            setDialog({
+                type: 'error',
+                title: 'Failed to Update Item',
+                desc: 'Title, category and price are required.',
+            });
+            return;
+        }
+
         try {
-            let cat = categories.find(c => c.name === editForm.category_name);
+            const cat = categories.find((category) => String(category.id) === String(editForm.category_id));
             if (!cat) {
-                const newCatRes = await api.post('/owner/inventory/categories', { name: editForm.category_name });
-                cat = newCatRes.data;
-                setCategories(prev => [...prev, cat]);
+                setDialog({
+                    type: 'error',
+                    title: 'Failed to Update Item',
+                    desc: 'Please select a valid category.',
+                });
+                return;
             }
 
             const formData = new FormData();
@@ -374,8 +535,21 @@ export default function MenuSection({
                                         </div>
                                         <div className={styles.menuFormGroup}>
                                             <label className={styles.menuFormLabel}>Category</label>
-                                            <input required list="catsAdd" className={styles.menuFormInput} placeholder="Select Category" value={form.category_name} onChange={e => setForm({ ...form, category_name: e.target.value })} />
-                                            <datalist id="catsAdd">{categories.map(c => <option key={c.id} value={c.name} />)}</datalist>
+                                            <div className={styles.menuCategoryRow}>
+                                                <CategoryDropdown
+                                                    categories={categories}
+                                                    value={form.category_id}
+                                                    onChange={(categoryId) => handleCategorySelect('add', categoryId)}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className={styles.menuCategoryAddBtn}
+                                                    onClick={() => setCategoryModalTarget('add')}
+                                                    title="Add Category"
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -477,8 +651,21 @@ export default function MenuSection({
                                         </div>
                                         <div className={styles.menuFormGroup}>
                                             <label className={styles.menuFormLabel}>Category</label>
-                                            <input required list="catsEdit" className={styles.menuFormInput} value={editForm.category_name} onChange={e => setEditForm({ ...editForm, category_name: e.target.value })} />
-                                            <datalist id="catsEdit">{categories.map(c => <option key={c.id} value={c.name} />)}</datalist>
+                                            <div className={styles.menuCategoryRow}>
+                                                <CategoryDropdown
+                                                    categories={categories}
+                                                    value={editForm.category_id || ''}
+                                                    onChange={(categoryId) => handleCategorySelect('edit', categoryId)}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className={styles.menuCategoryAddBtn}
+                                                    onClick={() => setCategoryModalTarget('edit')}
+                                                    title="Add Category"
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -545,6 +732,14 @@ export default function MenuSection({
                         )}
                     </div>
                 </div>
+            )}
+
+            {categoryModalTarget && (
+                <CategoryCreateModal
+                    onClose={() => setCategoryModalTarget(null)}
+                    onSave={handleCreateCategory}
+                    isSaving={isCategorySaving}
+                />
             )}
         </div>
     );

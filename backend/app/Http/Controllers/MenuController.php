@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Models\Category;
 use App\Models\RestaurantOwner;
 use App\Models\MenuItem;
 use App\Models\Review;
@@ -53,6 +54,10 @@ class MenuController extends Controller
     public function show($restaurantId)
     {
         $restaurant = RestaurantOwner::findOrFail($restaurantId);
+        $categories = Category::where('restaurant_owner_id', $restaurantId)
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get(['id', 'name']);
 
         $menuByCategories = MenuItem::where('restaurant_owner_id', $restaurantId)
             ->where('available', true)
@@ -78,6 +83,7 @@ class MenuController extends Controller
                 'reviews_count'           => Review::where('restaurant_owner_id', $restaurant->id)->count(),
                 'operating_status'        => $restaurant->operating_status,
             ],
+            'categories' => $categories,
             'menu' => $menuByCategories
         ]);
     }
