@@ -388,7 +388,14 @@ function OwnerDashboard() {
                             refreshInventory={refreshInventory}
                         />
                     )}
-                    {active === 'categories' && <CategoriesSection />}
+                    {active === 'categories' && (
+                        <CategoriesSection
+                            items={inventoryItems}
+                            categories={inventoryCategories}
+                            refreshInventory={refreshInventory}
+                            loading={inventoryLoading}
+                        />
+                    )}
                     {active === 'promotions' && <PromotionsSection />}
                     {active === 'reviews' && <ReviewsSection />}
                     {active === 'analytics' && <AnalyticsSection />}
