@@ -619,7 +619,7 @@ export default function OrdersSection({ store }) {
                                         <div key={idx} className={styles.panelItemRow}>
                                             <img src={it.image || 'https://via.placeholder.com/60'} alt={it.name} className={styles.panelItemImg} />
                                             <div className={styles.panelItemDetails}>
-                                                <div className={styles.panelItemName}>{it.name}</div>
+                                                <div className={styles.panelItemTitle}>{it.name}</div>
                                                 {it.variations && (
                                                     <div style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '2px' }}>
                                                         {it.variations.name && <div>Variant: {it.variations.name}</div>}

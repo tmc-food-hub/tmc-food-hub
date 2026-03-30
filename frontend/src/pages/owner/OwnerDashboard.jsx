@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Navigate, Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, Clock, Settings, LogOut,
@@ -10,6 +10,7 @@ import {
     PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { useOwnerAuth } from '../../context/OwnerAuthContext';
+import { ThemeContext } from '../../components/ui/ThemeContext';
 import tmcLogo from '../../assets/imgs/tmc-foodhub-logo.svg';
 import styles from './OwnerDashboard.module.css';
 
@@ -78,6 +79,7 @@ const NAV_GROUPS = [
 function OwnerDashboard() {
     const { currentOwner, ownerStore, logout, updateStore, refreshOwner, loading } = useOwnerAuth();
     const { orders } = useOrders();
+    const { isDarkMode, toggleTheme } = useContext(ThemeContext);
     const navigate = useNavigate();
     const location = useLocation();
     const [active, setActive] = useState('overview');
@@ -295,7 +297,12 @@ function OwnerDashboard() {
                             >
                                 Account Settings
                             </button>
-                            <button className={styles.profileMenuBtn}>Dark Mode <ToggleLeft size={16} /></button>
+                            <button 
+                                className={styles.profileMenuBtn} 
+                                onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
+                            >
+                                {isDarkMode ? 'Light Mode' : 'Dark Mode'} {isDarkMode ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                            </button>
                             <div className={styles.profileMenuDivider}></div>
                             <button className={`${styles.profileMenuBtn} ${styles.profileMenuLogout}`} onClick={() => { logout(); navigate('/owner-login'); }}>
                                 <LogOut size={16} /> Logout
