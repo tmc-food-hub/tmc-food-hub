@@ -1448,7 +1448,7 @@
     gap: 4px;
 }
 
-.panelItemName {
+.panelItemTitle {
     font-size: .85rem;
     font-weight: 600;
     color: #111827;
@@ -2400,7 +2400,7 @@
     object-fit: cover;
 }
 
-.itemName {
+.inventoryItemTitle {
     font-weight: 700;
     font-size: .95rem;
 }
@@ -5845,7 +5845,7 @@
     object-fit: contain;
 }
 
-.itemName {
+.inventoryItemTitle {
     font-weight: 700;
     color: #111827;
     font-size: 0.9rem;

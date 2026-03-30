@@ -233,7 +233,7 @@ export default function InventorySection({ items = [], setItems, loading = false
                                                     <div className={styles.inventoryItemImgBadge}>
                                                         <img src={resolveMediaUrl(item.image)} alt={item.title} />
                                                     </div>
-                                                    <span className={styles.itemName}>{item.title}</span>
+                                                    <span className={styles.inventoryItemTitle}>{item.title}</span>
                                                 </div>
                                             </td>
                                             <td><span className={styles.itemCategory}>{item.category?.name || 'Uncategorized'}</span></td>

@@ -568,7 +568,7 @@ function StoreOperationsTab({ store, items = [], refreshInventory }) {
                                                     <div key={item.id} className={styles.blacklistItemRow}>
                                                         <div className={styles.blacklistItemInfo}>
                                                             <img src={resolveMediaUrl(item.image)} alt={item.title} className={styles.blacklistItemImage} />
-                                                            <span className={styles.blacklistItemName}>{item.title}</span>
+                                                            <span className={styles.blacklistItemTitle}>{item.title}</span>
                                                         </div>
                                                         <button
                                                             type="button"
