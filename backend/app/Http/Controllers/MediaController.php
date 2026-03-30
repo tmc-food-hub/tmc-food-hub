@@ -21,9 +21,39 @@ class MediaController extends Controller
             return $this->missingImageResponse($path);
         }
 
-        return Storage::disk('public')->response($resolvedPath, null, [
-            'Cache-Control' => 'public, max-age=31536000',
-        ]);
+        $disk = Storage::disk('public');
+
+        $extension = strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION));
+        $mimeType = match ($extension) {
+            'jpeg', 'jpg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'webp' => 'image/webp',
+            default => 'application/octet-stream',
+        };
+
+        return response()->stream(
+            function () use ($disk, $resolvedPath) {
+                $stream = $disk->readStream($resolvedPath);
+                
+                // Fallback to get() if readStream fails (some custom flysystem drivers don't support streams properly)
+                if ($stream === false || $stream === null) {
+                    echo $disk->get($resolvedPath);
+                    return;
+                }
+                
+                fpassthru($stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            },
+            200,
+            [
+                'Content-Type' => $mimeType,
+                'Cache-Control' => 'public, max-age=31536000',
+            ]
+        );
     }
 
     private function resolveExistingPath(string $path): ?string
