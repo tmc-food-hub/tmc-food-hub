@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\MediaPath;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
@@ -33,27 +34,22 @@ class MediaController extends Controller
             default => 'application/octet-stream',
         };
 
-        return response()->stream(
-            function () use ($disk, $resolvedPath) {
-                $stream = $disk->readStream($resolvedPath);
-                
-                // Fallback to get() if readStream fails (some custom flysystem drivers don't support streams properly)
-                if ($stream === false || $stream === null) {
-                    echo $disk->get($resolvedPath);
-                    return;
-                }
-                
-                fpassthru($stream);
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            },
-            200,
-            [
-                'Content-Type' => $mimeType,
-                'Cache-Control' => 'public, max-age=31536000',
-            ]
-        );
+        try {
+            $contents = $disk->get($resolvedPath);
+        } catch (\Throwable $exception) {
+            Log::warning('Unable to read media file from public disk.', [
+                'path' => $path,
+                'resolved_path' => $resolvedPath,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return $this->missingImageResponse($path);
+        }
+
+        return response($contents, 200, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
     }
 
     private function resolveExistingPath(string $path): ?string
@@ -73,7 +69,18 @@ class MediaController extends Controller
         }
 
         foreach (array_unique($candidates) as $candidate) {
-            if ($disk->exists($candidate)) {
+            try {
+                $exists = $disk->exists($candidate);
+            } catch (\Throwable $exception) {
+                Log::warning('Unable to inspect media candidate on public disk.', [
+                    'requested_path' => $path,
+                    'candidate' => $candidate,
+                    'error' => $exception->getMessage(),
+                ]);
+                continue;
+            }
+
+            if ($exists) {
                 return $candidate;
             }
         }
