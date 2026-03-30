@@ -3310,6 +3310,188 @@
     box-shadow: 0 0 0 2px rgba(153, 27, 27, 0.1);
 }
 
+.menuCategoryRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: start;
+}
+
+.menuCategoryDropdownWrap {
+    position: relative;
+}
+
+.menuCategoryTrigger {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%);
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.menuCategoryTrigger:hover {
+    border-color: #D1D5DB;
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
+}
+
+.menuCategoryTriggerOpen {
+    border-color: #991B1B;
+    box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.08);
+}
+
+.menuCategoryTriggerFilled {
+    background:
+        linear-gradient(180deg, #FFFFFF 0%, #FFF8F7 100%);
+}
+
+.menuCategoryTriggerCopy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.menuCategoryTriggerLabel {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menuCategoryTriggerMeta {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+.menuCategoryTriggerChevron {
+    color: #6B7280;
+    flex-shrink: 0;
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.menuCategoryTriggerChevronOpen {
+    transform: rotate(180deg);
+    color: #991B1B;
+}
+
+.menuCategoryDropdown {
+    position: absolute;
+    top: calc(100% + 0.55rem);
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(229, 231, 235, 0.95);
+    border-radius: 16px;
+    padding: 0.45rem;
+    box-shadow: 0 22px 50px rgba(17, 24, 39, 0.16);
+    z-index: 30;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.menuCategoryOption {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    padding: 0.8rem 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.menuCategoryOption:hover {
+    background: #FFF4F2;
+    transform: translateY(-1px);
+}
+
+.menuCategoryOptionActive {
+    background: linear-gradient(135deg, #991B1B 0%, #B91C1C 100%);
+    color: #FFFFFF;
+}
+
+.menuCategoryOptionCopy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    text-align: left;
+}
+
+.menuCategoryOptionName {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menuCategoryOptionMeta {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: inherit;
+    opacity: 0.72;
+}
+
+.menuCategoryOptionCheck {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    flex-shrink: 0;
+}
+
+.menuCategoryEmptyState {
+    padding: 0.95rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #6B7280;
+    text-align: center;
+    line-height: 1.45;
+}
+
+.menuCategoryAddBtn {
+    width: 48px;
+    height: 48px;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF4F2 100%);
+    color: #991B1B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    box-shadow: 0 8px 20px rgba(153, 27, 27, 0.08);
+}
+
+.menuCategoryAddBtn:hover {
+    border-color: #991B1B;
+    background: #FEF2F2;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(153, 27, 27, 0.12);
+}
+
 .menuFormRow2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
