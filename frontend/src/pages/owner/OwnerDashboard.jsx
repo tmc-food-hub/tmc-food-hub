@@ -401,7 +401,7 @@ function OwnerDashboard() {
                     {active === 'analytics' && <AnalyticsSection />}
                     {active === 'earnings' && <EarningsSection />}
                     {active === 'transactions' && <EarningsSection />}
-                    {active === 'payment-settings' && <PaymentSettings />}
+                    {active === 'payment-settings' && <PaymentSettings refreshOwner={refreshOwner} />}
                     {active === 'hours' && <HoursSection store={ownerStore} onUpdate={updateStore} />}
                     {active === 'settings' && (
                         <SettingsSection

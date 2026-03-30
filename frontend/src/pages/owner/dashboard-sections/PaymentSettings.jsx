@@ -3,7 +3,7 @@ import { Plus, AlertCircle, CreditCard, Landmark, Check, X, Wallet, Smartphone, 
 import api from '../../../api/axios';
 import styles from '../OwnerDashboard.module.css';
 
-function PaymentSettings() {
+function PaymentSettings({ refreshOwner }) {
     const [loading, setLoading] = useState(true);
     const [paymentData, setPaymentData] = useState(null);
     const [showMethodModal, setShowMethodModal] = useState(false);
@@ -126,6 +126,7 @@ function PaymentSettings() {
                 // Refresh data
                 const res = await api.get('/owner/payment-settings');
                 setPaymentData(res.data);
+                await refreshOwner?.();
                 setErrorMessage('');
                 setSaving(false);
             }, 1500);
@@ -159,6 +160,7 @@ function PaymentSettings() {
             await api.put('/owner/payment-settings', updates);
             const res = await api.get('/owner/payment-settings');
             setPaymentData(res.data);
+            await refreshOwner?.();
             setErrorMessage('');
         } catch (err) {
             console.error(err);

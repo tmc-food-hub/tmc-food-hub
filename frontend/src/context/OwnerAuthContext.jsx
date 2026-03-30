@@ -129,9 +129,22 @@ export function OwnerAuthProvider({ children }) {
             businessRegistrationNumber: currentOwner.business_registration_number || '',
             emailVerifiedAt: currentOwner.email_verified_at,
             operatingStatus: currentOwner.operating_status || 'open',
+            operating_status: currentOwner.operating_status || 'open',
             autoAcceptOrders: currentOwner.auto_accept_orders ?? true,
             manualConfirmation: currentOwner.manual_confirmation ?? false,
             defaultPrepTime: currentOwner.default_prep_time || 15,
+            acceptedPaymentMethods: currentOwner.accepted_payment_methods || [],
+            accepted_payment_methods: currentOwner.accepted_payment_methods || [],
+            gcashNumber: currentOwner.gcash_number || '',
+            gcash_number: currentOwner.gcash_number || '',
+            mayaNumber: currentOwner.maya_number || '',
+            maya_number: currentOwner.maya_number || '',
+            bankName: currentOwner.bank_name || '',
+            bank_name: currentOwner.bank_name || '',
+            bankAccountName: currentOwner.bank_account_name || '',
+            bank_account_name: currentOwner.bank_account_name || '',
+            bankAccountNumber: currentOwner.bank_account_number || '',
+            bank_account_number: currentOwner.bank_account_number || '',
         };
     }, [currentOwner]);
 

@@ -65,10 +65,20 @@ export default function OverviewSection({ store, orders, items = [], onNavigate 
     const [recentReviews, setRecentReviews] = useState([]);
 
     // Onboarding checklist config
+    const acceptedPaymentMethods = Array.isArray(store?.accepted_payment_methods)
+        ? store.accepted_payment_methods
+        : (Array.isArray(store?.acceptedPaymentMethods) ? store.acceptedPaymentMethods : []);
+    const operatingStatus = store?.operating_status || store?.operatingStatus || 'open';
     const hasLogo = !!store?.logo;
-    const hasPaymentMethod = store?.accepted_payment_methods?.length > 0 || !!store?.gcash_number || !!store?.maya_number || !!store?.bank_account_number;
+    const hasPaymentMethod = acceptedPaymentMethods.length > 0
+        || !!store?.gcash_number
+        || !!store?.gcashNumber
+        || !!store?.maya_number
+        || !!store?.mayaNumber
+        || !!store?.bank_account_number
+        || !!store?.bankAccountNumber;
     const hasMenuAndStocks = items.length > 0;
-    const isStoreOpen = store?.operating_status === 'open';
+    const isStoreOpen = operatingStatus === 'open';
 
     const checklistSteps = [
         { label: 'Add a restaurant logo', completed: hasLogo, action: () => onNavigate('settings') },
@@ -78,8 +88,7 @@ export default function OverviewSection({ store, orders, items = [], onNavigate 
     ];
 
     const completedStepsCount = checklistSteps.filter(s => s.completed).length;
-    const allStepsCompleted = completedStepsCount === checklistSteps.length;
-    const showOnboarding = !allStepsCompleted;
+    const showOnboarding = checklistSteps.some((step) => !step.completed);
 
     useEffect(() => {
         let active = true;
