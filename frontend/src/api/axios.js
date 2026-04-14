@@ -156,7 +156,7 @@ const REFRESH_ENDPOINTS = {
 const CLEANUP_KEYS = {
     customer: ['auth_token', 'auth_user', 'user_type'],
     owner: ['owner_auth_token', 'owner_auth_user', 'owner_user_type'],
-    admin: ['admin_auth_token'],
+    admin: ['admin_auth_token', 'admin_auth_user', 'admin_user_type'],
 };
 
 function clearGuardTokens(guard) {

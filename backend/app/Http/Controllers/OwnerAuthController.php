@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\OtpVerificationMail;
 use App\Models\EmailVerification;
 use App\Models\RestaurantOwner;
+use App\Models\SecuritySettings;
 use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -17,6 +18,30 @@ use Illuminate\Validation\ValidationException;
 
 class OwnerAuthController extends Controller
 {
+    private function enforcePasswordPolicy(string $password): void
+    {
+        $settings = SecuritySettings::getSettings();
+        $requirements = [];
+
+        if ((bool) ($settings->require_uppercase ?? true) && !preg_match('/[A-Z]/', $password)) {
+            $requirements[] = 'at least one uppercase letter';
+        }
+
+        if ((bool) ($settings->require_numbers ?? true) && !preg_match('/\d/', $password)) {
+            $requirements[] = 'at least one number';
+        }
+
+        if ((bool) ($settings->require_special_character ?? true) && !preg_match('/[^a-zA-Z0-9]/', $password)) {
+            $requirements[] = 'at least one special character';
+        }
+
+        if (!empty($requirements)) {
+            throw ValidationException::withMessages([
+                'password' => ['Password must include ' . implode(', ', $requirements) . '.'],
+            ]);
+        }
+    }
+
     /**
      * Send a 6-digit OTP to the provided email for owner registration.
      */
@@ -172,6 +197,8 @@ class OwnerAuthController extends Controller
             'privacy_accepted' => 'accepted',
             'merchant_agreement_accepted' => 'accepted',
         ]);
+
+        $this->enforcePasswordPolicy($validated['password']);
 
         $owner = RestaurantOwner::create([
             'name' => $validated['first_name'] . ' ' . $validated['last_name'],

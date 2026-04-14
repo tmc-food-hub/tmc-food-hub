@@ -29,6 +29,7 @@ Route::post('/owner/register', [OwnerAuthController::class, 'register']);
 Route::post('/owner/send-otp', [OwnerAuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
 Route::post('/admin/login', [AdminController::class, 'login']);
+Route::post('/admin/verify-2fa', [AdminController::class, 'verifyTwoFactor']);
 Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*');
 
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────

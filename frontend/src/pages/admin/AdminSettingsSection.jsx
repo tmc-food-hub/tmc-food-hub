@@ -1494,6 +1494,10 @@ function SecurityTab({ onRegisterSave }) {
         sms_emergency: true,
         session_timeout: '30 minutes',
         max_login_attempts: 5,
+        require_uppercase: true,
+        require_numbers: true,
+        require_special_character: true,
+        password_expiry_days: 90,
     });
 
     useEffect(() => {
@@ -1514,6 +1518,10 @@ function SecurityTab({ onRegisterSave }) {
                 sms_emergency: data.sms_emergency ?? true,
                 session_timeout: data.session_timeout || '30 minutes',
                 max_login_attempts: data.max_login_attempts || 5,
+                require_uppercase: data.require_uppercase ?? true,
+                require_numbers: data.require_numbers ?? true,
+                require_special_character: data.require_special_character ?? true,
+                password_expiry_days: data.password_expiry_days || 90,
             });
         } catch (err) {
             console.error('Error fetching security settings:', err);
@@ -1531,6 +1539,10 @@ function SecurityTab({ onRegisterSave }) {
                 sms_emergency: securitySettings.sms_emergency,
                 session_timeout: securitySettings.session_timeout,
                 max_login_attempts: securitySettings.max_login_attempts,
+                require_uppercase: securitySettings.require_uppercase,
+                require_numbers: securitySettings.require_numbers,
+                require_special_character: securitySettings.require_special_character,
+                password_expiry_days: securitySettings.password_expiry_days,
             });
             setSuccessMessage('Security settings saved successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -1558,6 +1570,8 @@ function SecurityTab({ onRegisterSave }) {
             </div>
         );
     }
+
+    const expiryFillWidth = `${Math.max(15, Math.min(100, Math.round((securitySettings.password_expiry_days / 180) * 100)))}%`;
 
     return (<>
         <h2 className={styles.sectionTitle}>Security Settings</h2>
@@ -1588,7 +1602,7 @@ function SecurityTab({ onRegisterSave }) {
                         </div>
                         <div className={styles.field}>
                             <label>Max Login Attempts</label>
-                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value))}>
+                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value, 10))}>
                                 <option value="3">3 attempts</option>
                                 <option value="5">5 attempts</option>
                                 <option value="10">10 attempts</option>
@@ -1612,12 +1626,31 @@ function SecurityTab({ onRegisterSave }) {
             <div className={styles.rightCol}>
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔑 Password Policy</h3>
-                    <div className={styles.pwPolicyItem}><span>Require Uppercase</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
-                    <div className={styles.pwPolicyItem}><span>Require Numbers</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
-                    <div className={styles.pwPolicyItem}><span>Require Special Character</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Uppercase</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_uppercase ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_uppercase')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Numbers</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_numbers ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_numbers')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Special Character</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_special_character ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_special_character')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.field} style={{ marginTop: '0.6rem' }}>
+                        <label>Password Expiry</label>
+                        <select value={securitySettings.password_expiry_days} onChange={(e) => handleSecurityChange('password_expiry_days', parseInt(e.target.value, 10))}>
+                            <option value="30">30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                            <option value="180">180 days</option>
+                            <option value="365">365 days</option>
+                        </select>
+                    </div>
                     <div className={styles.pwExpiry}>
-                        <div className={styles.pwExpiryHeader}><span>PASSWORD EXPIRY</span><span>90 days</span></div>
-                        <div className={styles.pwExpiryBar}><div className={styles.pwExpiryFill} /></div>
+                        <div className={styles.pwExpiryHeader}><span>PASSWORD EXPIRY</span><span>{securitySettings.password_expiry_days} days</span></div>
+                        <div className={styles.pwExpiryBar}><div className={styles.pwExpiryFill} style={{ width: expiryFillWidth }} /></div>
                     </div>
                 </div>
             </div>

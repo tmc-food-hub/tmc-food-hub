@@ -11,12 +11,15 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AdminController extends Controller
 {
@@ -64,10 +67,20 @@ class AdminController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        if ($this->isSessionExpired($admin)) {
+            $this->revokeCurrentAccessToken($admin);
+
+            return response()->json([
+                'message' => 'Session expired. Please log in again.',
+            ], 401);
+        }
+
         $permission = $this->requiredPermissionForMethod($method);
         if ($permission && !$this->hasPermission($admin, $permission)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+
+        $this->touchLastActive($admin);
 
         return null;
     }
@@ -92,6 +105,83 @@ class AdminController extends Controller
         }
     }
 
+    private function sessionTimeoutToMinutes(?string $sessionTimeout): int
+    {
+        $value = strtolower(trim((string) $sessionTimeout));
+
+        if ($value === '') {
+            return 30;
+        }
+
+        return match ($value) {
+            '15 minutes' => 15,
+            '30 minutes' => 30,
+            '1 hour' => 60,
+            default => (function () use ($value) {
+                if (preg_match('/^(\d+)\s*(minute|minutes|hour|hours)$/', $value, $matches)) {
+                    $num = (int) $matches[1];
+                    $unit = $matches[2];
+                    return str_starts_with($unit, 'hour') ? $num * 60 : $num;
+                }
+
+                return 30;
+            })(),
+        };
+    }
+
+    private function isSessionExpired(User $admin): bool
+    {
+        if (!$admin->last_active) {
+            return false;
+        }
+
+        $settings = SecuritySettings::getSettings();
+        $timeoutMinutes = $this->sessionTimeoutToMinutes($settings->session_timeout ?? '30 minutes');
+
+        return now()->diffInMinutes(\Carbon\Carbon::parse($admin->last_active)) >= $timeoutMinutes;
+    }
+
+    private function touchLastActive(User $admin): void
+    {
+        try {
+            $admin->last_active = now();
+            $admin->save();
+        } catch (\Exception $e) {
+            Log::warning('Failed to update admin last_active: ' . $e->getMessage());
+        }
+    }
+
+    private function loginAttemptCacheKey(Request $request): string
+    {
+        $email = strtolower(trim((string) $request->input('email', '')));
+        return 'admin_login_attempts:' . sha1($email . '|' . ($request->ip() ?? 'unknown'));
+    }
+
+    private function twoFactorCacheKey(User $admin): string
+    {
+        return 'admin_login_2fa:' . $admin->id;
+    }
+
+    private function issueAdminAuthResponse(User $admin): array
+    {
+        return [
+            'user' => $admin,
+            'token' => $admin->createToken('admin-auth-token')->plainTextToken,
+        ];
+    }
+
+    private function revokeCurrentAccessToken(?User $admin): void
+    {
+        if (!$admin) {
+            return;
+        }
+
+        $currentToken = $admin->currentAccessToken();
+        if ($currentToken instanceof PersonalAccessToken) {
+            $currentToken->delete();
+        }
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -99,17 +189,85 @@ class AdminController extends Controller
             'password' => 'required',
         ]);
 
+        $settings = SecuritySettings::getSettings();
+        $maxAttempts = max((int) ($settings->max_login_attempts ?? 5), 1);
+        $attemptCacheKey = $this->loginAttemptCacheKey($request);
+        $attempts = (int) Cache::get($attemptCacheKey, 0);
+
+        if ($attempts >= $maxAttempts) {
+            return response()->json([
+                'message' => 'Too many failed login attempts. Please wait 15 minutes before trying again.',
+            ], 429);
+        }
+
         $admin = User::where('email', $request->email)
             ->whereIn('role', $this->adminRoleNames())
             ->first();
 
         if (!$admin || !Hash::check($request->password, $admin->password)) {
+            $attempts++;
+            Cache::put($attemptCacheKey, $attempts, now()->addMinutes(15));
+
+            $remainingAttempts = max($maxAttempts - $attempts, 0);
+            $errorMessage = $remainingAttempts > 0
+                ? "The provided admin credentials are incorrect. {$remainingAttempts} attempt(s) remaining."
+                : 'Too many failed login attempts. Please wait 15 minutes before trying again.';
+
             throw ValidationException::withMessages([
-                'email' => ['The provided admin credentials are incorrect.'],
+                'email' => [$errorMessage],
             ]);
         }
 
-        $token = $admin->createToken('admin-auth-token')->plainTextToken;
+        if (strtolower((string) ($admin->status ?? 'active')) !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Your admin account is currently inactive. Please contact a super admin.'],
+            ]);
+        }
+
+        Cache::forget($attemptCacheKey);
+
+        if ((bool) ($settings->two_factor_auth ?? false)) {
+            $verificationCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            Cache::put($this->twoFactorCacheKey($admin), [
+                'code_hash' => Hash::make($verificationCode),
+                'attempts' => 0,
+            ], now()->addMinutes(10));
+
+            try {
+                Mail::raw(
+                    "Your TMC Food Hub admin login verification code is: {$verificationCode}\n\nThis code expires in 10 minutes.",
+                    function ($message) use ($admin) {
+                        $message->to($admin->email)->subject('Admin Login Verification Code');
+                    }
+                );
+            } catch (\Exception $e) {
+                Log::warning('Failed to send admin 2FA code: ' . $e->getMessage());
+
+                if (!app()->environment('local')) {
+                    return response()->json([
+                        'message' => 'Unable to send two-factor verification code. Please try again.',
+                    ], 500);
+                }
+
+                Log::info('Admin 2FA code (local fallback) for ' . $admin->email . ': ' . $verificationCode);
+            }
+
+            $this->logAdminActivity(
+                $admin,
+                'Auth',
+                'Requested two-factor verification for admin login',
+                'Authentication',
+                $request
+            );
+
+            return response()->json([
+                'requires_2fa' => true,
+                'email' => $admin->email,
+                'message' => 'A 2FA verification code has been sent to your email.',
+            ]);
+        }
+
+        $this->touchLastActive($admin);
 
         $this->logAdminActivity(
             $admin,
@@ -119,10 +277,80 @@ class AdminController extends Controller
             $request
         );
 
-        return response()->json([
-            'user' => $admin,
-            'token' => $token,
+        return response()->json($this->issueAdminAuthResponse($admin));
+    }
+
+    public function verifyTwoFactor(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
         ]);
+
+        $admin = User::where('email', $request->email)
+            ->whereIn('role', $this->adminRoleNames())
+            ->first();
+
+        if (!$admin) {
+            throw ValidationException::withMessages([
+                'email' => ['No admin account found for this email address.'],
+            ]);
+        }
+
+        if (strtolower((string) ($admin->status ?? 'active')) !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Your admin account is currently inactive. Please contact a super admin.'],
+            ]);
+        }
+
+        $twoFactorCacheKey = $this->twoFactorCacheKey($admin);
+        $challenge = Cache::get($twoFactorCacheKey);
+
+        if (!$challenge || empty($challenge['code_hash'])) {
+            throw ValidationException::withMessages([
+                'code' => ['No verification code found or it has expired. Please sign in again.'],
+            ]);
+        }
+
+        $attempts = (int) ($challenge['attempts'] ?? 0);
+        if ($attempts >= 5) {
+            Cache::forget($twoFactorCacheKey);
+            throw ValidationException::withMessages([
+                'code' => ['Too many invalid verification attempts. Please sign in again.'],
+            ]);
+        }
+
+        if (!Hash::check((string) $request->code, (string) $challenge['code_hash'])) {
+            $attempts++;
+
+            if ($attempts >= 5) {
+                Cache::forget($twoFactorCacheKey);
+                throw ValidationException::withMessages([
+                    'code' => ['Too many invalid verification attempts. Please sign in again.'],
+                ]);
+            }
+
+            $challenge['attempts'] = $attempts;
+            Cache::put($twoFactorCacheKey, $challenge, now()->addMinutes(10));
+
+            $remaining = 5 - $attempts;
+            throw ValidationException::withMessages([
+                'code' => ["Invalid verification code. {$remaining} attempt(s) remaining."],
+            ]);
+        }
+
+        Cache::forget($twoFactorCacheKey);
+        $this->touchLastActive($admin);
+
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged in to admin portal',
+            'Authentication',
+            $request
+        );
+
+        return response()->json($this->issueAdminAuthResponse($admin));
     }
 
     public function user(Request $request)
@@ -145,7 +373,7 @@ class AdminController extends Controller
             return $authError;
         }
 
-        $admin->currentAccessToken()->delete();
+        $this->revokeCurrentAccessToken($admin);
 
         $newToken = $admin->createToken('admin-auth-token')->plainTextToken;
 
@@ -167,9 +395,7 @@ class AdminController extends Controller
             $request
         );
 
-        if ($admin?->currentAccessToken()) {
-            $admin->currentAccessToken()->delete();
-        }
+        $this->revokeCurrentAccessToken($admin);
 
         return response()->json(['message' => 'Logged out successfully.']);
     }
@@ -2078,6 +2304,10 @@ class AdminController extends Controller
                     'sms_emergency' => $settings->sms_emergency,
                     'session_timeout' => $settings->session_timeout,
                     'max_login_attempts' => $settings->max_login_attempts,
+                    'require_uppercase' => $settings->require_uppercase ?? true,
+                    'require_numbers' => $settings->require_numbers ?? true,
+                    'require_special_character' => $settings->require_special_character ?? true,
+                    'password_expiry_days' => $settings->password_expiry_days ?? 90,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -2100,9 +2330,21 @@ class AdminController extends Controller
                 'sms_emergency' => 'sometimes|boolean',
                 'session_timeout' => 'sometimes|string',
                 'max_login_attempts' => 'sometimes|integer|min:1|max:20',
+                'require_uppercase' => 'sometimes|boolean',
+                'require_numbers' => 'sometimes|boolean',
+                'require_special_character' => 'sometimes|boolean',
+                'password_expiry_days' => 'sometimes|integer|min:1|max:365',
             ]);
 
             SecuritySettings::updateSettings($validated);
+
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                'Updated security settings and password policy',
+                'Security Settings',
+                $request
+            );
 
             return response()->json([
                 'message' => 'Security settings updated successfully'
