@@ -285,3 +285,7 @@
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 1200px) { .twoColWide { flex-direction: column; } .twoCol { grid-template-columns: 1fr; } .fieldGrid3 { grid-template-columns: 1fr 1fr; } .roleCardsGrid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 768px) { .settingsLayout { flex-direction: column; } .tabSidebar { width: 100%; flex-direction: row; overflow-x: auto; } .fieldGrid { grid-template-columns: 1fr; } .footer { flex-direction: column; gap: .65rem; text-align: center; } .roleCardsGrid { grid-template-columns: 1fr; } .themeGrid { grid-template-columns: 1fr; } .logsFilters { flex-wrap: wrap; } }
+
+/* --- Modals ---- */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 999; }
+.modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 8px; padding: 24px; max-width: 500px; width: 90%; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.2); }

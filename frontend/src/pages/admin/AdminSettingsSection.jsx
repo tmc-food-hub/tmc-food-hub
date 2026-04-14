@@ -938,6 +938,10 @@ function NotificationsTab({ onRegisterSave }) {
 function AdminManagementTab() {
     const [loading, setLoading] = useState(true);
     const [admins, setAdmins] = useState([]);
+    const [editingAdmin, setEditingAdmin] = useState(null);
+    const [deletingAdmin, setDeletingAdmin] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({ name: '', email: '', role: 'moderator', status: 'active' });
 
     useEffect(() => {
         fetchAdmins();
@@ -952,6 +956,44 @@ function AdminManagementTab() {
             console.error('Error fetching admins:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleEditClick = (admin) => {
+        setEditingAdmin(admin);
+        setFormData({
+            name: admin.name,
+            email: admin.email,
+            role: admin.role,
+            status: admin.status,
+        });
+    };
+
+    const handleSaveEdit = async () => {
+        try {
+            setSaving(true);
+            await api.put(`/admin/admins/${editingAdmin.id}`, formData);
+            setEditingAdmin(null);
+            fetchAdmins();
+        } catch (err) {
+            console.error('Error updating admin:', err);
+            alert(err.response?.data?.message || 'Error updating admin');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            setSaving(true);
+            await api.delete(`/admin/admins/${deletingAdmin.id}`);
+            setDeletingAdmin(null);
+            fetchAdmins();
+        } catch (err) {
+            console.error('Error deleting admin:', err);
+            alert(err.response?.data?.message || 'Error deleting admin');
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -978,12 +1020,111 @@ function AdminManagementTab() {
                             <td><span className={`${styles.rolePill} ${styles[a.roleClass]}`}>{a.role}</span></td>
                             <td><span className={`${styles.statusDot} ${styles[a.statusClass]}`}>{a.status}</span></td>
                             <td className={styles.dateCol}>{a.lastActive}</td>
-                            <td><div className={styles.adminActions}><button className={styles.editIcon}><Pencil size={14} /></button><button className={styles.deleteIcon}><Trash2 size={14} /></button></div></td>
+                            <td><div className={styles.adminActions}><button className={styles.editIcon} onClick={() => handleEditClick(a)} title="Edit"><Pencil size={14} /></button><button className={styles.deleteIcon} onClick={() => setDeletingAdmin(a)} title="Delete"><Trash2 size={14} /></button></div></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
+
+        {/* Edit Admin Modal */}
+        {editingAdmin && (
+            <>
+                <div className={styles.modalOverlay} onClick={() => setEditingAdmin(null)} />
+                <div className={styles.modal} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '8px', padding: '24px', maxWidth: '500px', width: '90%', zIndex: 1000, boxShadow: '0 20px 25px rgba(0,0,0,0.2)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: '700' }}>Edit Admin</h3>
+                    <div style={{ display: 'grid', gap: '16px', marginBottom: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Name *</label>
+                            <input 
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Email *</label>
+                            <input 
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Role</label>
+                            <select 
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            >
+                                <option value="admin">Admin</option>
+                                <option value="moderator">Moderator</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Status</label>
+                            <select 
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button 
+                            onClick={() => setEditingAdmin(null)}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: '1px solid #E5E7EB', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleSaveEdit}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#22c55e', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '14px', opacity: saving ? 0.7 : 1 }}
+                        >
+                            {saving ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deletingAdmin && (
+            <>
+                <div className={styles.modalOverlay} onClick={() => setDeletingAdmin(null)} />
+                <div className={styles.modal} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '8px', padding: '24px', maxWidth: '400px', width: '90%', zIndex: 1000, boxShadow: '0 20px 25px rgba(0,0,0,0.2)' }}>
+                    <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: '700', color: '#DC2626' }}>Delete Admin</h3>
+                    <p style={{ margin: '0 0 24px', color: '#6B7280', fontSize: '14px' }}>
+                        Are you sure you want to delete <strong>{deletingAdmin.name}</strong>? This action cannot be undone.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button 
+                            onClick={() => setDeletingAdmin(null)}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: '1px solid #E5E7EB', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleDeleteConfirm}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#DC2626', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '14px', opacity: saving ? 0.7 : 1 }}
+                        >
+                            {saving ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                </div>
+            </>
+        )}
     </>);
 }
 
