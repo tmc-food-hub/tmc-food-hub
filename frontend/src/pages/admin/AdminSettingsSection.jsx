@@ -1330,21 +1330,50 @@ function RolesPermissionsTab({ onRegisterSave }) {
 function ActivityLogsTab() {
     const [loading, setLoading] = useState(true);
     const [logs, setLogs] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
+    const [filters, setFilters] = useState({
+        search: '',
+        role: 'all',
+        action: 'all',
+        category: 'all',
+    });
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setFilters(prev => ({ ...prev, search: searchInput.trim() }));
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     useEffect(() => {
         fetchActivityLogs();
-    }, []);
+    }, [filters.search, filters.role, filters.action, filters.category]);
 
     const fetchActivityLogs = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/admin/activity-logs');
+            const params = {};
+            if (filters.search) params.search = filters.search;
+            if (filters.role !== 'all') params.role = filters.role;
+            if (filters.action !== 'all') params.action = filters.action;
+            if (filters.category !== 'all') params.category = filters.category;
+
+            const response = await api.get('/admin/activity-logs', { params });
             setLogs(response.data.data || []);
         } catch (err) {
             console.error('Error fetching activity logs:', err);
+            setLogs([]);
         } finally {
             setLoading(false);
         }
+    };
+
+    const formatRole = (role) => {
+        if (!role) return 'Unknown';
+        return String(role)
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
     };
 
     if (loading) {
@@ -1361,9 +1390,46 @@ function ActivityLogsTab() {
         <p className={styles.sectionSub}>Monitor all administrative actions across the platform. This log is read-only for security and compliance purposes.</p>
 
         <div className={styles.logsFilters}>
-            <div className={styles.logsSearch}><span className={styles.logsSearchIcon}>🔍</span><input placeholder="Search admin..." /></div>
-            <select className={styles.logsSelect}><option>All Roles</option></select>
-            <select className={styles.logsSelect}><option>All Actions</option></select>
+            <div className={styles.logsSearch}>
+                <span className={styles.logsSearchIcon}>🔍</span>
+                <input
+                    placeholder="Search admin, page, action..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                />
+            </div>
+            <select
+                className={styles.logsSelect}
+                value={filters.role}
+                onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
+            >
+                <option value="all">All Roles</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+                <option value="analyst">Analyst</option>
+                <option value="viewer">Viewer</option>
+            </select>
+            <select
+                className={styles.logsSelect}
+                value={filters.action}
+                onChange={(e) => setFilters(prev => ({ ...prev, action: e.target.value }))}
+            >
+                <option value="all">All Actions</option>
+                <option value="Access">Access</option>
+                <option value="Update">Update</option>
+                <option value="Delete">Delete</option>
+                <option value="Auth">Auth</option>
+            </select>
+            <select
+                className={styles.logsSelect}
+                value={filters.category}
+                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            >
+                <option value="all">All Categories</option>
+                <option value="admin_action">Admin Actions</option>
+                <option value="auth_session">Login / Logout</option>
+            </select>
             <button className={styles.logsExportBtn}><span>↓</span> Export</button>
         </div>
 
@@ -1371,16 +1437,38 @@ function ActivityLogsTab() {
             <table className={styles.logsTable}>
                 <thead><tr><th>Admin</th><th>Action Description</th><th>Page/Module</th><th>Masked IP</th><th>Device</th><th>Timestamp</th></tr></thead>
                 <tbody>
-                    {logs.map((l) => (
-                        <tr key={l.id}>
-                            <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{l.name.split(' ').map(x => x[0]).join('')}</div><div><div className={styles.adminName}>{l.name}</div><div className={styles.adminEmail}>{l.role}</div></div></div></td>
-                            <td><span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span><div className={styles.logActionDesc}>{l.desc}</div></td>
-                            <td className={styles.logModule}>{l.page}</td>
-                            <td className={styles.logIp}>{l.ip}</td>
-                            <td className={styles.logDevice}>{l.device}</td>
-                            <td className={styles.logTime}>{l.time}</td>
+                    {logs.length === 0 ? (
+                        <tr>
+                            <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#6B7280', fontSize: '13px' }}>
+                                No activity logs matched your current filters.
+                            </td>
                         </tr>
-                    ))}
+                    ) : (
+                        logs.map((l) => (
+                            <tr key={l.id}>
+                                <td>
+                                    <div className={styles.adminCell}>
+                                        <div className={styles.adminAvatar}>{l.name?.split(' ').map(x => x[0]).join('') || 'A'}</div>
+                                        <div>
+                                            <div className={styles.adminName}>{l.name}</div>
+                                            <div className={styles.adminEmail}>{l.roleLabel || formatRole(l.role)}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span>
+                                    <div className={styles.logActionDesc}>{l.desc}</div>
+                                    <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
+                                        {(l.categoryLabel || 'Admin Actions')} • {(l.eventType || l.action)}
+                                    </div>
+                                </td>
+                                <td className={styles.logModule}>{l.page}</td>
+                                <td className={styles.logIp}>{l.ip}</td>
+                                <td className={styles.logDevice}>{l.device}</td>
+                                <td className={styles.logTime}>{l.time}</td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
         </div>

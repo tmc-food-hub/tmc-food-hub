@@ -72,6 +72,26 @@ class AdminController extends Controller
         return null;
     }
 
+    private function logAdminActivity(?User $admin, string $action, string $description, string $page, ?Request $request = null): void
+    {
+        if (!$admin) {
+            return;
+        }
+
+        try {
+            ActivityLog::logAction(
+                $admin->id,
+                $action,
+                $description,
+                $page,
+                $request?->ip(),
+                $request?->userAgent()
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to write activity log: ' . $e->getMessage());
+        }
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -90,6 +110,14 @@ class AdminController extends Controller
         }
 
         $token = $admin->createToken('admin-auth-token')->plainTextToken;
+
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged in to admin portal',
+            'Authentication',
+            $request
+        );
 
         return response()->json([
             'user' => $admin,
@@ -130,6 +158,14 @@ class AdminController extends Controller
     public function logout(Request $request)
     {
         $admin = $request->user();
+
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged out of admin portal',
+            'Authentication',
+            $request
+        );
 
         if ($admin?->currentAccessToken()) {
             $admin->currentAccessToken()->delete();
@@ -1688,6 +1724,14 @@ class AdminController extends Controller
 
             $adminToUpdate->update($validated);
 
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                "Updated admin account {$adminToUpdate->email}",
+                'Admin Management',
+                $request
+            );
+
             return response()->json([
                 'message' => 'Admin updated successfully',
                 'data' => [
@@ -1726,7 +1770,17 @@ class AdminController extends Controller
                 return response()->json(['message' => 'Can only delete admin users'], 422);
             }
 
+            $deletedEmail = $adminToDelete->email;
+
             $adminToDelete->delete();
+
+            $this->logAdminActivity(
+                $admin,
+                'Delete',
+                "Deleted admin account {$deletedEmail}",
+                'Admin Management',
+                $request
+            );
 
             return response()->json([
                 'message' => 'Admin deleted successfully',
@@ -1877,6 +1931,14 @@ class AdminController extends Controller
                 }
             }
 
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                'Updated roles and permissions matrix',
+                'Roles & Permissions',
+                $request
+            );
+
             return response()->json([
                 'message' => 'Role permissions updated successfully',
             ]);
@@ -1896,15 +1958,48 @@ class AdminController extends Controller
         }
 
         try {
-            $logs = ActivityLog::with('admin')
+            $search = trim((string) $request->query('search', ''));
+            $role = strtolower(trim((string) $request->query('role', 'all')));
+            $action = trim((string) $request->query('action', 'all'));
+            $category = strtolower(trim((string) $request->query('category', 'all')));
+
+            $query = ActivityLog::with('admin');
+
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('description', 'like', "%{$search}%")
+                        ->orWhere('page', 'like', "%{$search}%")
+                        ->orWhere('action', 'like', "%{$search}%")
+                        ->orWhereHas('admin', function ($adminQuery) use ($search) {
+                            $adminQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('role', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($role !== '' && $role !== 'all') {
+                $query->whereHas('admin', function ($adminQuery) use ($role) {
+                    $adminQuery->where('role', $role);
+                });
+            }
+
+            if ($action !== '' && strtolower($action) !== 'all') {
+                $query->where('action', $action);
+            }
+
+            $logs = $query
                 ->orderBy('created_at', 'desc')
-                ->limit(50)
+                ->limit(200)
                 ->get()
                 ->map(function ($log) {
+                    [$categoryKey, $categoryLabel, $eventType] = $this->categorizeActivity($log->action ?? 'Access', $log->description ?? '');
+
                     return [
                         'id' => $log->id,
-                        'name' => $log->admin->name,
-                        'role' => $log->admin->role,
+                        'name' => $log->admin?->name ?? 'Unknown Admin',
+                        'role' => $log->admin?->role ?? 'unknown',
+                        'roleLabel' => $this->formatAdminRole($log->admin?->role ?? 'unknown'),
                         'action' => $log->action,
                         'actionClass' => $this->getActionClass($log->action),
                         'desc' => $log->description,
@@ -1912,14 +2007,36 @@ class AdminController extends Controller
                         'ip' => $this->maskIp($log->ip_address),
                         'device' => $log->device ?? 'Unknown',
                         'time' => $log->created_at->format('M d, Y. g:i:s A'),
+                        'categoryKey' => $categoryKey,
+                        'categoryLabel' => $categoryLabel,
+                        'eventType' => $eventType,
                     ];
                 });
 
-            return response()->json(['data' => $logs]);
+            if ($category !== '' && $category !== 'all') {
+                $logs = $logs->filter(function ($log) use ($category) {
+                    return ($log['categoryKey'] ?? '') === $category;
+                })->values();
+            }
+
+            return response()->json(['data' => $logs->values()]);
         } catch (\Exception $e) {
             Log::error('Error fetching activity logs: ' . $e->getMessage());
             return response()->json(['message' => 'Error fetching activity logs'], 500);
         }
+    }
+
+    private function categorizeActivity(string $action, ?string $description = null): array
+    {
+        $desc = strtolower($description ?? '');
+        $isSessionEvent = $action === 'Auth' && (str_contains($desc, 'logged in') || str_contains($desc, 'logged out'));
+
+        if ($isSessionEvent) {
+            $eventType = str_contains($desc, 'logged out') ? 'Logout' : 'Login';
+            return ['auth_session', 'Login / Logout', $eventType];
+        }
+
+        return ['admin_action', 'Admin Actions', $action];
     }
 
     private function getActionClass($action): string
