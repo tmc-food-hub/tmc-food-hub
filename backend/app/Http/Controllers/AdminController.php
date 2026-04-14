@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
@@ -1629,13 +1630,25 @@ class AdminController extends Controller
         }
 
         try {
-            $validated = $request->validate([
+            // Get raw data and normalize role to lowercase
+            $data = $request->all();
+            if (isset($data['role'])) {
+                $data['role'] = strtolower($data['role']);
+            }
+
+            // Validate using the normalized data
+            $validator = Validator::make($data, [
                 'name' => 'sometimes|string|max:255',
                 'email' => 'sometimes|email|unique:users,email,' . $id,
-                'role' => 'sometimes|in:admin,moderator,viewer',
+                'role' => 'sometimes|in:admin,moderator,viewer,analyst,super_admin',
                 'status' => 'sometimes|in:Active,Inactive,Suspended',
             ]);
 
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            $validated = $validator->validated();
             $adminToUpdate = User::findOrFail($id);
 
             // Check if admin is trying to edit themselves
