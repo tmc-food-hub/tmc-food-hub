@@ -128,6 +128,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/settings/general', [AdminController::class, 'updateGeneralSettings']);
     Route::put('/settings/commission', [AdminController::class, 'updateCommissionSettings']);
     Route::put('/settings/notifications', [AdminController::class, 'updateNotificationSettings']);
+    Route::post('/upload-logo', [AdminController::class, 'uploadLogo']);
+    Route::post('/upload-favicon', [AdminController::class, 'uploadFavicon']);
 
     // Admin Management
     Route::get('/admins', [AdminController::class, 'getAdmins']);

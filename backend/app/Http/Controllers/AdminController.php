@@ -11,8 +11,10 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
@@ -1503,6 +1505,8 @@ class AdminController extends Controller
                 'currency' => 'sometimes|in:PHP,USD,EUR',
                 'language' => 'sometimes|in:English,Filipino',
                 'timezone' => 'sometimes|timezone',
+                'logo_url' => 'sometimes|nullable|string|max:255',
+                'favicon_url' => 'sometimes|nullable|string|max:255',
             ]);
 
             $settings = PlatformSettings::updateGeneral($validated);
@@ -1877,6 +1881,90 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             Log::error('Error updating security settings: ' . $e->getMessage());
             return response()->json(['message' => 'Error updating security settings'], 500);
+        }
+    }
+
+    public function uploadLogo(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'logo' => 'required|image|mimes:png,jpeg,jpg,gif,webp,svg,bmp,tiff,ico|max:5120', // 5MB
+            ]);
+
+            $file = $request->file('logo');
+            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Ensure branding directory exists
+            $brandingDir = public_path('branding');
+            if (!file_exists($brandingDir)) {
+                mkdir($brandingDir, 0755, true);
+            }
+            
+            // Store directly in public directory
+            $file->move($brandingDir, $filename);
+            $url = '/branding/' . $filename;
+
+            // Update PlatformSettings
+            PlatformSettings::updateGeneral(['logo_url' => $url]);
+
+            return response()->json([
+                'message' => 'Logo uploaded successfully',
+                'logo_url' => $url,
+                'file' => $filename,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error uploading logo: ' . $e->getMessage());
+            return response()->json(['message' => 'Error uploading logo'], 500);
+        }
+    }
+
+    public function uploadFavicon(Request $request)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'favicon' => 'required|image|mimes:png,jpeg,jpg,gif,webp,svg,ico,x-icon|max:5120', // 5MB
+            ]);
+
+            $file = $request->file('favicon');
+            $filename = 'favicon_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Ensure branding directory exists
+            $brandingDir = public_path('branding');
+            if (!file_exists($brandingDir)) {
+                mkdir($brandingDir, 0755, true);
+            }
+            
+            // Store directly in public directory
+            $file->move($brandingDir, $filename);
+            $url = '/branding/' . $filename;
+
+            // Update PlatformSettings
+            PlatformSettings::updateGeneral(['favicon_url' => $url]);
+
+            return response()->json([
+                'message' => 'Favicon uploaded successfully',
+                'favicon_url' => $url,
+                'file' => $filename,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error uploading favicon: ' . $e->getMessage());
+            return response()->json(['message' => 'Error uploading favicon'], 500);
         }
     }
 }

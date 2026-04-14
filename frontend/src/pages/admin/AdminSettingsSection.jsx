@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import {
     Settings, CreditCard, Wallet, Bell, UserCog, Shield, FileText, Lock, Palette,
-    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp, Loader
+    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp, Loader, AlertCircle
 } from 'lucide-react';
 import api from '../../api/axios';
 import styles from './AdminSettingsSection.module.css';
+
+// Comprehensive timezone list
+const TIMEZONES = [
+    'UTC', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Lagos', 'Africa/Nairobi', 'Africa/Casablanca',
+    'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto',
+    'America/Mexico_City', 'America/Sao_Paulo', 'America/Buenos_Aires', 'America/Bogota', 'America/Lima',
+    'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Tokyo',
+    'Asia/Seoul', 'Asia/Manila', 'Asia/Jakarta', 'Asia/Yangon', 'Asia/Karachi', 'Asia/Tehran',
+    'Asia/Jerusalem', 'Asia/Moscow', 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane',
+    'Australia/Perth', 'Australia/Adelaide', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
+    'Europe/Madrid', 'Europe/Amsterdam', 'Europe/Rome', 'Europe/Vienna', 'Europe/Warsaw',
+    'Europe/Istanbul', 'Europe/Athens', 'Europe/Helsinki', 'Europe/Dublin', 'Europe/Lisbon',
+    'Europe/Zurich', 'Europe/Brussels', 'Europe/Budapest', 'Europe/Prague', 'Europe/Stockholm',
+    'Europe/Copenhagen', 'Europe/Oslo', 'Europe/Bucharest', 'Europe/Sofia', 'Europe/Zagreb',
+    'Europe/Belgrade', 'Europe/Skopje', 'Europe/Tirana', 'Europe/Nicosia', 'Europe/Riga',
+    'Europe/Tallin', 'Europe/Vilnius', 'Europe/Minsk', 'Europe/Chisinau', 'Europe/Johannesburg',
+    'Pacific/Auckland', 'Pacific/Fiji', 'Pacific/Tongatapu', 'Pacific/Port_Moresby', 'Pacific/Honolulu',
+    'Indian/Mauritius', 'Indian/Maldives', 'Indian/Reunion', 'Indian/Cocos', 'Indian/Christmas'
+].sort();
 
 const TABS = [
     { key: 'general', label: 'General', icon: <Settings size={15} /> },
@@ -19,10 +38,16 @@ const TABS = [
 ];
 
 /* ─── General Tab ───────────────────────────────────────────────────────────── */
-function GeneralTab() {
+function GeneralTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [faviconPreview, setFaviconPreview] = useState(null);
+    const [logoFile, setLogoFile] = useState(null);
+    const [faviconFile, setFaviconFile] = useState(null);
     const [settings, setSettings] = useState({
         platform_status: 'live',
         platform_name: 'TMC Foodhub',
@@ -32,15 +57,22 @@ function GeneralTab() {
         currency: 'PHP',
         language: 'English',
         timezone: 'Asia/Manila',
+        logo_url: null,
+        favicon_url: null,
     });
 
     useEffect(() => {
         fetchSettings();
+        // Register save handler with parent
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveGeneral);
+        }
     }, []);
 
     const fetchSettings = async () => {
         try {
             setLoading(true);
+            setErrorMessage('');
             const response = await api.get('/admin/settings');
             const data = response.data.data;
             setSettings({
@@ -52,32 +84,132 @@ function GeneralTab() {
                 currency: data.currency || 'PHP',
                 language: data.language || 'English',
                 timezone: data.timezone || 'Asia/Manila',
+                logo_url: data.logo_url || null,
+                favicon_url: data.favicon_url || null,
             });
+            if (data.logo_url) setLogoPreview(data.logo_url);
+            if (data.favicon_url) setFaviconPreview(data.favicon_url);
         } catch (err) {
             console.error('Error fetching settings:', err);
+            setErrorMessage('Failed to load settings. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
+    const validateForm = () => {
+        const errors = {};
+        setFieldErrors({});
+        
+        if (!settings.platform_name?.trim()) errors.platform_name = 'Platform name is required';
+        if (!settings.support_email?.trim()) errors.support_email = 'Support email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.support_email)) errors.support_email = 'Invalid email format';
+        if (!settings.tagline?.trim()) errors.tagline = 'Tagline is required';
+        if (!settings.phone_number?.trim()) errors.phone_number = 'Phone number is required';
+        
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return false;
+        }
+        return true;
+    };
+
+    const handleFileSelect = (file, type) => {
+        if (!file) return;
+        
+        const allowedMimes = [
+            'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml',
+            'image/bmp', 'image/tiff', 'image/x-icon', 'image/vnd.microsoft.icon'
+        ];
+        if (!allowedMimes.includes(file.type)) {
+            setFieldErrors(p => ({ ...p, [type]: 'Unsupported format. Use: PNG, JPEG, GIF, WebP, SVG, BMP, TIFF, or ICO (max 5MB)' }));
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setFieldErrors(p => ({ ...p, [type]: 'File size must be under 5MB' }));
+            return;
+        }
+        
+        setFieldErrors(p => ({ ...p, [type]: '' }));
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (type === 'logo') {
+                setLogoPreview(e.target.result);
+                setLogoFile(file);
+            } else {
+                setFaviconPreview(e.target.result);
+                setFaviconFile(file);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSaveGeneral = async () => {
+        if (!validateForm()) return;
+        
         try {
             setSaving(true);
+            setErrorMessage('');
+            const uploadPromises = [];
+            
+            // Upload logo if selected
+            if (logoFile) {
+                const logoForm = new FormData();
+                logoForm.append('logo', logoFile);
+                uploadPromises.push(
+                    api.post('/admin/upload-logo', logoForm, { 
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => ({ type: 'logo', data: res.data }))
+                );
+            }
+            
+            // Upload favicon if selected
+            if (faviconFile) {
+                const faviconForm = new FormData();
+                faviconForm.append('favicon', faviconFile);
+                uploadPromises.push(
+                    api.post('/admin/upload-favicon', faviconForm, { 
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => ({ type: 'favicon', data: res.data }))
+                );
+            }
+            
+            // Wait for uploads if any
+            let updatedSettings = { ...settings };
+            if (uploadPromises.length > 0) {
+                const uploadResults = await Promise.all(uploadPromises);
+                uploadResults.forEach(result => {
+                    if (result.type === 'logo' && result.data?.logo_url) {
+                        updatedSettings.logo_url = result.data.logo_url;
+                        setLogoPreview(result.data.logo_url);
+                    }
+                    if (result.type === 'favicon' && result.data?.favicon_url) {
+                        updatedSettings.favicon_url = result.data.favicon_url;
+                        setFaviconPreview(result.data.favicon_url);
+                    }
+                });
+                setLogoFile(null);
+                setFaviconFile(null);
+                setSettings(updatedSettings);
+            }
+            
             await api.put('/admin/settings/general', {
-                platform_status: settings.platform_status,
-                platform_name: settings.platform_name,
-                tagline: settings.tagline,
-                support_email: settings.support_email,
-                phone_number: settings.phone_number,
-                currency: settings.currency,
-                language: settings.language,
-                timezone: settings.timezone,
+                platform_status: updatedSettings.platform_status,
+                platform_name: updatedSettings.platform_name,
+                tagline: updatedSettings.tagline,
+                support_email: updatedSettings.support_email,
+                phone_number: updatedSettings.phone_number,
+                currency: updatedSettings.currency,
+                language: updatedSettings.language,
+                timezone: updatedSettings.timezone,
+                logo_url: updatedSettings.logo_url,
+                favicon_url: updatedSettings.favicon_url,
             });
             setSuccessMessage('General settings saved successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             console.error('Error saving settings:', err);
-            alert('Failed to save settings');
+            setErrorMessage(err.response?.data?.message || 'Failed to save settings. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -86,6 +218,12 @@ function GeneralTab() {
     const handleInputChange = (field, value) => {
         setSettings(prev => ({ ...prev, [field]: value }));
     };
+
+    const renderFieldError = (field) => fieldErrors[field] && (
+        <div style={{ color: '#DC2626', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <AlertCircle size={12} /> {fieldErrors[field]}
+        </div>
+    );
 
     if (loading) {
         return (
@@ -103,6 +241,11 @@ function GeneralTab() {
         {successMessage && (
             <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
                 ✓ {successMessage}
+            </div>
+        )}
+        {errorMessage && (
+            <div style={{ padding: '12px 16px', background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: '6px', marginBottom: '20px', color: '#991B1B', fontSize: '13px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} /> {errorMessage}
             </div>
         )}
 
@@ -134,30 +277,38 @@ function GeneralTab() {
                         <label>Platform Name</label>
                         <input 
                             value={settings.platform_name} 
-                            onChange={(e) => handleInputChange('platform_name', e.target.value)} 
+                            onChange={(e) => { handleInputChange('platform_name', e.target.value); setFieldErrors(p => ({ ...p, platform_name: '' })); }} 
+                            style={{ borderColor: fieldErrors.platform_name ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('platform_name')}
                     </div>
                     <div className={styles.field}>
                         <label>Tagline</label>
                         <input 
                             value={settings.tagline} 
-                            onChange={(e) => handleInputChange('tagline', e.target.value)} 
+                            onChange={(e) => { handleInputChange('tagline', e.target.value); setFieldErrors(p => ({ ...p, tagline: '' })); }} 
+                            style={{ borderColor: fieldErrors.tagline ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('tagline')}
                     </div>
                     <div className={styles.field}>
                         <label>Support Email</label>
                         <input 
                             type="email"
                             value={settings.support_email} 
-                            onChange={(e) => handleInputChange('support_email', e.target.value)} 
+                            onChange={(e) => { handleInputChange('support_email', e.target.value); setFieldErrors(p => ({ ...p, support_email: '' })); }} 
+                            style={{ borderColor: fieldErrors.support_email ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('support_email')}
                     </div>
                     <div className={styles.field}>
                         <label>Phone Number</label>
                         <input 
                             value={settings.phone_number} 
-                            onChange={(e) => handleInputChange('phone_number', e.target.value)} 
+                            onChange={(e) => { handleInputChange('phone_number', e.target.value); setFieldErrors(p => ({ ...p, phone_number: '' })); }} 
+                            style={{ borderColor: fieldErrors.phone_number ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('phone_number')}
                     </div>
                 </div>
             </div>
@@ -169,17 +320,53 @@ function GeneralTab() {
                     <div className={styles.brandItem}>
                         <div className={styles.brandLabel}>Primary Logo</div>
                         <div className={styles.logoBox}>
-                            <div className={styles.logoPlaceholder}>🍔</div>
+                            {logoPreview ? (
+                                <img src={logoPreview} alt="Logo preview" style={{ maxWidth: '100%', maxHeight: '80px' }} />
+                            ) : (
+                                <div className={styles.logoPlaceholder}>🍔</div>
+                            )}
                         </div>
-                        <span className={styles.brandHint}>Recommended size: 512×128px. Transparent PNG.</span>
+                        <input 
+                            type="file" 
+                            accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/bmp,image/tiff,image/x-icon"
+                            onChange={(e) => handleFileSelect(e.target.files?.[0], 'logo')}
+                            style={{ display: 'none' }}
+                            id="logo-input"
+                        />
+                        <button 
+                            onClick={() => document.getElementById('logo-input').click()}
+                            className={styles.replaceBtn}
+                            style={{ marginTop: '8px' }}
+                        >
+                            Upload Logo
+                        </button>
+                        {renderFieldError('logo')}
+                        <span className={styles.brandHint}>Recommended size: 512×128px. PNG, JPEG, GIF (max 5MB)</span>
                     </div>
                     <div className={styles.brandItem}>
                         <div className={styles.brandLabel}>Favicon</div>
                         <div className={styles.faviconRow}>
-                            <div className={styles.faviconBox}>🍔</div>
-                            <button className={styles.replaceBtn}>Replace Icon</button>
+                            {faviconPreview ? (
+                                <img src={faviconPreview} alt="Favicon preview" style={{ maxWidth: '40px', maxHeight: '40px' }} />
+                            ) : (
+                                <div className={styles.faviconBox}>🍔</div>
+                            )}
+                            <input 
+                                type="file" 
+                                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon"
+                                onChange={(e) => handleFileSelect(e.target.files?.[0], 'favicon')}
+                                style={{ display: 'none' }}
+                                id="favicon-input"
+                            />
+                            <button 
+                                onClick={() => document.getElementById('favicon-input').click()}
+                                className={styles.replaceBtn}
+                            >
+                                Replace Icon
+                            </button>
                         </div>
-                        <span className={styles.brandHint}>ICO, PNG (32×32px)</span>
+                        {renderFieldError('favicon')}
+                        <span className={styles.brandHint}>ICO, PNG (32×32px, max 5MB)</span>
                     </div>
                 </div>
             </div>
@@ -195,6 +382,9 @@ function GeneralTab() {
                         <option>PHP</option>
                         <option>USD</option>
                         <option>EUR</option>
+                        <option>GBP</option>
+                        <option>JPY</option>
+                        <option>AUD</option>
                     </select>
                 </div>
                 <div className={styles.field}>
@@ -202,14 +392,17 @@ function GeneralTab() {
                     <select value={settings.language} onChange={(e) => handleInputChange('language', e.target.value)}>
                         <option>English</option>
                         <option>Filipino</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                        <option>German</option>
                     </select>
                 </div>
                 <div className={styles.field}>
                     <label>Timezone</label>
                     <select value={settings.timezone} onChange={(e) => handleInputChange('timezone', e.target.value)}>
-                        <option>Asia/Manila (GMT+8)</option>
-                        <option>UTC</option>
-                        <option>America/New_York</option>
+                        {TIMEZONES.map(tz => (
+                            <option key={tz} value={tz}>{tz}</option>
+                        ))}
                     </select>
                 </div>
             </div>
@@ -258,7 +451,7 @@ function GeneralTab() {
 }
 
 /* ─── Commission & Fees Tab ─────────────────────────────────────────────────── */
-function CommissionTab() {
+function CommissionTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -271,6 +464,9 @@ function CommissionTab() {
 
     useEffect(() => {
         fetchCommissionSettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveCommission);
+        }
     }, []);
 
     const fetchCommissionSettings = async () => {
@@ -554,7 +750,7 @@ function PaymentsTab() {
 }
 
 /* ─── Notifications Tab ─────────────────────────────────────────────────────── */
-function NotificationsTab() {
+function NotificationsTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -567,6 +763,9 @@ function NotificationsTab() {
 
     useEffect(() => {
         fetchNotificationSettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveNotifications);
+        }
     }, []);
 
     const fetchNotificationSettings = async () => {
@@ -786,7 +985,7 @@ function AdminManagementTab() {
 }
 
 /* ─── Roles & Permissions Tab ───────────────────────────────────────────────── */
-function RolesPermissionsTab() {
+function RolesPermissionsTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -796,6 +995,9 @@ function RolesPermissionsTab() {
 
     useEffect(() => {
         fetchPermissionsAndRoles();
+        if (onRegisterSave) {
+            onRegisterSave(handleSavePermissions);
+        }
     }, []);
 
     const fetchPermissionsAndRoles = async () => {
@@ -1027,7 +1229,7 @@ function ActivityLogsTab() {
 }
 
 /* ─── Security Tab ──────────────────────────────────────────────────────────── */
-function SecurityTab() {
+function SecurityTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -1041,6 +1243,9 @@ function SecurityTab() {
 
     useEffect(() => {
         fetchSecuritySettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveSecuritySettings);
+        }
     }, []);
 
     const fetchSecuritySettings = async () => {
@@ -1273,10 +1478,20 @@ function AppearanceTab() {
 export default function AdminSettingsSection() {
     const [activeTab, setActiveTab] = useState('general');
     const [toast, setToast] = useState(null);
+    const tabSaveHandlers = React.useRef({});
 
     const handleSave = () => {
-        setToast({ msg: 'Success', sub: 'Configuration saved successfully.' });
-        setTimeout(() => setToast(null), 4000);
+        const handler = tabSaveHandlers.current[activeTab];
+        if (handler) {
+            handler();
+        } else {
+            setToast({ msg: 'Success', sub: 'Configuration saved successfully.' });
+            setTimeout(() => setToast(null), 4000);
+        }
+    };
+
+    const registerSaveHandler = (tabKey, handler) => {
+        tabSaveHandlers.current[tabKey] = handler;
     };
 
     /* Each tab can have a custom footer text & button */
@@ -1288,14 +1503,14 @@ export default function AdminSettingsSection() {
 
     const renderTab = () => {
         switch (activeTab) {
-            case 'general': return <GeneralTab />;
-            case 'commission': return <CommissionTab />;
+            case 'general': return <GeneralTab onRegisterSave={(handler) => registerSaveHandler('general', handler)} />;
+            case 'commission': return <CommissionTab onRegisterSave={(handler) => registerSaveHandler('commission', handler)} />;
             case 'payments': return <PaymentsTab />;
-            case 'notifications': return <NotificationsTab />;
+            case 'notifications': return <NotificationsTab onRegisterSave={(handler) => registerSaveHandler('notifications', handler)} />;
             case 'admin': return <AdminManagementTab />;
-            case 'roles': return <RolesPermissionsTab />;
+            case 'roles': return <RolesPermissionsTab onRegisterSave={(handler) => registerSaveHandler('roles', handler)} />;
             case 'logs': return <ActivityLogsTab />;
-            case 'security': return <SecurityTab />;
+            case 'security': return <SecurityTab onRegisterSave={(handler) => registerSaveHandler('security', handler)} />;
             case 'appearance': return <AppearanceTab />;
             default: return null;
         }
