@@ -20,6 +20,58 @@ use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
 {
+    private function adminRoleNames(): array
+    {
+        return ['super_admin', 'admin', 'moderator', 'analyst', 'viewer'];
+    }
+
+    private function isAdminUser(?User $user): bool
+    {
+        return $user instanceof User && in_array($user->role, $this->adminRoleNames(), true);
+    }
+
+    private function requiredPermissionForMethod(string $method): ?string
+    {
+        return match ($method) {
+            'dashboard', 'customers', 'restaurants', 'reviews', 'payments', 'analytics', 'disputes', 'performance', 'getActivityLogs' => 'view_transactions',
+            'orders' => 'cancel_refund_orders',
+            'settings', 'getSettings', 'updateGeneralSettings', 'updateCommissionSettings', 'updateNotificationSettings', 'getSecuritySettings', 'updateSecuritySettings', 'uploadLogo', 'uploadFavicon' => 'edit_system_config',
+            'promotions', 'storePromotion', 'updatePromotion', 'deletePromotion', 'showPromotion', 'expiringPromotions', 'extendPromotion' => 'create_promotions',
+            'getAdmins', 'updateAdmin', 'deleteAdmin', 'getPermissionsAndRoles', 'updateRolePermissions' => 'manage_roles',
+            default => null,
+        };
+    }
+
+    private function hasPermission(User $user, string $permissionName): bool
+    {
+        $roleId = DB::table('roles')->where('name', $user->role)->value('id');
+
+        // Backward-compatible fallback while roles table is being initialized.
+        if (!$roleId) {
+            return $user->role === 'admin';
+        }
+
+        return DB::table('role_permissions')
+            ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
+            ->where('role_permissions.role_id', $roleId)
+            ->where('permissions.name', $permissionName)
+            ->exists();
+    }
+
+    private function authorizeAdminAccess(?User $admin, string $method)
+    {
+        if (!$this->isAdminUser($admin)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $permission = $this->requiredPermissionForMethod($method);
+        if ($permission && !$this->hasPermission($admin, $permission)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        return null;
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -28,7 +80,7 @@ class AdminController extends Controller
         ]);
 
         $admin = User::where('email', $request->email)
-            ->where('role', 'admin')
+            ->whereIn('role', $this->adminRoleNames())
             ->first();
 
         if (!$admin || !Hash::check($request->password, $admin->password)) {
@@ -48,9 +100,8 @@ class AdminController extends Controller
     public function user(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         return response()->json($admin);
@@ -62,9 +113,8 @@ class AdminController extends Controller
     public function refreshToken(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         $admin->currentAccessToken()->delete();
@@ -91,9 +141,8 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         $totalPartners = RestaurantOwner::count();
@@ -179,9 +228,8 @@ class AdminController extends Controller
     public function orders(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -269,7 +317,7 @@ class AdminController extends Controller
                         ],
                     ];
                 } catch (\Exception $e) {
-                    \Log::error('Error formatting order ' . $order->id . ': ' . $e->getMessage());
+                    Log::error('Error formatting order ' . $order->id . ': ' . $e->getMessage());
                     // Return a minimal response if formatting fails
                     return [
                         'id' => "TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
@@ -295,7 +343,7 @@ class AdminController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            \Log::error('Orders endpoint error: ' . $e->getMessage());
+            Log::error('Orders endpoint error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error fetching orders',
                 'error' => $e->getMessage(),
@@ -306,9 +354,8 @@ class AdminController extends Controller
     public function customers(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         $page = $request->query('page', 1);
@@ -357,9 +404,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -528,9 +574,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -648,9 +693,8 @@ class AdminController extends Controller
     public function payments(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -761,9 +805,8 @@ class AdminController extends Controller
     public function analytics(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -952,9 +995,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -1066,9 +1108,8 @@ class AdminController extends Controller
     public function settings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         // Placeholder for settings management
@@ -1086,9 +1127,8 @@ class AdminController extends Controller
     public function promotions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1130,9 +1170,8 @@ class AdminController extends Controller
     public function storePromotion(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1168,9 +1207,8 @@ class AdminController extends Controller
     public function updatePromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1212,9 +1250,8 @@ class AdminController extends Controller
     public function deletePromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1236,9 +1273,8 @@ class AdminController extends Controller
     public function showPromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1258,9 +1294,8 @@ class AdminController extends Controller
     public function expiringPromotions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1302,9 +1337,8 @@ class AdminController extends Controller
     public function extendPromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1341,9 +1375,8 @@ class AdminController extends Controller
     public function performance(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1472,9 +1505,8 @@ class AdminController extends Controller
     public function getSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1491,9 +1523,8 @@ class AdminController extends Controller
     public function updateGeneralSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1527,9 +1558,8 @@ class AdminController extends Controller
     public function updateCommissionSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1559,9 +1589,8 @@ class AdminController extends Controller
     public function updateNotificationSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1589,13 +1618,12 @@ class AdminController extends Controller
     public function getAdmins(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
-            $admins = User::where('role', 'admin')
+            $admins = User::whereIn('role', $this->adminRoleNames())
                 ->select('id', 'name', 'email', 'role', 'status', 'last_active', 'created_at')
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1624,9 +1652,8 @@ class AdminController extends Controller
     public function updateAdmin(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1634,6 +1661,9 @@ class AdminController extends Controller
             $data = $request->all();
             if (isset($data['role'])) {
                 $data['role'] = strtolower($data['role']);
+            }
+            if (isset($data['status'])) {
+                $data['status'] = ucfirst(strtolower($data['status']));
             }
 
             // Validate using the normalized data
@@ -1679,9 +1709,8 @@ class AdminController extends Controller
     public function deleteAdmin(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1693,7 +1722,7 @@ class AdminController extends Controller
             }
 
             // Check if admin is not a customer or restaurant owner
-            if (!in_array($adminToDelete->role, ['admin', 'moderator', 'viewer'])) {
+            if (!in_array($adminToDelete->role, $this->adminRoleNames(), true)) {
                 return response()->json(['message' => 'Can only delete admin users'], 422);
             }
 
@@ -1715,6 +1744,7 @@ class AdminController extends Controller
             'super_admin' => 'Super Admin',
             'moderator' => 'Moderator',
             'analyst' => 'Analyst',
+            'viewer' => 'Viewer',
         ];
         return $roleMap[$role] ?? ucfirst($role);
     }
@@ -1726,6 +1756,7 @@ class AdminController extends Controller
             'super_admin' => 'roleSuperAdmin',
             'moderator' => 'roleModerator',
             'analyst' => 'roleAnalyst',
+            'viewer' => 'roleAnalyst',
         ];
         return $classMap[$role] ?? 'roleAdmin';
     }
@@ -1743,17 +1774,16 @@ class AdminController extends Controller
     public function getPermissionsAndRoles(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
-            $roles = \DB::table('roles')->get();
-            $permissions = \DB::table('permissions')
+            $roles = DB::table('roles')->get();
+            $permissions = DB::table('permissions')
                 ->select('id', 'name', 'display_name', 'description', 'category')
                 ->get();
-            $rolePermissions = \DB::table('role_permissions')->get();
+            $rolePermissions = DB::table('role_permissions')->get();
 
             // Group permissions by category
             $permissionsByCategory = [];
@@ -1815,9 +1845,8 @@ class AdminController extends Controller
     public function updateRolePermissions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1833,13 +1862,13 @@ class AdminController extends Controller
                 $roleIds = $item['role_ids'];
 
                 // Delete existing associations
-                \DB::table('role_permissions')
+                DB::table('role_permissions')
                     ->where('permission_id', $permissionId)
                     ->delete();
 
                 // Insert new associations
                 foreach ($roleIds as $roleId) {
-                    \DB::table('role_permissions')->insert([
+                    DB::table('role_permissions')->insert([
                         'role_id' => $roleId,
                         'permission_id' => $permissionId,
                         'created_at' => now(),
@@ -1862,9 +1891,8 @@ class AdminController extends Controller
     public function getActivityLogs(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1919,9 +1947,8 @@ class AdminController extends Controller
     public function getSecuritySettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1945,9 +1972,8 @@ class AdminController extends Controller
     public function updateSecuritySettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1975,9 +2001,8 @@ class AdminController extends Controller
     public function uploadLogo(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -2017,9 +2042,8 @@ class AdminController extends Controller
     public function uploadFavicon(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -2056,3 +2080,16 @@ class AdminController extends Controller
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

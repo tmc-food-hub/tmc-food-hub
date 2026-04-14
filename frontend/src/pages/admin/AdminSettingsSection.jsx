@@ -941,7 +941,7 @@ function AdminManagementTab() {
     const [editingAdmin, setEditingAdmin] = useState(null);
     const [deletingAdmin, setDeletingAdmin] = useState(null);
     const [saving, setSaving] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', role: 'moderator', status: 'active' });
+    const [formData, setFormData] = useState({ name: '', email: '', role: 'admin', status: 'Active' });
 
     useEffect(() => {
         fetchAdmins();
@@ -959,13 +959,34 @@ function AdminManagementTab() {
         }
     };
 
+    const normalizeRoleValue = (role) => {
+        const roleMap = {
+            'super admin': 'super_admin',
+            super_admin: 'super_admin',
+            admin: 'admin',
+            moderator: 'moderator',
+            analyst: 'analyst',
+            viewer: 'viewer',
+        };
+        return roleMap[String(role || '').trim().toLowerCase()] || 'admin';
+    };
+
+    const normalizeStatusValue = (status) => {
+        const statusMap = {
+            active: 'Active',
+            inactive: 'Inactive',
+            suspended: 'Suspended',
+        };
+        return statusMap[String(status || '').trim().toLowerCase()] || 'Active';
+    };
+
     const handleEditClick = (admin) => {
         setEditingAdmin(admin);
         setFormData({
             name: admin.name,
             email: admin.email,
-            role: admin.role,
-            status: admin.status,
+            role: normalizeRoleValue(admin.role),
+            status: normalizeStatusValue(admin.status),
         });
     };
 
@@ -1059,8 +1080,10 @@ function AdminManagementTab() {
                                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
                             >
+                                <option value="super_admin">Super Admin</option>
                                 <option value="admin">Admin</option>
                                 <option value="moderator">Moderator</option>
+                                <option value="analyst">Analyst</option>
                                 <option value="viewer">Viewer</option>
                             </select>
                         </div>
@@ -1071,9 +1094,9 @@ function AdminManagementTab() {
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="suspended">Suspended</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Suspended">Suspended</option>
                             </select>
                         </div>
                     </div>
