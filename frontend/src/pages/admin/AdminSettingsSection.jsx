@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import {
     Settings, CreditCard, Wallet, Bell, UserCog, Shield, FileText, Lock, Palette,
-    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp, Loader
+    Globe, Eye, EyeOff, Pencil, Trash2, CheckCircle2, X, Upload, TrendingUp, Loader, AlertCircle
 } from 'lucide-react';
 import api from '../../api/axios';
 import styles from './AdminSettingsSection.module.css';
+
+// Comprehensive timezone list
+const TIMEZONES = [
+    'UTC', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Lagos', 'Africa/Nairobi', 'Africa/Casablanca',
+    'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto',
+    'America/Mexico_City', 'America/Sao_Paulo', 'America/Buenos_Aires', 'America/Bogota', 'America/Lima',
+    'Asia/Dubai', 'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Singapore', 'Asia/Hong_Kong', 'Asia/Tokyo',
+    'Asia/Seoul', 'Asia/Manila', 'Asia/Jakarta', 'Asia/Yangon', 'Asia/Karachi', 'Asia/Tehran',
+    'Asia/Jerusalem', 'Asia/Moscow', 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane',
+    'Australia/Perth', 'Australia/Adelaide', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
+    'Europe/Madrid', 'Europe/Amsterdam', 'Europe/Rome', 'Europe/Vienna', 'Europe/Warsaw',
+    'Europe/Istanbul', 'Europe/Athens', 'Europe/Helsinki', 'Europe/Dublin', 'Europe/Lisbon',
+    'Europe/Zurich', 'Europe/Brussels', 'Europe/Budapest', 'Europe/Prague', 'Europe/Stockholm',
+    'Europe/Copenhagen', 'Europe/Oslo', 'Europe/Bucharest', 'Europe/Sofia', 'Europe/Zagreb',
+    'Europe/Belgrade', 'Europe/Skopje', 'Europe/Tirana', 'Europe/Nicosia', 'Europe/Riga',
+    'Europe/Tallin', 'Europe/Vilnius', 'Europe/Minsk', 'Europe/Chisinau', 'Europe/Johannesburg',
+    'Pacific/Auckland', 'Pacific/Fiji', 'Pacific/Tongatapu', 'Pacific/Port_Moresby', 'Pacific/Honolulu',
+    'Indian/Mauritius', 'Indian/Maldives', 'Indian/Reunion', 'Indian/Cocos', 'Indian/Christmas'
+].sort();
 
 const TABS = [
     { key: 'general', label: 'General', icon: <Settings size={15} /> },
@@ -19,10 +38,16 @@ const TABS = [
 ];
 
 /* ─── General Tab ───────────────────────────────────────────────────────────── */
-function GeneralTab() {
+function GeneralTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [faviconPreview, setFaviconPreview] = useState(null);
+    const [logoFile, setLogoFile] = useState(null);
+    const [faviconFile, setFaviconFile] = useState(null);
     const [settings, setSettings] = useState({
         platform_status: 'live',
         platform_name: 'TMC Foodhub',
@@ -32,15 +57,22 @@ function GeneralTab() {
         currency: 'PHP',
         language: 'English',
         timezone: 'Asia/Manila',
+        logo_url: null,
+        favicon_url: null,
     });
 
     useEffect(() => {
         fetchSettings();
+        // Register save handler with parent
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveGeneral);
+        }
     }, []);
 
     const fetchSettings = async () => {
         try {
             setLoading(true);
+            setErrorMessage('');
             const response = await api.get('/admin/settings');
             const data = response.data.data;
             setSettings({
@@ -52,32 +84,132 @@ function GeneralTab() {
                 currency: data.currency || 'PHP',
                 language: data.language || 'English',
                 timezone: data.timezone || 'Asia/Manila',
+                logo_url: data.logo_url || null,
+                favicon_url: data.favicon_url || null,
             });
+            if (data.logo_url) setLogoPreview(data.logo_url);
+            if (data.favicon_url) setFaviconPreview(data.favicon_url);
         } catch (err) {
             console.error('Error fetching settings:', err);
+            setErrorMessage('Failed to load settings. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
+    const validateForm = () => {
+        const errors = {};
+        setFieldErrors({});
+        
+        if (!settings.platform_name?.trim()) errors.platform_name = 'Platform name is required';
+        if (!settings.support_email?.trim()) errors.support_email = 'Support email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.support_email)) errors.support_email = 'Invalid email format';
+        if (!settings.tagline?.trim()) errors.tagline = 'Tagline is required';
+        if (!settings.phone_number?.trim()) errors.phone_number = 'Phone number is required';
+        
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return false;
+        }
+        return true;
+    };
+
+    const handleFileSelect = (file, type) => {
+        if (!file) return;
+        
+        const allowedMimes = [
+            'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml',
+            'image/bmp', 'image/tiff', 'image/x-icon', 'image/vnd.microsoft.icon'
+        ];
+        if (!allowedMimes.includes(file.type)) {
+            setFieldErrors(p => ({ ...p, [type]: 'Unsupported format. Use: PNG, JPEG, GIF, WebP, SVG, BMP, TIFF, or ICO (max 5MB)' }));
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setFieldErrors(p => ({ ...p, [type]: 'File size must be under 5MB' }));
+            return;
+        }
+        
+        setFieldErrors(p => ({ ...p, [type]: '' }));
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (type === 'logo') {
+                setLogoPreview(e.target.result);
+                setLogoFile(file);
+            } else {
+                setFaviconPreview(e.target.result);
+                setFaviconFile(file);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSaveGeneral = async () => {
+        if (!validateForm()) return;
+        
         try {
             setSaving(true);
+            setErrorMessage('');
+            const uploadPromises = [];
+            
+            // Upload logo if selected
+            if (logoFile) {
+                const logoForm = new FormData();
+                logoForm.append('logo', logoFile);
+                uploadPromises.push(
+                    api.post('/admin/upload-logo', logoForm, { 
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => ({ type: 'logo', data: res.data }))
+                );
+            }
+            
+            // Upload favicon if selected
+            if (faviconFile) {
+                const faviconForm = new FormData();
+                faviconForm.append('favicon', faviconFile);
+                uploadPromises.push(
+                    api.post('/admin/upload-favicon', faviconForm, { 
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(res => ({ type: 'favicon', data: res.data }))
+                );
+            }
+            
+            // Wait for uploads if any
+            let updatedSettings = { ...settings };
+            if (uploadPromises.length > 0) {
+                const uploadResults = await Promise.all(uploadPromises);
+                uploadResults.forEach(result => {
+                    if (result.type === 'logo' && result.data?.logo_url) {
+                        updatedSettings.logo_url = result.data.logo_url;
+                        setLogoPreview(result.data.logo_url);
+                    }
+                    if (result.type === 'favicon' && result.data?.favicon_url) {
+                        updatedSettings.favicon_url = result.data.favicon_url;
+                        setFaviconPreview(result.data.favicon_url);
+                    }
+                });
+                setLogoFile(null);
+                setFaviconFile(null);
+                setSettings(updatedSettings);
+            }
+            
             await api.put('/admin/settings/general', {
-                platform_status: settings.platform_status,
-                platform_name: settings.platform_name,
-                tagline: settings.tagline,
-                support_email: settings.support_email,
-                phone_number: settings.phone_number,
-                currency: settings.currency,
-                language: settings.language,
-                timezone: settings.timezone,
+                platform_status: updatedSettings.platform_status,
+                platform_name: updatedSettings.platform_name,
+                tagline: updatedSettings.tagline,
+                support_email: updatedSettings.support_email,
+                phone_number: updatedSettings.phone_number,
+                currency: updatedSettings.currency,
+                language: updatedSettings.language,
+                timezone: updatedSettings.timezone,
+                logo_url: updatedSettings.logo_url,
+                favicon_url: updatedSettings.favicon_url,
             });
             setSuccessMessage('General settings saved successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             console.error('Error saving settings:', err);
-            alert('Failed to save settings');
+            setErrorMessage(err.response?.data?.message || 'Failed to save settings. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -86,6 +218,12 @@ function GeneralTab() {
     const handleInputChange = (field, value) => {
         setSettings(prev => ({ ...prev, [field]: value }));
     };
+
+    const renderFieldError = (field) => fieldErrors[field] && (
+        <div style={{ color: '#DC2626', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <AlertCircle size={12} /> {fieldErrors[field]}
+        </div>
+    );
 
     if (loading) {
         return (
@@ -103,6 +241,11 @@ function GeneralTab() {
         {successMessage && (
             <div style={{ padding: '12px 16px', background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '6px', marginBottom: '20px', color: '#166534', fontSize: '13px', fontWeight: '500' }}>
                 ✓ {successMessage}
+            </div>
+        )}
+        {errorMessage && (
+            <div style={{ padding: '12px 16px', background: '#FEE2E2', border: '1px solid #FECACA', borderRadius: '6px', marginBottom: '20px', color: '#991B1B', fontSize: '13px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} /> {errorMessage}
             </div>
         )}
 
@@ -134,30 +277,38 @@ function GeneralTab() {
                         <label>Platform Name</label>
                         <input 
                             value={settings.platform_name} 
-                            onChange={(e) => handleInputChange('platform_name', e.target.value)} 
+                            onChange={(e) => { handleInputChange('platform_name', e.target.value); setFieldErrors(p => ({ ...p, platform_name: '' })); }} 
+                            style={{ borderColor: fieldErrors.platform_name ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('platform_name')}
                     </div>
                     <div className={styles.field}>
                         <label>Tagline</label>
                         <input 
                             value={settings.tagline} 
-                            onChange={(e) => handleInputChange('tagline', e.target.value)} 
+                            onChange={(e) => { handleInputChange('tagline', e.target.value); setFieldErrors(p => ({ ...p, tagline: '' })); }} 
+                            style={{ borderColor: fieldErrors.tagline ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('tagline')}
                     </div>
                     <div className={styles.field}>
                         <label>Support Email</label>
                         <input 
                             type="email"
                             value={settings.support_email} 
-                            onChange={(e) => handleInputChange('support_email', e.target.value)} 
+                            onChange={(e) => { handleInputChange('support_email', e.target.value); setFieldErrors(p => ({ ...p, support_email: '' })); }} 
+                            style={{ borderColor: fieldErrors.support_email ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('support_email')}
                     </div>
                     <div className={styles.field}>
                         <label>Phone Number</label>
                         <input 
                             value={settings.phone_number} 
-                            onChange={(e) => handleInputChange('phone_number', e.target.value)} 
+                            onChange={(e) => { handleInputChange('phone_number', e.target.value); setFieldErrors(p => ({ ...p, phone_number: '' })); }} 
+                            style={{ borderColor: fieldErrors.phone_number ? '#DC2626' : 'inherit' }}
                         />
+                        {renderFieldError('phone_number')}
                     </div>
                 </div>
             </div>
@@ -169,17 +320,53 @@ function GeneralTab() {
                     <div className={styles.brandItem}>
                         <div className={styles.brandLabel}>Primary Logo</div>
                         <div className={styles.logoBox}>
-                            <div className={styles.logoPlaceholder}>🍔</div>
+                            {logoPreview ? (
+                                <img src={logoPreview} alt="Logo preview" style={{ maxWidth: '100%', maxHeight: '80px' }} />
+                            ) : (
+                                <div className={styles.logoPlaceholder}>🍔</div>
+                            )}
                         </div>
-                        <span className={styles.brandHint}>Recommended size: 512×128px. Transparent PNG.</span>
+                        <input 
+                            type="file" 
+                            accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/bmp,image/tiff,image/x-icon"
+                            onChange={(e) => handleFileSelect(e.target.files?.[0], 'logo')}
+                            style={{ display: 'none' }}
+                            id="logo-input"
+                        />
+                        <button 
+                            onClick={() => document.getElementById('logo-input').click()}
+                            className={styles.replaceBtn}
+                            style={{ marginTop: '8px' }}
+                        >
+                            Upload Logo
+                        </button>
+                        {renderFieldError('logo')}
+                        <span className={styles.brandHint}>Recommended size: 512×128px. PNG, JPEG, GIF (max 5MB)</span>
                     </div>
                     <div className={styles.brandItem}>
                         <div className={styles.brandLabel}>Favicon</div>
                         <div className={styles.faviconRow}>
-                            <div className={styles.faviconBox}>🍔</div>
-                            <button className={styles.replaceBtn}>Replace Icon</button>
+                            {faviconPreview ? (
+                                <img src={faviconPreview} alt="Favicon preview" style={{ maxWidth: '40px', maxHeight: '40px' }} />
+                            ) : (
+                                <div className={styles.faviconBox}>🍔</div>
+                            )}
+                            <input 
+                                type="file" 
+                                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon"
+                                onChange={(e) => handleFileSelect(e.target.files?.[0], 'favicon')}
+                                style={{ display: 'none' }}
+                                id="favicon-input"
+                            />
+                            <button 
+                                onClick={() => document.getElementById('favicon-input').click()}
+                                className={styles.replaceBtn}
+                            >
+                                Replace Icon
+                            </button>
                         </div>
-                        <span className={styles.brandHint}>ICO, PNG (32×32px)</span>
+                        {renderFieldError('favicon')}
+                        <span className={styles.brandHint}>ICO, PNG (32×32px, max 5MB)</span>
                     </div>
                 </div>
             </div>
@@ -195,6 +382,9 @@ function GeneralTab() {
                         <option>PHP</option>
                         <option>USD</option>
                         <option>EUR</option>
+                        <option>GBP</option>
+                        <option>JPY</option>
+                        <option>AUD</option>
                     </select>
                 </div>
                 <div className={styles.field}>
@@ -202,14 +392,17 @@ function GeneralTab() {
                     <select value={settings.language} onChange={(e) => handleInputChange('language', e.target.value)}>
                         <option>English</option>
                         <option>Filipino</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                        <option>German</option>
                     </select>
                 </div>
                 <div className={styles.field}>
                     <label>Timezone</label>
                     <select value={settings.timezone} onChange={(e) => handleInputChange('timezone', e.target.value)}>
-                        <option>Asia/Manila (GMT+8)</option>
-                        <option>UTC</option>
-                        <option>America/New_York</option>
+                        {TIMEZONES.map(tz => (
+                            <option key={tz} value={tz}>{tz}</option>
+                        ))}
                     </select>
                 </div>
             </div>
@@ -258,7 +451,7 @@ function GeneralTab() {
 }
 
 /* ─── Commission & Fees Tab ─────────────────────────────────────────────────── */
-function CommissionTab() {
+function CommissionTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -271,6 +464,9 @@ function CommissionTab() {
 
     useEffect(() => {
         fetchCommissionSettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveCommission);
+        }
     }, []);
 
     const fetchCommissionSettings = async () => {
@@ -304,7 +500,10 @@ function CommissionTab() {
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             console.error('Error saving commission settings:', err);
-            alert('Failed to save commission settings');
+            const errorMsg = err.response?.data?.errors 
+                ? Object.values(err.response.data.errors).flat().join(', ')
+                : err.response?.data?.message || 'Failed to save commission settings';
+            alert(errorMsg);
         } finally {
             setSaving(false);
         }
@@ -554,7 +753,7 @@ function PaymentsTab() {
 }
 
 /* ─── Notifications Tab ─────────────────────────────────────────────────────── */
-function NotificationsTab() {
+function NotificationsTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -567,6 +766,9 @@ function NotificationsTab() {
 
     useEffect(() => {
         fetchNotificationSettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveNotifications);
+        }
     }, []);
 
     const fetchNotificationSettings = async () => {
@@ -736,6 +938,10 @@ function NotificationsTab() {
 function AdminManagementTab() {
     const [loading, setLoading] = useState(true);
     const [admins, setAdmins] = useState([]);
+    const [editingAdmin, setEditingAdmin] = useState(null);
+    const [deletingAdmin, setDeletingAdmin] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({ name: '', email: '', role: 'admin', status: 'Active' });
 
     useEffect(() => {
         fetchAdmins();
@@ -750,6 +956,65 @@ function AdminManagementTab() {
             console.error('Error fetching admins:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const normalizeRoleValue = (role) => {
+        const roleMap = {
+            'super admin': 'super_admin',
+            super_admin: 'super_admin',
+            admin: 'admin',
+            moderator: 'moderator',
+            analyst: 'analyst',
+            viewer: 'viewer',
+        };
+        return roleMap[String(role || '').trim().toLowerCase()] || 'admin';
+    };
+
+    const normalizeStatusValue = (status) => {
+        const statusMap = {
+            active: 'Active',
+            inactive: 'Inactive',
+            suspended: 'Suspended',
+        };
+        return statusMap[String(status || '').trim().toLowerCase()] || 'Active';
+    };
+
+    const handleEditClick = (admin) => {
+        setEditingAdmin(admin);
+        setFormData({
+            name: admin.name,
+            email: admin.email,
+            role: normalizeRoleValue(admin.role),
+            status: normalizeStatusValue(admin.status),
+        });
+    };
+
+    const handleSaveEdit = async () => {
+        try {
+            setSaving(true);
+            await api.put(`/admin/admins/${editingAdmin.id}`, formData);
+            setEditingAdmin(null);
+            fetchAdmins();
+        } catch (err) {
+            console.error('Error updating admin:', err);
+            alert(err.response?.data?.message || 'Error updating admin');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            setSaving(true);
+            await api.delete(`/admin/admins/${deletingAdmin.id}`);
+            setDeletingAdmin(null);
+            fetchAdmins();
+        } catch (err) {
+            console.error('Error deleting admin:', err);
+            alert(err.response?.data?.message || 'Error deleting admin');
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -776,17 +1041,118 @@ function AdminManagementTab() {
                             <td><span className={`${styles.rolePill} ${styles[a.roleClass]}`}>{a.role}</span></td>
                             <td><span className={`${styles.statusDot} ${styles[a.statusClass]}`}>{a.status}</span></td>
                             <td className={styles.dateCol}>{a.lastActive}</td>
-                            <td><div className={styles.adminActions}><button className={styles.editIcon}><Pencil size={14} /></button><button className={styles.deleteIcon}><Trash2 size={14} /></button></div></td>
+                            <td><div className={styles.adminActions}><button className={styles.editIcon} onClick={() => handleEditClick(a)} title="Edit"><Pencil size={14} /></button><button className={styles.deleteIcon} onClick={() => setDeletingAdmin(a)} title="Delete"><Trash2 size={14} /></button></div></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
+
+        {/* Edit Admin Modal */}
+        {editingAdmin && (
+            <>
+                <div className={styles.modalOverlay} onClick={() => setEditingAdmin(null)} />
+                <div className={styles.modal} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '8px', padding: '24px', maxWidth: '500px', width: '90%', zIndex: 1000, boxShadow: '0 20px 25px rgba(0,0,0,0.2)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: '700' }}>Edit Admin</h3>
+                    <div style={{ display: 'grid', gap: '16px', marginBottom: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Name *</label>
+                            <input 
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Email *</label>
+                            <input 
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Role</label>
+                            <select 
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            >
+                                <option value="super_admin">Super Admin</option>
+                                <option value="admin">Admin</option>
+                                <option value="moderator">Moderator</option>
+                                <option value="analyst">Analyst</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: '#374151' }}>Status</label>
+                            <select 
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                style={{ width: '100%', padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}
+                            >
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button 
+                            onClick={() => setEditingAdmin(null)}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: '1px solid #E5E7EB', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleSaveEdit}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#22c55e', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '14px', opacity: saving ? 0.7 : 1 }}
+                        >
+                            {saving ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deletingAdmin && (
+            <>
+                <div className={styles.modalOverlay} onClick={() => setDeletingAdmin(null)} />
+                <div className={styles.modal} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: '8px', padding: '24px', maxWidth: '400px', width: '90%', zIndex: 1000, boxShadow: '0 20px 25px rgba(0,0,0,0.2)' }}>
+                    <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: '700', color: '#DC2626' }}>Delete Admin</h3>
+                    <p style={{ margin: '0 0 24px', color: '#6B7280', fontSize: '14px' }}>
+                        Are you sure you want to delete <strong>{deletingAdmin.name}</strong>? This action cannot be undone.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                        <button 
+                            onClick={() => setDeletingAdmin(null)}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: '1px solid #E5E7EB', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleDeleteConfirm}
+                            disabled={saving}
+                            style={{ padding: '8px 16px', border: 'none', borderRadius: '6px', background: '#DC2626', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '14px', opacity: saving ? 0.7 : 1 }}
+                        >
+                            {saving ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                </div>
+            </>
+        )}
     </>);
 }
 
 /* ─── Roles & Permissions Tab ───────────────────────────────────────────────── */
-function RolesPermissionsTab() {
+function RolesPermissionsTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -796,6 +1162,9 @@ function RolesPermissionsTab() {
 
     useEffect(() => {
         fetchPermissionsAndRoles();
+        if (onRegisterSave) {
+            onRegisterSave(handleSavePermissions);
+        }
     }, []);
 
     const fetchPermissionsAndRoles = async () => {
@@ -961,21 +1330,50 @@ function RolesPermissionsTab() {
 function ActivityLogsTab() {
     const [loading, setLoading] = useState(true);
     const [logs, setLogs] = useState([]);
+    const [searchInput, setSearchInput] = useState('');
+    const [filters, setFilters] = useState({
+        search: '',
+        role: 'all',
+        action: 'all',
+        category: 'all',
+    });
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setFilters(prev => ({ ...prev, search: searchInput.trim() }));
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     useEffect(() => {
         fetchActivityLogs();
-    }, []);
+    }, [filters.search, filters.role, filters.action, filters.category]);
 
     const fetchActivityLogs = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/admin/activity-logs');
+            const params = {};
+            if (filters.search) params.search = filters.search;
+            if (filters.role !== 'all') params.role = filters.role;
+            if (filters.action !== 'all') params.action = filters.action;
+            if (filters.category !== 'all') params.category = filters.category;
+
+            const response = await api.get('/admin/activity-logs', { params });
             setLogs(response.data.data || []);
         } catch (err) {
             console.error('Error fetching activity logs:', err);
+            setLogs([]);
         } finally {
             setLoading(false);
         }
+    };
+
+    const formatRole = (role) => {
+        if (!role) return 'Unknown';
+        return String(role)
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
     };
 
     if (loading) {
@@ -992,9 +1390,46 @@ function ActivityLogsTab() {
         <p className={styles.sectionSub}>Monitor all administrative actions across the platform. This log is read-only for security and compliance purposes.</p>
 
         <div className={styles.logsFilters}>
-            <div className={styles.logsSearch}><span className={styles.logsSearchIcon}>🔍</span><input placeholder="Search admin..." /></div>
-            <select className={styles.logsSelect}><option>All Roles</option></select>
-            <select className={styles.logsSelect}><option>All Actions</option></select>
+            <div className={styles.logsSearch}>
+                <span className={styles.logsSearchIcon}>🔍</span>
+                <input
+                    placeholder="Search admin, page, action..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                />
+            </div>
+            <select
+                className={styles.logsSelect}
+                value={filters.role}
+                onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
+            >
+                <option value="all">All Roles</option>
+                <option value="super_admin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+                <option value="analyst">Analyst</option>
+                <option value="viewer">Viewer</option>
+            </select>
+            <select
+                className={styles.logsSelect}
+                value={filters.action}
+                onChange={(e) => setFilters(prev => ({ ...prev, action: e.target.value }))}
+            >
+                <option value="all">All Actions</option>
+                <option value="Access">Access</option>
+                <option value="Update">Update</option>
+                <option value="Delete">Delete</option>
+                <option value="Auth">Auth</option>
+            </select>
+            <select
+                className={styles.logsSelect}
+                value={filters.category}
+                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            >
+                <option value="all">All Categories</option>
+                <option value="admin_action">Admin Actions</option>
+                <option value="auth_session">Login / Logout</option>
+            </select>
             <button className={styles.logsExportBtn}><span>↓</span> Export</button>
         </div>
 
@@ -1002,16 +1437,38 @@ function ActivityLogsTab() {
             <table className={styles.logsTable}>
                 <thead><tr><th>Admin</th><th>Action Description</th><th>Page/Module</th><th>Masked IP</th><th>Device</th><th>Timestamp</th></tr></thead>
                 <tbody>
-                    {logs.map((l) => (
-                        <tr key={l.id}>
-                            <td><div className={styles.adminCell}><div className={styles.adminAvatar}>{l.name.split(' ').map(x => x[0]).join('')}</div><div><div className={styles.adminName}>{l.name}</div><div className={styles.adminEmail}>{l.role}</div></div></div></td>
-                            <td><span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span><div className={styles.logActionDesc}>{l.desc}</div></td>
-                            <td className={styles.logModule}>{l.page}</td>
-                            <td className={styles.logIp}>{l.ip}</td>
-                            <td className={styles.logDevice}>{l.device}</td>
-                            <td className={styles.logTime}>{l.time}</td>
+                    {logs.length === 0 ? (
+                        <tr>
+                            <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#6B7280', fontSize: '13px' }}>
+                                No activity logs matched your current filters.
+                            </td>
                         </tr>
-                    ))}
+                    ) : (
+                        logs.map((l) => (
+                            <tr key={l.id}>
+                                <td>
+                                    <div className={styles.adminCell}>
+                                        <div className={styles.adminAvatar}>{l.name?.split(' ').map(x => x[0]).join('') || 'A'}</div>
+                                        <div>
+                                            <div className={styles.adminName}>{l.name}</div>
+                                            <div className={styles.adminEmail}>{l.roleLabel || formatRole(l.role)}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span className={`${styles.actionBadge} ${styles[l.actionClass]}`}>{l.action}</span>
+                                    <div className={styles.logActionDesc}>{l.desc}</div>
+                                    <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
+                                        {(l.categoryLabel || 'Admin Actions')} • {(l.eventType || l.action)}
+                                    </div>
+                                </td>
+                                <td className={styles.logModule}>{l.page}</td>
+                                <td className={styles.logIp}>{l.ip}</td>
+                                <td className={styles.logDevice}>{l.device}</td>
+                                <td className={styles.logTime}>{l.time}</td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
         </div>
@@ -1027,7 +1484,7 @@ function ActivityLogsTab() {
 }
 
 /* ─── Security Tab ──────────────────────────────────────────────────────────── */
-function SecurityTab() {
+function SecurityTab({ onRegisterSave }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
@@ -1037,10 +1494,17 @@ function SecurityTab() {
         sms_emergency: true,
         session_timeout: '30 minutes',
         max_login_attempts: 5,
+        require_uppercase: true,
+        require_numbers: true,
+        require_special_character: true,
+        password_expiry_days: 90,
     });
 
     useEffect(() => {
         fetchSecuritySettings();
+        if (onRegisterSave) {
+            onRegisterSave(handleSaveSecuritySettings);
+        }
     }, []);
 
     const fetchSecuritySettings = async () => {
@@ -1054,6 +1518,10 @@ function SecurityTab() {
                 sms_emergency: data.sms_emergency ?? true,
                 session_timeout: data.session_timeout || '30 minutes',
                 max_login_attempts: data.max_login_attempts || 5,
+                require_uppercase: data.require_uppercase ?? true,
+                require_numbers: data.require_numbers ?? true,
+                require_special_character: data.require_special_character ?? true,
+                password_expiry_days: data.password_expiry_days || 90,
             });
         } catch (err) {
             console.error('Error fetching security settings:', err);
@@ -1071,6 +1539,10 @@ function SecurityTab() {
                 sms_emergency: securitySettings.sms_emergency,
                 session_timeout: securitySettings.session_timeout,
                 max_login_attempts: securitySettings.max_login_attempts,
+                require_uppercase: securitySettings.require_uppercase,
+                require_numbers: securitySettings.require_numbers,
+                require_special_character: securitySettings.require_special_character,
+                password_expiry_days: securitySettings.password_expiry_days,
             });
             setSuccessMessage('Security settings saved successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -1098,6 +1570,8 @@ function SecurityTab() {
             </div>
         );
     }
+
+    const expiryFillWidth = `${Math.max(15, Math.min(100, Math.round((securitySettings.password_expiry_days / 180) * 100)))}%`;
 
     return (<>
         <h2 className={styles.sectionTitle}>Security Settings</h2>
@@ -1128,7 +1602,7 @@ function SecurityTab() {
                         </div>
                         <div className={styles.field}>
                             <label>Max Login Attempts</label>
-                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value))}>
+                            <select value={securitySettings.max_login_attempts} onChange={(e) => handleSecurityChange('max_login_attempts', parseInt(e.target.value, 10))}>
                                 <option value="3">3 attempts</option>
                                 <option value="5">5 attempts</option>
                                 <option value="10">10 attempts</option>
@@ -1152,12 +1626,31 @@ function SecurityTab() {
             <div className={styles.rightCol}>
                 <div className={styles.card}>
                     <h3 className={styles.cardLabel}>🔑 Password Policy</h3>
-                    <div className={styles.pwPolicyItem}><span>Require Uppercase</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
-                    <div className={styles.pwPolicyItem}><span>Require Numbers</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
-                    <div className={styles.pwPolicyItem}><span>Require Special Character</span><CheckCircle2 size={16} className={styles.pwCheck} /></div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Uppercase</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_uppercase ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_uppercase')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Numbers</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_numbers ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_numbers')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.pwPolicyItem}>
+                        <span>Require Special Character</span>
+                        <div className={`${styles.toggle} ${securitySettings.require_special_character ? styles.toggleOn : ''}`} onClick={() => toggleSecuritySwitch('require_special_character')}><div className={styles.toggleDot} /></div>
+                    </div>
+                    <div className={styles.field} style={{ marginTop: '0.6rem' }}>
+                        <label>Password Expiry</label>
+                        <select value={securitySettings.password_expiry_days} onChange={(e) => handleSecurityChange('password_expiry_days', parseInt(e.target.value, 10))}>
+                            <option value="30">30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                            <option value="180">180 days</option>
+                            <option value="365">365 days</option>
+                        </select>
+                    </div>
                     <div className={styles.pwExpiry}>
-                        <div className={styles.pwExpiryHeader}><span>PASSWORD EXPIRY</span><span>90 days</span></div>
-                        <div className={styles.pwExpiryBar}><div className={styles.pwExpiryFill} /></div>
+                        <div className={styles.pwExpiryHeader}><span>PASSWORD EXPIRY</span><span>{securitySettings.password_expiry_days} days</span></div>
+                        <div className={styles.pwExpiryBar}><div className={styles.pwExpiryFill} style={{ width: expiryFillWidth }} /></div>
                     </div>
                 </div>
             </div>
@@ -1273,10 +1766,20 @@ function AppearanceTab() {
 export default function AdminSettingsSection() {
     const [activeTab, setActiveTab] = useState('general');
     const [toast, setToast] = useState(null);
+    const tabSaveHandlers = React.useRef({});
 
     const handleSave = () => {
-        setToast({ msg: 'Success', sub: 'Configuration saved successfully.' });
-        setTimeout(() => setToast(null), 4000);
+        const handler = tabSaveHandlers.current[activeTab];
+        if (handler) {
+            handler();
+        } else {
+            setToast({ msg: 'Success', sub: 'Configuration saved successfully.' });
+            setTimeout(() => setToast(null), 4000);
+        }
+    };
+
+    const registerSaveHandler = (tabKey, handler) => {
+        tabSaveHandlers.current[tabKey] = handler;
     };
 
     /* Each tab can have a custom footer text & button */
@@ -1288,14 +1791,14 @@ export default function AdminSettingsSection() {
 
     const renderTab = () => {
         switch (activeTab) {
-            case 'general': return <GeneralTab />;
-            case 'commission': return <CommissionTab />;
+            case 'general': return <GeneralTab onRegisterSave={(handler) => registerSaveHandler('general', handler)} />;
+            case 'commission': return <CommissionTab onRegisterSave={(handler) => registerSaveHandler('commission', handler)} />;
             case 'payments': return <PaymentsTab />;
-            case 'notifications': return <NotificationsTab />;
+            case 'notifications': return <NotificationsTab onRegisterSave={(handler) => registerSaveHandler('notifications', handler)} />;
             case 'admin': return <AdminManagementTab />;
-            case 'roles': return <RolesPermissionsTab />;
+            case 'roles': return <RolesPermissionsTab onRegisterSave={(handler) => registerSaveHandler('roles', handler)} />;
             case 'logs': return <ActivityLogsTab />;
-            case 'security': return <SecurityTab />;
+            case 'security': return <SecurityTab onRegisterSave={(handler) => registerSaveHandler('security', handler)} />;
             case 'appearance': return <AppearanceTab />;
             default: return null;
         }

@@ -45,6 +45,16 @@ export function AdminAuthProvider({ children }) {
     async function login(email, password) {
         try {
             const res = await api.post('/admin/login', { email, password });
+
+            if (res.data?.requires_2fa) {
+                return {
+                    success: false,
+                    requiresTwoFactor: true,
+                    email: res.data.email || email,
+                    message: res.data.message || 'Enter the verification code sent to your email.',
+                };
+            }
+
             const { user, token } = res.data;
 
             setAdmin(user);
@@ -58,6 +68,30 @@ export function AdminAuthProvider({ children }) {
             return {
                 success: false,
                 message: error.response?.data?.message || error.response?.data?.errors?.email?.[0] || 'Invalid admin credentials.',
+            };
+        }
+    }
+
+    async function verifyTwoFactor(email, code) {
+        try {
+            const res = await api.post('/admin/verify-2fa', { email, code });
+            const { user, token } = res.data;
+
+            setAdmin(user);
+            localStorage.setItem('admin_auth_token', token);
+            localStorage.setItem('admin_auth_user', JSON.stringify(user));
+            localStorage.setItem('admin_user_type', 'admin');
+
+            return { success: true };
+        } catch (error) {
+            console.error('Admin 2FA verification failed:', error);
+            return {
+                success: false,
+                message:
+                    error.response?.data?.message
+                    || error.response?.data?.errors?.code?.[0]
+                    || error.response?.data?.errors?.email?.[0]
+                    || 'Invalid verification code.',
             };
         }
     }
@@ -76,7 +110,7 @@ export function AdminAuthProvider({ children }) {
     }
 
     return (
-        <AdminAuthContext.Provider value={{ admin, loading, login, logout }}>
+        <AdminAuthContext.Provider value={{ admin, loading, login, verifyTwoFactor, logout }}>
             {children}
         </AdminAuthContext.Provider>
     );

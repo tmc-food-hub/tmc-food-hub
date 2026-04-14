@@ -11,12 +11,177 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AdminController extends Controller
 {
+    private function adminRoleNames(): array
+    {
+        return ['super_admin', 'admin', 'moderator', 'analyst', 'viewer'];
+    }
+
+    private function isAdminUser(?User $user): bool
+    {
+        return $user instanceof User && in_array($user->role, $this->adminRoleNames(), true);
+    }
+
+    private function requiredPermissionForMethod(string $method): ?string
+    {
+        return match ($method) {
+            'dashboard', 'customers', 'restaurants', 'reviews', 'payments', 'analytics', 'disputes', 'performance', 'getActivityLogs' => 'view_transactions',
+            'orders' => 'cancel_refund_orders',
+            'settings', 'getSettings', 'updateGeneralSettings', 'updateCommissionSettings', 'updateNotificationSettings', 'getSecuritySettings', 'updateSecuritySettings', 'uploadLogo', 'uploadFavicon' => 'edit_system_config',
+            'promotions', 'storePromotion', 'updatePromotion', 'deletePromotion', 'showPromotion', 'expiringPromotions', 'extendPromotion' => 'create_promotions',
+            'getAdmins', 'updateAdmin', 'deleteAdmin', 'getPermissionsAndRoles', 'updateRolePermissions' => 'manage_roles',
+            default => null,
+        };
+    }
+
+    private function hasPermission(User $user, string $permissionName): bool
+    {
+        $roleId = DB::table('roles')->where('name', $user->role)->value('id');
+
+        // Backward-compatible fallback while roles table is being initialized.
+        if (!$roleId) {
+            return $user->role === 'admin';
+        }
+
+        return DB::table('role_permissions')
+            ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
+            ->where('role_permissions.role_id', $roleId)
+            ->where('permissions.name', $permissionName)
+            ->exists();
+    }
+
+    private function authorizeAdminAccess(?User $admin, string $method)
+    {
+        if (!$this->isAdminUser($admin)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($this->isSessionExpired($admin)) {
+            $this->revokeCurrentAccessToken($admin);
+
+            return response()->json([
+                'message' => 'Session expired. Please log in again.',
+            ], 401);
+        }
+
+        $permission = $this->requiredPermissionForMethod($method);
+        if ($permission && !$this->hasPermission($admin, $permission)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $this->touchLastActive($admin);
+
+        return null;
+    }
+
+    private function logAdminActivity(?User $admin, string $action, string $description, string $page, ?Request $request = null): void
+    {
+        if (!$admin) {
+            return;
+        }
+
+        try {
+            ActivityLog::logAction(
+                $admin->id,
+                $action,
+                $description,
+                $page,
+                $request?->ip(),
+                $request?->userAgent()
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to write activity log: ' . $e->getMessage());
+        }
+    }
+
+    private function sessionTimeoutToMinutes(?string $sessionTimeout): int
+    {
+        $value = strtolower(trim((string) $sessionTimeout));
+
+        if ($value === '') {
+            return 30;
+        }
+
+        return match ($value) {
+            '15 minutes' => 15,
+            '30 minutes' => 30,
+            '1 hour' => 60,
+            default => (function () use ($value) {
+                if (preg_match('/^(\d+)\s*(minute|minutes|hour|hours)$/', $value, $matches)) {
+                    $num = (int) $matches[1];
+                    $unit = $matches[2];
+                    return str_starts_with($unit, 'hour') ? $num * 60 : $num;
+                }
+
+                return 30;
+            })(),
+        };
+    }
+
+    private function isSessionExpired(User $admin): bool
+    {
+        if (!$admin->last_active) {
+            return false;
+        }
+
+        $settings = SecuritySettings::getSettings();
+        $timeoutMinutes = $this->sessionTimeoutToMinutes($settings->session_timeout ?? '30 minutes');
+
+        return now()->diffInMinutes(\Carbon\Carbon::parse($admin->last_active)) >= $timeoutMinutes;
+    }
+
+    private function touchLastActive(User $admin): void
+    {
+        try {
+            $admin->last_active = now();
+            $admin->save();
+        } catch (\Exception $e) {
+            Log::warning('Failed to update admin last_active: ' . $e->getMessage());
+        }
+    }
+
+    private function loginAttemptCacheKey(Request $request): string
+    {
+        $email = strtolower(trim((string) $request->input('email', '')));
+        return 'admin_login_attempts:' . sha1($email . '|' . ($request->ip() ?? 'unknown'));
+    }
+
+    private function twoFactorCacheKey(User $admin): string
+    {
+        return 'admin_login_2fa:' . $admin->id;
+    }
+
+    private function issueAdminAuthResponse(User $admin): array
+    {
+        return [
+            'user' => $admin,
+            'token' => $admin->createToken('admin-auth-token')->plainTextToken,
+        ];
+    }
+
+    private function revokeCurrentAccessToken(?User $admin): void
+    {
+        if (!$admin) {
+            return;
+        }
+
+        $currentToken = $admin->currentAccessToken();
+        if ($currentToken instanceof PersonalAccessToken) {
+            $currentToken->delete();
+        }
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -24,30 +189,175 @@ class AdminController extends Controller
             'password' => 'required',
         ]);
 
+        $settings = SecuritySettings::getSettings();
+        $maxAttempts = max((int) ($settings->max_login_attempts ?? 5), 1);
+        $attemptCacheKey = $this->loginAttemptCacheKey($request);
+        $attempts = (int) Cache::get($attemptCacheKey, 0);
+
+        if ($attempts >= $maxAttempts) {
+            return response()->json([
+                'message' => 'Too many failed login attempts. Please wait 15 minutes before trying again.',
+            ], 429);
+        }
+
         $admin = User::where('email', $request->email)
-            ->where('role', 'admin')
+            ->whereIn('role', $this->adminRoleNames())
             ->first();
 
         if (!$admin || !Hash::check($request->password, $admin->password)) {
+            $attempts++;
+            Cache::put($attemptCacheKey, $attempts, now()->addMinutes(15));
+
+            $remainingAttempts = max($maxAttempts - $attempts, 0);
+            $errorMessage = $remainingAttempts > 0
+                ? "The provided admin credentials are incorrect. {$remainingAttempts} attempt(s) remaining."
+                : 'Too many failed login attempts. Please wait 15 minutes before trying again.';
+
             throw ValidationException::withMessages([
-                'email' => ['The provided admin credentials are incorrect.'],
+                'email' => [$errorMessage],
             ]);
         }
 
-        $token = $admin->createToken('admin-auth-token')->plainTextToken;
+        if (strtolower((string) ($admin->status ?? 'active')) !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Your admin account is currently inactive. Please contact a super admin.'],
+            ]);
+        }
 
-        return response()->json([
-            'user' => $admin,
-            'token' => $token,
+        Cache::forget($attemptCacheKey);
+
+        if ((bool) ($settings->two_factor_auth ?? false)) {
+            $verificationCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            Cache::put($this->twoFactorCacheKey($admin), [
+                'code_hash' => Hash::make($verificationCode),
+                'attempts' => 0,
+            ], now()->addMinutes(10));
+
+            try {
+                Mail::raw(
+                    "Your TMC Food Hub admin login verification code is: {$verificationCode}\n\nThis code expires in 10 minutes.",
+                    function ($message) use ($admin) {
+                        $message->to($admin->email)->subject('Admin Login Verification Code');
+                    }
+                );
+            } catch (\Exception $e) {
+                Log::warning('Failed to send admin 2FA code: ' . $e->getMessage());
+
+                if (!app()->environment('local')) {
+                    return response()->json([
+                        'message' => 'Unable to send two-factor verification code. Please try again.',
+                    ], 500);
+                }
+
+                Log::info('Admin 2FA code (local fallback) for ' . $admin->email . ': ' . $verificationCode);
+            }
+
+            $this->logAdminActivity(
+                $admin,
+                'Auth',
+                'Requested two-factor verification for admin login',
+                'Authentication',
+                $request
+            );
+
+            return response()->json([
+                'requires_2fa' => true,
+                'email' => $admin->email,
+                'message' => 'A 2FA verification code has been sent to your email.',
+            ]);
+        }
+
+        $this->touchLastActive($admin);
+
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged in to admin portal',
+            'Authentication',
+            $request
+        );
+
+        return response()->json($this->issueAdminAuthResponse($admin));
+    }
+
+    public function verifyTwoFactor(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
         ]);
+
+        $admin = User::where('email', $request->email)
+            ->whereIn('role', $this->adminRoleNames())
+            ->first();
+
+        if (!$admin) {
+            throw ValidationException::withMessages([
+                'email' => ['No admin account found for this email address.'],
+            ]);
+        }
+
+        if (strtolower((string) ($admin->status ?? 'active')) !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Your admin account is currently inactive. Please contact a super admin.'],
+            ]);
+        }
+
+        $twoFactorCacheKey = $this->twoFactorCacheKey($admin);
+        $challenge = Cache::get($twoFactorCacheKey);
+
+        if (!$challenge || empty($challenge['code_hash'])) {
+            throw ValidationException::withMessages([
+                'code' => ['No verification code found or it has expired. Please sign in again.'],
+            ]);
+        }
+
+        $attempts = (int) ($challenge['attempts'] ?? 0);
+        if ($attempts >= 5) {
+            Cache::forget($twoFactorCacheKey);
+            throw ValidationException::withMessages([
+                'code' => ['Too many invalid verification attempts. Please sign in again.'],
+            ]);
+        }
+
+        if (!Hash::check((string) $request->code, (string) $challenge['code_hash'])) {
+            $attempts++;
+
+            if ($attempts >= 5) {
+                Cache::forget($twoFactorCacheKey);
+                throw ValidationException::withMessages([
+                    'code' => ['Too many invalid verification attempts. Please sign in again.'],
+                ]);
+            }
+
+            $challenge['attempts'] = $attempts;
+            Cache::put($twoFactorCacheKey, $challenge, now()->addMinutes(10));
+
+            $remaining = 5 - $attempts;
+            throw ValidationException::withMessages([
+                'code' => ["Invalid verification code. {$remaining} attempt(s) remaining."],
+            ]);
+        }
+
+        Cache::forget($twoFactorCacheKey);
+        $this->touchLastActive($admin);
+
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged in to admin portal',
+            'Authentication',
+            $request
+        );
+
+        return response()->json($this->issueAdminAuthResponse($admin));
     }
 
     public function user(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         return response()->json($admin);
@@ -59,12 +369,11 @@ class AdminController extends Controller
     public function refreshToken(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
-        $admin->currentAccessToken()->delete();
+        $this->revokeCurrentAccessToken($admin);
 
         $newToken = $admin->createToken('admin-auth-token')->plainTextToken;
 
@@ -78,9 +387,15 @@ class AdminController extends Controller
     {
         $admin = $request->user();
 
-        if ($admin?->currentAccessToken()) {
-            $admin->currentAccessToken()->delete();
-        }
+        $this->logAdminActivity(
+            $admin,
+            'Auth',
+            'Logged out of admin portal',
+            'Authentication',
+            $request
+        );
+
+        $this->revokeCurrentAccessToken($admin);
 
         return response()->json(['message' => 'Logged out successfully.']);
     }
@@ -88,9 +403,8 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         $totalPartners = RestaurantOwner::count();
@@ -176,9 +490,8 @@ class AdminController extends Controller
     public function orders(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -266,7 +579,7 @@ class AdminController extends Controller
                         ],
                     ];
                 } catch (\Exception $e) {
-                    \Log::error('Error formatting order ' . $order->id . ': ' . $e->getMessage());
+                    Log::error('Error formatting order ' . $order->id . ': ' . $e->getMessage());
                     // Return a minimal response if formatting fails
                     return [
                         'id' => "TMC-" . str_pad($order->id, 6, '0', STR_PAD_LEFT),
@@ -292,7 +605,7 @@ class AdminController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            \Log::error('Orders endpoint error: ' . $e->getMessage());
+            Log::error('Orders endpoint error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error fetching orders',
                 'error' => $e->getMessage(),
@@ -303,9 +616,8 @@ class AdminController extends Controller
     public function customers(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         $page = $request->query('page', 1);
@@ -354,9 +666,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -525,9 +836,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -645,9 +955,8 @@ class AdminController extends Controller
     public function payments(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -758,9 +1067,8 @@ class AdminController extends Controller
     public function analytics(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -949,9 +1257,8 @@ class AdminController extends Controller
     {
         try {
             $admin = $request->user();
-
-            if (!$admin || $admin->role !== 'admin') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+                return $authError;
             }
 
             $page = $request->query('page', 1);
@@ -1063,9 +1370,8 @@ class AdminController extends Controller
     public function settings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         // Placeholder for settings management
@@ -1083,9 +1389,8 @@ class AdminController extends Controller
     public function promotions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1127,9 +1432,8 @@ class AdminController extends Controller
     public function storePromotion(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1165,9 +1469,8 @@ class AdminController extends Controller
     public function updatePromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1209,9 +1512,8 @@ class AdminController extends Controller
     public function deletePromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1233,9 +1535,8 @@ class AdminController extends Controller
     public function showPromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1255,9 +1556,8 @@ class AdminController extends Controller
     public function expiringPromotions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1299,9 +1599,8 @@ class AdminController extends Controller
     public function extendPromotion(Request $request, $id)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1338,9 +1637,8 @@ class AdminController extends Controller
     public function performance(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1469,9 +1767,8 @@ class AdminController extends Controller
     public function getSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1488,9 +1785,8 @@ class AdminController extends Controller
     public function updateGeneralSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1503,6 +1799,8 @@ class AdminController extends Controller
                 'currency' => 'sometimes|in:PHP,USD,EUR',
                 'language' => 'sometimes|in:English,Filipino',
                 'timezone' => 'sometimes|timezone',
+                'logo_url' => 'sometimes|nullable|string|max:255',
+                'favicon_url' => 'sometimes|nullable|string|max:255',
             ]);
 
             $settings = PlatformSettings::updateGeneral($validated);
@@ -1522,15 +1820,14 @@ class AdminController extends Controller
     public function updateCommissionSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
             $validated = $request->validate([
                 'default_commission_rate' => 'sometimes|numeric|min:0|max:100',
-                'commission_type' => 'sometimes|in:percentage,fixed,tiered',
+                'commission_type' => 'sometimes|in:flat,per_order,tiered',
                 'tiered_commission' => 'sometimes|array',
                 'delivery_mode' => 'sometimes|in:restaurant,platform,mixed',
                 'platform_delivery_fee' => 'sometimes|numeric|min:0',
@@ -1554,9 +1851,8 @@ class AdminController extends Controller
     public function updateNotificationSettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1584,13 +1880,12 @@ class AdminController extends Controller
     public function getAdmins(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
-            $admins = User::where('role', 'admin')
+            $admins = User::whereIn('role', $this->adminRoleNames())
                 ->select('id', 'name', 'email', 'role', 'status', 'last_active', 'created_at')
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1616,6 +1911,112 @@ class AdminController extends Controller
         }
     }
 
+    public function updateAdmin(Request $request, $id)
+    {
+        $admin = $request->user();
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
+        }
+
+        try {
+            // Get raw data and normalize role to lowercase
+            $data = $request->all();
+            if (isset($data['role'])) {
+                $data['role'] = strtolower($data['role']);
+            }
+            if (isset($data['status'])) {
+                $data['status'] = ucfirst(strtolower($data['status']));
+            }
+
+            // Validate using the normalized data
+            $validator = Validator::make($data, [
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $id,
+                'role' => 'sometimes|in:admin,moderator,viewer,analyst,super_admin',
+                'status' => 'sometimes|in:Active,Inactive,Suspended',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            $validated = $validator->validated();
+            $adminToUpdate = User::findOrFail($id);
+
+            // Check if admin is trying to edit themselves
+            if ($adminToUpdate->id === $admin->id) {
+                return response()->json(['message' => 'Cannot edit your own account'], 422);
+            }
+
+            $adminToUpdate->update($validated);
+
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                "Updated admin account {$adminToUpdate->email}",
+                'Admin Management',
+                $request
+            );
+
+            return response()->json([
+                'message' => 'Admin updated successfully',
+                'data' => [
+                    'id' => $adminToUpdate->id,
+                    'name' => $adminToUpdate->name,
+                    'email' => $adminToUpdate->email,
+                    'role' => $this->formatAdminRole($adminToUpdate->role),
+                    'status' => $adminToUpdate->status ?? 'Active',
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating admin: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating admin'], 500);
+        }
+    }
+
+    public function deleteAdmin(Request $request, $id)
+    {
+        $admin = $request->user();
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
+        }
+
+        try {
+            $adminToDelete = User::findOrFail($id);
+
+            // Check if admin is trying to delete themselves
+            if ($adminToDelete->id === $admin->id) {
+                return response()->json(['message' => 'Cannot delete your own account'], 422);
+            }
+
+            // Check if admin is not a customer or restaurant owner
+            if (!in_array($adminToDelete->role, $this->adminRoleNames(), true)) {
+                return response()->json(['message' => 'Can only delete admin users'], 422);
+            }
+
+            $deletedEmail = $adminToDelete->email;
+
+            $adminToDelete->delete();
+
+            $this->logAdminActivity(
+                $admin,
+                'Delete',
+                "Deleted admin account {$deletedEmail}",
+                'Admin Management',
+                $request
+            );
+
+            return response()->json([
+                'message' => 'Admin deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting admin: ' . $e->getMessage());
+            return response()->json(['message' => 'Error deleting admin'], 500);
+        }
+    }
+
     private function formatAdminRole($role)
     {
         $roleMap = [
@@ -1623,6 +2024,7 @@ class AdminController extends Controller
             'super_admin' => 'Super Admin',
             'moderator' => 'Moderator',
             'analyst' => 'Analyst',
+            'viewer' => 'Viewer',
         ];
         return $roleMap[$role] ?? ucfirst($role);
     }
@@ -1634,6 +2036,7 @@ class AdminController extends Controller
             'super_admin' => 'roleSuperAdmin',
             'moderator' => 'roleModerator',
             'analyst' => 'roleAnalyst',
+            'viewer' => 'roleAnalyst',
         ];
         return $classMap[$role] ?? 'roleAdmin';
     }
@@ -1651,17 +2054,16 @@ class AdminController extends Controller
     public function getPermissionsAndRoles(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
-            $roles = \DB::table('roles')->get();
-            $permissions = \DB::table('permissions')
+            $roles = DB::table('roles')->get();
+            $permissions = DB::table('permissions')
                 ->select('id', 'name', 'display_name', 'description', 'category')
                 ->get();
-            $rolePermissions = \DB::table('role_permissions')->get();
+            $rolePermissions = DB::table('role_permissions')->get();
 
             // Group permissions by category
             $permissionsByCategory = [];
@@ -1723,9 +2125,8 @@ class AdminController extends Controller
     public function updateRolePermissions(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1741,13 +2142,13 @@ class AdminController extends Controller
                 $roleIds = $item['role_ids'];
 
                 // Delete existing associations
-                \DB::table('role_permissions')
+                DB::table('role_permissions')
                     ->where('permission_id', $permissionId)
                     ->delete();
 
                 // Insert new associations
                 foreach ($roleIds as $roleId) {
-                    \DB::table('role_permissions')->insert([
+                    DB::table('role_permissions')->insert([
                         'role_id' => $roleId,
                         'permission_id' => $permissionId,
                         'created_at' => now(),
@@ -1755,6 +2156,14 @@ class AdminController extends Controller
                     ]);
                 }
             }
+
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                'Updated roles and permissions matrix',
+                'Roles & Permissions',
+                $request
+            );
 
             return response()->json([
                 'message' => 'Role permissions updated successfully',
@@ -1770,21 +2179,53 @@ class AdminController extends Controller
     public function getActivityLogs(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
-            $logs = ActivityLog::with('admin')
+            $search = trim((string) $request->query('search', ''));
+            $role = strtolower(trim((string) $request->query('role', 'all')));
+            $action = trim((string) $request->query('action', 'all'));
+            $category = strtolower(trim((string) $request->query('category', 'all')));
+
+            $query = ActivityLog::with('admin');
+
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('description', 'like', "%{$search}%")
+                        ->orWhere('page', 'like', "%{$search}%")
+                        ->orWhere('action', 'like', "%{$search}%")
+                        ->orWhereHas('admin', function ($adminQuery) use ($search) {
+                            $adminQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('role', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($role !== '' && $role !== 'all') {
+                $query->whereHas('admin', function ($adminQuery) use ($role) {
+                    $adminQuery->where('role', $role);
+                });
+            }
+
+            if ($action !== '' && strtolower($action) !== 'all') {
+                $query->where('action', $action);
+            }
+
+            $logs = $query
                 ->orderBy('created_at', 'desc')
-                ->limit(50)
+                ->limit(200)
                 ->get()
                 ->map(function ($log) {
+                    [$categoryKey, $categoryLabel, $eventType] = $this->categorizeActivity($log->action ?? 'Access', $log->description ?? '');
+
                     return [
                         'id' => $log->id,
-                        'name' => $log->admin->name,
-                        'role' => $log->admin->role,
+                        'name' => $log->admin?->name ?? 'Unknown Admin',
+                        'role' => $log->admin?->role ?? 'unknown',
+                        'roleLabel' => $this->formatAdminRole($log->admin?->role ?? 'unknown'),
                         'action' => $log->action,
                         'actionClass' => $this->getActionClass($log->action),
                         'desc' => $log->description,
@@ -1792,14 +2233,36 @@ class AdminController extends Controller
                         'ip' => $this->maskIp($log->ip_address),
                         'device' => $log->device ?? 'Unknown',
                         'time' => $log->created_at->format('M d, Y. g:i:s A'),
+                        'categoryKey' => $categoryKey,
+                        'categoryLabel' => $categoryLabel,
+                        'eventType' => $eventType,
                     ];
                 });
 
-            return response()->json(['data' => $logs]);
+            if ($category !== '' && $category !== 'all') {
+                $logs = $logs->filter(function ($log) use ($category) {
+                    return ($log['categoryKey'] ?? '') === $category;
+                })->values();
+            }
+
+            return response()->json(['data' => $logs->values()]);
         } catch (\Exception $e) {
             Log::error('Error fetching activity logs: ' . $e->getMessage());
             return response()->json(['message' => 'Error fetching activity logs'], 500);
         }
+    }
+
+    private function categorizeActivity(string $action, ?string $description = null): array
+    {
+        $desc = strtolower($description ?? '');
+        $isSessionEvent = $action === 'Auth' && (str_contains($desc, 'logged in') || str_contains($desc, 'logged out'));
+
+        if ($isSessionEvent) {
+            $eventType = str_contains($desc, 'logged out') ? 'Logout' : 'Login';
+            return ['auth_session', 'Login / Logout', $eventType];
+        }
+
+        return ['admin_action', 'Admin Actions', $action];
     }
 
     private function getActionClass($action): string
@@ -1827,9 +2290,8 @@ class AdminController extends Controller
     public function getSecuritySettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1842,6 +2304,10 @@ class AdminController extends Controller
                     'sms_emergency' => $settings->sms_emergency,
                     'session_timeout' => $settings->session_timeout,
                     'max_login_attempts' => $settings->max_login_attempts,
+                    'require_uppercase' => $settings->require_uppercase ?? true,
+                    'require_numbers' => $settings->require_numbers ?? true,
+                    'require_special_character' => $settings->require_special_character ?? true,
+                    'password_expiry_days' => $settings->password_expiry_days ?? 90,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -1853,9 +2319,8 @@ class AdminController extends Controller
     public function updateSecuritySettings(Request $request)
     {
         $admin = $request->user();
-
-        if (!$admin || $admin->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
         }
 
         try {
@@ -1865,9 +2330,21 @@ class AdminController extends Controller
                 'sms_emergency' => 'sometimes|boolean',
                 'session_timeout' => 'sometimes|string',
                 'max_login_attempts' => 'sometimes|integer|min:1|max:20',
+                'require_uppercase' => 'sometimes|boolean',
+                'require_numbers' => 'sometimes|boolean',
+                'require_special_character' => 'sometimes|boolean',
+                'password_expiry_days' => 'sometimes|integer|min:1|max:365',
             ]);
 
             SecuritySettings::updateSettings($validated);
+
+            $this->logAdminActivity(
+                $admin,
+                'Update',
+                'Updated security settings and password policy',
+                'Security Settings',
+                $request
+            );
 
             return response()->json([
                 'message' => 'Security settings updated successfully'
@@ -1879,4 +2356,99 @@ class AdminController extends Controller
             return response()->json(['message' => 'Error updating security settings'], 500);
         }
     }
+
+    public function uploadLogo(Request $request)
+    {
+        $admin = $request->user();
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
+        }
+
+        try {
+            $validated = $request->validate([
+                'logo' => 'required|image|mimes:png,jpeg,jpg,gif,webp,svg,bmp,tiff,ico|max:5120', // 5MB
+            ]);
+
+            $file = $request->file('logo');
+            $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Ensure branding directory exists
+            $brandingDir = public_path('branding');
+            if (!file_exists($brandingDir)) {
+                mkdir($brandingDir, 0755, true);
+            }
+            
+            // Store directly in public directory
+            $file->move($brandingDir, $filename);
+            $url = '/branding/' . $filename;
+
+            // Update PlatformSettings
+            PlatformSettings::updateGeneral(['logo_url' => $url]);
+
+            return response()->json([
+                'message' => 'Logo uploaded successfully',
+                'logo_url' => $url,
+                'file' => $filename,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error uploading logo: ' . $e->getMessage());
+            return response()->json(['message' => 'Error uploading logo'], 500);
+        }
+    }
+
+    public function uploadFavicon(Request $request)
+    {
+        $admin = $request->user();
+        if ($authError = $this->authorizeAdminAccess($admin, __FUNCTION__)) {
+            return $authError;
+        }
+
+        try {
+            $validated = $request->validate([
+                'favicon' => 'required|image|mimes:png,jpeg,jpg,gif,webp,svg,ico,x-icon|max:5120', // 5MB
+            ]);
+
+            $file = $request->file('favicon');
+            $filename = 'favicon_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Ensure branding directory exists
+            $brandingDir = public_path('branding');
+            if (!file_exists($brandingDir)) {
+                mkdir($brandingDir, 0755, true);
+            }
+            
+            // Store directly in public directory
+            $file->move($brandingDir, $filename);
+            $url = '/branding/' . $filename;
+
+            // Update PlatformSettings
+            PlatformSettings::updateGeneral(['favicon_url' => $url]);
+
+            return response()->json([
+                'message' => 'Favicon uploaded successfully',
+                'favicon_url' => $url,
+                'file' => $filename,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error uploading favicon: ' . $e->getMessage());
+            return response()->json(['message' => 'Error uploading favicon'], 500);
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

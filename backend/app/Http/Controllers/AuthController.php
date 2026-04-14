@@ -6,6 +6,7 @@ use App\Mail\OtpVerificationMail;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\EmailVerification;
 use App\Models\PasswordResetVerification;
+use App\Models\SecuritySettings;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -16,6 +17,30 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private function enforcePasswordPolicy(string $password): void
+    {
+        $settings = SecuritySettings::getSettings();
+        $requirements = [];
+
+        if ((bool) ($settings->require_uppercase ?? true) && !preg_match('/[A-Z]/', $password)) {
+            $requirements[] = 'at least one uppercase letter';
+        }
+
+        if ((bool) ($settings->require_numbers ?? true) && !preg_match('/\d/', $password)) {
+            $requirements[] = 'at least one number';
+        }
+
+        if ((bool) ($settings->require_special_character ?? true) && !preg_match('/[^a-zA-Z0-9]/', $password)) {
+            $requirements[] = 'at least one special character';
+        }
+
+        if (!empty($requirements)) {
+            throw ValidationException::withMessages([
+                'password' => ['Password must include ' . implode(', ', $requirements) . '.'],
+            ]);
+        }
+    }
+
     /**
      * Handle login and return a Sanctum token.
      */
@@ -194,6 +219,7 @@ class AuthController extends Controller
         ];
 
         $validated = $request->validate($rules);
+        $this->enforcePasswordPolicy($validated['password']);
 
         $user = User::create([
             'name' => $validated['first_name'] . ' ' . $validated['last_name'],
@@ -277,6 +303,8 @@ class AuthController extends Controller
                 'current_password' => ['The provided current password does not match our records.'],
             ]);
         }
+
+        $this->enforcePasswordPolicy($request->password);
 
         $user->update([
             'password' => Hash::make($request->password),
@@ -421,6 +449,8 @@ class AuthController extends Controller
                 'reset_token' => ['Unable to reset password. Please try again.'],
             ]);
         }
+
+        $this->enforcePasswordPolicy($request->password);
 
         $user->update([
             'password' => Hash::make($request->password),

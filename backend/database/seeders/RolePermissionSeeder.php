@@ -85,7 +85,7 @@ class RolePermissionSeeder extends Seeder
         // Assign permissions to roles
         $rolePermissions = [
             'super_admin' => ['edit_system_config', 'manage_roles', 'cancel_refund_orders', 'view_transactions', 'create_promotions'],
-            'admin' => ['manage_roles', 'cancel_refund_orders', 'view_transactions', 'create_promotions'],
+            'admin' => ['edit_system_config', 'manage_roles', 'cancel_refund_orders', 'view_transactions', 'create_promotions'],
             'moderator' => ['cancel_refund_orders', 'view_transactions'],
             'analyst' => ['view_transactions'],
         ];

@@ -29,6 +29,7 @@ Route::post('/owner/register', [OwnerAuthController::class, 'register']);
 Route::post('/owner/send-otp', [OwnerAuthController::class, 'sendOtp'])->middleware('throttle:5,1');
 Route::post('/owner/verify-otp', [OwnerAuthController::class, 'verifyOtp'])->middleware('throttle:10,1');
 Route::post('/admin/login', [AdminController::class, 'login']);
+Route::post('/admin/verify-2fa', [AdminController::class, 'verifyTwoFactor']);
 Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*');
 
 // ── Public Menu / Restaurant Browse Routes (customer-facing) ─────────────
@@ -128,9 +129,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/settings/general', [AdminController::class, 'updateGeneralSettings']);
     Route::put('/settings/commission', [AdminController::class, 'updateCommissionSettings']);
     Route::put('/settings/notifications', [AdminController::class, 'updateNotificationSettings']);
+    Route::post('/upload-logo', [AdminController::class, 'uploadLogo']);
+    Route::post('/upload-favicon', [AdminController::class, 'uploadFavicon']);
 
     // Admin Management
     Route::get('/admins', [AdminController::class, 'getAdmins']);
+    Route::put('/admins/{id}', [AdminController::class, 'updateAdmin']);
+    Route::delete('/admins/{id}', [AdminController::class, 'deleteAdmin']);
 
     // Roles & Permissions
     Route::get('/permissions-roles', [AdminController::class, 'getPermissionsAndRoles']);
