@@ -73,7 +73,7 @@ class PlatformSettings extends Model
                 'language' => 'English',
                 'timezone' => 'Asia/Manila',
                 'default_commission_rate' => 15.00,
-                'commission_type' => 'percentage',
+                'commission_type' => 'flat',
             ]
         );
     }

@@ -500,7 +500,10 @@ function CommissionTab({ onRegisterSave }) {
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             console.error('Error saving commission settings:', err);
-            alert('Failed to save commission settings');
+            const errorMsg = err.response?.data?.errors 
+                ? Object.values(err.response.data.errors).flat().join(', ')
+                : err.response?.data?.message || 'Failed to save commission settings';
+            alert(errorMsg);
         } finally {
             setSaving(false);
         }

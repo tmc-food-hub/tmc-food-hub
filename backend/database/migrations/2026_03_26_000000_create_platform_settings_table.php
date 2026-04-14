@@ -32,7 +32,7 @@ return new class extends Migration
             
             // Commission Settings
             $table->decimal('default_commission_rate', 5, 2)->default(15.00);
-            $table->string('commission_type')->default('percentage'); // percentage, fixed, tiered
+            $table->string('commission_type')->default('flat'); // flat, per_order, tiered
             $table->json('tiered_commission')->nullable();
             
             // Delivery Settings

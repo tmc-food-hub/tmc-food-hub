@@ -1534,7 +1534,7 @@ class AdminController extends Controller
         try {
             $validated = $request->validate([
                 'default_commission_rate' => 'sometimes|numeric|min:0|max:100',
-                'commission_type' => 'sometimes|in:percentage,fixed,tiered',
+                'commission_type' => 'sometimes|in:flat,per_order,tiered',
                 'tiered_commission' => 'sometimes|array',
                 'delivery_mode' => 'sometimes|in:restaurant,platform,mixed',
                 'platform_delivery_fee' => 'sometimes|numeric|min:0',
