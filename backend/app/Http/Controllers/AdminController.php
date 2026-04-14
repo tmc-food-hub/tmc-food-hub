@@ -1620,6 +1620,81 @@ class AdminController extends Controller
         }
     }
 
+    public function updateAdmin(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $id,
+                'role' => 'sometimes|in:admin,moderator,viewer',
+                'status' => 'sometimes|in:Active,Inactive,Suspended',
+            ]);
+
+            $adminToUpdate = User::findOrFail($id);
+
+            // Check if admin is trying to edit themselves
+            if ($adminToUpdate->id === $admin->id) {
+                return response()->json(['message' => 'Cannot edit your own account'], 422);
+            }
+
+            $adminToUpdate->update($validated);
+
+            return response()->json([
+                'message' => 'Admin updated successfully',
+                'data' => [
+                    'id' => $adminToUpdate->id,
+                    'name' => $adminToUpdate->name,
+                    'email' => $adminToUpdate->email,
+                    'role' => $this->formatAdminRole($adminToUpdate->role),
+                    'status' => $adminToUpdate->status ?? 'Active',
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating admin: ' . $e->getMessage());
+            return response()->json(['message' => 'Error updating admin'], 500);
+        }
+    }
+
+    public function deleteAdmin(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        if (!$admin || $admin->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $adminToDelete = User::findOrFail($id);
+
+            // Check if admin is trying to delete themselves
+            if ($adminToDelete->id === $admin->id) {
+                return response()->json(['message' => 'Cannot delete your own account'], 422);
+            }
+
+            // Check if admin is not a customer or restaurant owner
+            if (!in_array($adminToDelete->role, ['admin', 'moderator', 'viewer'])) {
+                return response()->json(['message' => 'Can only delete admin users'], 422);
+            }
+
+            $adminToDelete->delete();
+
+            return response()->json([
+                'message' => 'Admin deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting admin: ' . $e->getMessage());
+            return response()->json(['message' => 'Error deleting admin'], 500);
+        }
+    }
+
     private function formatAdminRole($role)
     {
         $roleMap = [

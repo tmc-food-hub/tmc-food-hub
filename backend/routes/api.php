@@ -133,6 +133,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Admin Management
     Route::get('/admins', [AdminController::class, 'getAdmins']);
+    Route::put('/admins/{id}', [AdminController::class, 'updateAdmin']);
+    Route::delete('/admins/{id}', [AdminController::class, 'deleteAdmin']);
 
     // Roles & Permissions
     Route::get('/permissions-roles', [AdminController::class, 'getPermissionsAndRoles']);
