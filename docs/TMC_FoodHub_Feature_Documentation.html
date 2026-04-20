@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TMC Food Hub - Detailed Feature Documentation</title>
+  <style>
+    :root {
+      --paper: #fffdf9;
+      --bg: #f4ede4;
+      --ink: #1f2937;
+      --muted: #5f6b7a;
+      --line: #ddd3c5;
+      --brand: #8f1d1d;
+      --brand-dark: #6d1616;
+      --brand-soft: #f7e6df;
+      --ok: #166534;
+      --ok-bg: #e8f5eb;
+      --warn: #8a5b00;
+      --warn-bg: #fff3cf;
+      --card: #fff9f3;
+      --shadow: 0 18px 50px rgba(35, 28, 21, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f7f1ea 0%, #eee6dc 100%);
+    }
+
+    .page {
+      width: min(1080px, calc(100% - 32px));
+      margin: 32px auto 56px;
+      background: var(--paper);
+      border-radius: 28px;
+      border: 1px solid rgba(143, 29, 29, 0.1);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 42px 50px 28px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      color: #fff;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.08);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: 40px;
+      line-height: 1.08;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 820px;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 50px;
+      background: #fff8f1;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toolbar p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button.primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .button.secondary {
+      background: #eee2d4;
+      color: var(--ink);
+    }
+
+    .content {
+      padding: 24px 50px 50px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .summary-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    h2 {
+      margin: 30px 0 12px;
+      font-size: 24px;
+      color: var(--brand);
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+    }
+
+    p, li {
+      font-size: 14px;
+      line-height: 1.68;
+    }
+
+    ul {
+      margin: 10px 0 0 18px;
+      padding: 0;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .implemented {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+
+    .partial {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    th {
+      background: #faf2ea;
+      color: #4b2f2f;
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .footer-note {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page {
+        width: 100%;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .toolbar { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      .hero, .toolbar, .content {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <span class="eyebrow">Detailed Documentation</span>
+      <h1>TMC Food Hub Feature Documentation</h1>
+      <p>
+        This document describes the current features, modules, and system behavior of the TMC Food Hub
+        repository based on direct source inspection performed on March 30, 2026. It is intended to be
+        used both as a product reference and as a print-friendly PDF export document.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <p>Use this HTML file as the formatted export version of the documentation.</p>
+      <div>
+        <button class="button secondary" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">Back to Top</button>
+        <button class="button primary" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <main class="content">
+      <section class="panel">
+        <strong>Document Scope</strong>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <strong>Customer Experience</strong>
+            Public pages, signup, login, profile, restaurant browsing, cart, checkout, tracking, and reviews.
+          </div>
+          <div class="summary-card">
+            <strong>Owner Portal</strong>
+            Orders, inventory, menu CRUD, categories, reviews, analytics, payment settings, and store configuration.
+          </div>
+          <div class="summary-card">
+            <strong>Admin Portal</strong>
+            Platform dashboard, customer oversight, restaurant oversight, disputes, promotions, analytics, and governance settings.
+          </div>
+          <div class="summary-card">
+            <strong>Backend Services</strong>
+            Sanctum auth, OTP verification, stock integrity, payment proof handling, review APIs, and system settings.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <strong>Table of Contents</strong>
+        <ul>
+          <li>1. Product Overview</li>
+          <li>2. Technology Stack</li>
+          <li>3. Feature Status Summary</li>
+          <li>4. Customer-Facing Features</li>
+          <li>5. Restaurant Owner Features</li>
+          <li>6. Administrator Features</li>
+          <li>7. Backend and System Capabilities</li>
+          <li>Implementation Coverage Summary</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>1. Product Overview</h2>
+        <p>
+          TMC Food Hub is a multi-role food ordering platform built as a full-stack web application.
+          The system currently supports customers, restaurant owners, and administrators through
+          separate experiences and role-aware backend APIs.
+        </p>
+        <ul>
+          <li><strong>Customers</strong> browse restaurants, place orders, upload payment proofs, track deliveries, manage profiles, and submit reviews.</li>
+          <li><strong>Restaurant owners</strong> manage menus, categories, stock levels, order fulfillment, payment settings, analytics, and store operations.</li>
+          <li><strong>Administrators</strong> supervise customers, restaurants, disputes, reviews, payouts, promotions, platform settings, permissions, and security configuration.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2. Technology Stack</h2>
+        <ul>
+          <li><strong>Frontend:</strong> React 19, Vite, React Router, Axios, React Leaflet, Lucide React, jsPDF, html2canvas</li>
+          <li><strong>Backend:</strong> Laravel 12, Sanctum, Eloquent ORM</li>
+          <li><strong>Project layout:</strong> `frontend` for the web application and `backend` for the API and data layer</li>
+          <li><strong>Main data domains:</strong> users, restaurant owners, categories, menu items, orders, order items, reviews, promotions, platform settings, security settings, and activity logs</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Feature Status Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Status</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Customer authentication</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Email login, signup, OTP verification, Google auth, and forgot-password OTP reset.</td>
+            </tr>
+            <tr>
+              <td>Restaurant browsing and ordering</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Restaurant discovery, menu browsing, cart, checkout, scheduling, receipt upload, tracking, and reorder.</td>
+            </tr>
+            <tr>
+              <td>Reviews</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Verified-order review submission, owner replies, rating summaries, and helpful votes.</td>
+            </tr>
+            <tr>
+              <td>Owner operations</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Orders, inventory, menu CRUD, categories, analytics, earnings views, and payment settings.</td>
+            </tr>
+            <tr>
+              <td>Owner promotions</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Owner promotions management includes listing, filtering, metrics, and promotion creation workflows.</td>
+            </tr>
+            <tr>
+              <td>Admin operations</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Dashboard, orders, customers, restaurants, reviews, disputes, payouts, analytics, promotions, and settings.</td>
+            </tr>
+            <tr>
+              <td>Admin exports</td>
+              <td><span class="tag implemented">Implemented</span></td>
+              <td>Export flows are available across administrative reporting and management areas.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>4. Customer-Facing Features</h2>
+
+        <h3>4.1 Public Website and Content <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Home page with hero, about, features, how-it-works, testimonials, services, events, FAQ, contact, and footer sections.</li>
+          <li>Dedicated pages for services, support, FAQ, events, announcements, and news/blog content.</li>
+          <li>Announcement detail pages include a PDF export action built with jsPDF and html2canvas.</li>
+          <li>Theme support is shared through a central theme context.</li>
+        </ul>
+
+        <h3>4.2 Authentication and Profile <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Email and password login.</li>
+          <li>Google login and Google signup.</li>
+          <li>Multi-step signup flow with email OTP verification and legal acceptance.</li>
+          <li>Forgot-password flow with reset OTP verification.</li>
+          <li>Profile editing, address management, delivery instructions, and password changes.</li>
+          <li>Token-backed session persistence using local storage and backend user revalidation.</li>
+        </ul>
+
+        <h3>4.3 Restaurant Discovery and Menus <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Restaurant search by name or cuisine.</li>
+          <li>Cuisine filters, dietary filters, sorting, and pagination.</li>
+          <li>Restaurant-specific menu pages with dynamic category tabs, item search, dietary filtering, and similar restaurants.</li>
+          <li>Availability-aware menu rendering with stock and out-of-stock states.</li>
+        </ul>
+
+        <h3>4.4 Cart, Checkout, and Payments <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Login-required add-to-cart flow.</li>
+          <li>Single-restaurant cart enforcement.</li>
+          <li>Persistent cart storage in local storage.</li>
+          <li>Checkout with ASAP delivery or scheduled delivery up to 7 days ahead.</li>
+          <li>Restaurant-specific payment methods for COD, GCash, Maya, and bank transfer.</li>
+          <li>Non-COD orders redirect to payment proof upload after placement.</li>
+        </ul>
+
+        <h3>4.5 Orders and Tracking <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>My Orders page with ongoing, completed, and cancelled tabs.</li>
+          <li>Polling-based order refresh every 5 seconds through shared order context.</li>
+          <li>Tracking page with timeline, route map, rider card, payment status, receipt preview, and cancellation timer.</li>
+          <li>Reorder behavior for completed orders.</li>
+        </ul>
+
+        <h3>4.6 Reviews and Feedback <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Review submission restricted to delivered orders.</li>
+          <li>Star ratings, text feedback, and backend support for review photos.</li>
+          <li>Restaurant rating summary and star distribution.</li>
+          <li>Helpful vote toggle on reviews.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Restaurant Owner Features</h2>
+
+        <h3>5.1 Owner Authentication <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Owner login with dedicated token issuance.</li>
+          <li>OTP-backed owner registration with business details and merchant agreement acceptance.</li>
+          <li>Owner token refresh and logout flows.</li>
+        </ul>
+
+        <h3>5.2 Owner Dashboard Shell <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Responsive owner portal with grouped sidebar navigation.</li>
+          <li>Notification panel, search UI, owner/store profile area, and dark mode toggle.</li>
+          <li>Welcome banner for newly onboarded stores.</li>
+        </ul>
+
+        <h3>5.3 Orders, Store Controls, and Payments <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Owner-only order view tied to restaurant ownership.</li>
+          <li>Order status progression controls.</li>
+          <li>Online payment confirmation and rejection.</li>
+          <li>Store operations for open, paused, closed, auto-accept, manual confirmation, and prep time.</li>
+          <li>Payment settings for COD, GCash, Maya, and bank transfer.</li>
+        </ul>
+
+        <h3>5.4 Inventory, Menu, and Categories <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Stock updates, refill actions, and low-stock awareness.</li>
+          <li>Menu item creation, editing, deletion, image upload, pricing, description, and category assignment.</li>
+          <li>Category creation, editing, deletion, and reorder support.</li>
+          <li>Availability toggles and auto-toggle behavior based on stock.</li>
+        </ul>
+
+        <h3>5.5 Reviews, Analytics, and Settings <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Owner review inbox with reply support.</li>
+          <li>Analytics data for revenue, orders, top items, heatmaps, and high-value orders.</li>
+          <li>Settings tabs for account, security, notifications, restaurant profile, store operations, and payment.</li>
+          <li>Map-based restaurant location editing using Leaflet.</li>
+          <li>Owner order tools include PDF receipt export support.</li>
+        </ul>
+
+        <h3>5.6 Owner Promotions <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Promotions management includes search, status filters, create flow, and metrics cards.</li>
+          <li>Promotion listings support ongoing campaign visibility and lifecycle management.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Administrator Features</h2>
+
+        <h3>6.1 Dashboard and Oversight <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Dashboard KPIs for partner count, platform revenue, active restaurants, and total customers.</li>
+          <li>Revenue chart, restaurant applications, alert stream, and quick actions.</li>
+          <li>Platform-wide order management.</li>
+          <li>Customer administration and restaurant partner administration.</li>
+        </ul>
+
+        <h3>6.2 Moderation, Finance, and Analytics <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Reviews moderation with status grouping.</li>
+          <li>Disputes handling with refund and rejection flows.</li>
+          <li>Payments and payouts management.</li>
+          <li>Analytics and performance overview sections.</li>
+        </ul>
+
+        <h3>6.3 Promotions and Settings <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>API-backed promotions with create, edit, delete, inspect, and extend actions.</li>
+          <li>Settings for platform identity, commission, notifications, admin management, roles, activity logs, security, and appearance.</li>
+          <li>Roles and permissions editing backed by database tables.</li>
+          <li>Activity logs with masked IP display.</li>
+        </ul>
+
+        <h3>6.4 Admin Exports <span class="tag implemented">Implemented</span></h3>
+        <ul>
+          <li>Export modals are present in customers, restaurants, reviews, analytics, payments, and promotions.</li>
+          <li>Administrative reporting includes export actions across key management and analytics sections.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. Backend and System Capabilities</h2>
+        <ul>
+          <li>Role-based Sanctum authentication for customers, owners, and admins.</li>
+          <li>Email OTP verification for signup and OTP-driven password reset.</li>
+          <li>Google credential verification endpoints for customer authentication.</li>
+          <li>Store-status enforcement before order creation.</li>
+          <li>Stock deduction on order placement and stock restoration on cancellation.</li>
+          <li>Receipt upload plus owner-side payment confirmation or rejection.</li>
+          <li>Verified-order review enforcement and helpful-vote support.</li>
+          <li>Media serving endpoint for stored uploads.</li>
+          <li>Platform settings, security settings, activity logs, and roles/permissions support.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <strong>Implementation Coverage Summary</strong>
+        <ul>
+          <li>Owner operations cover menus, categories, inventory, promotions, payments, analytics, reviews, and store settings.</li>
+          <li>Admin operations cover exports, moderation, disputes, analytics, payouts, promotions, settings, and activity logs.</li>
+          <li>Customer order flow covers discovery, cart, checkout, receipt upload, tracking, order history, reorder, and reviews.</li>
+          <li>Platform services include authentication, media handling, promotions logic, settings management, and validation rules.</li>
+        </ul>
+      </section>
+
+      <div class="footer-note">
+        This documentation reflects the repository state inspected during this session. If new features
+        are added or existing flows are expanded, update both the markdown and HTML versions together.
+      </div>
+    </main>
+  </div>
+</body>
+</html>
