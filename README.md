@@ -8,7 +8,7 @@ TMC Food Hub is a full-stack web application designed to connect restaurants wit
 - **Clean Interface:** A responsive and modern user interface built using React and Lucide React icons.
 - **Store Browsing:** View various restaurants, their menus, operating hours, and customer reviews.
 - **Shopping Cart & Checkout:** Intuitive cart persistence and checkout flow.
-- **Live Order Tracking:** Post-checkout dashboard with a mockup Leaflet map that visualizes the driver's location en route.
+- **Live Order Tracking:** Post-checkout dashboard with a Leaflet map that visualizes the driver's location en route.
 - **Order History:** A dedicated "My Orders" tab holding ongoing, completed, and combined order tracking.
 - **Customer Feedback:** A full review and rating system allowing customers to leave comments and tags for restaurants.
 
@@ -42,7 +42,7 @@ If you are a contributor looking to run the project locally or team members coll
  [**Read COLLABORATOR_COMMANDS.md**](./COLLABORATOR_COMMANDS.md) for step-by-step setup and daily Git workflow instructions.
 
 If you are looking to set up the MySQL Database alongside the Laravel Backend initially:
- [**Read BACKEND_SETUP_TODO.md**](./BACKEND_SETUP_TODO.md) to understand the data requirements and view the migration/seeding roadmap.
+ [**Read BACKEND_SETUP_TODO.md**](./BACKEND_SETUP_TODO.md) to understand the data requirements and review the backend/database implementation guide.
 
 ---
 
