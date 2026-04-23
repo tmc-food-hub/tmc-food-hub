@@ -61,7 +61,7 @@ class MenuController extends Controller
 
         $menuByCategories = MenuItem::where('restaurant_owner_id', $restaurantId)
             ->where('available', true)
-            ->with('category')
+            ->with(['category', 'variations', 'addOns'])
             ->get()
             ->groupBy(function ($item) {
                 return $item->category ? $item->category->name : 'Uncategorized';

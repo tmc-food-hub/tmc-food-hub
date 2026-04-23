@@ -2,60 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Minus, Plus } from 'lucide-react';
 import styles from './AddToCartModal.module.css';
 
-// Simple mock logic to generate variations/add-ons based on the item title
-function getCustomizationOptions(itemTitle) {
-    const title = itemTitle.toLowerCase();
 
-    let variations = [];
-    let addOns = [];
-
-    // Beverages
-    if (title.includes('drink') || title.includes('juice') || title.includes('sundae') || title.includes('coffee')) {
-        variations = [
-            { id: 'v1', name: 'Regular', priceOpt: 0, isDefault: true },
-            { id: 'v2', name: 'Large', priceOpt: 0.8 },
-        ];
-        addOns = [
-            { id: 'a1', name: 'Extra Ice', priceOpt: 0 },
-            { id: 'a2', name: 'Add Boba', priceOpt: 1.0 },
-        ];
-    }
-    // Burgers & Sandwiches
-    else if (title.includes('burger') || title.includes('sandwich')) {
-        variations = [
-            { id: 'v1', name: 'A La Carte', priceOpt: 0, isDefault: true },
-            { id: 'v2', name: 'Make it a Meal (Fries & Drink)', priceOpt: 2.5 },
-        ];
-        addOns = [
-            { id: 'a1', name: 'Extra Cheese', priceOpt: 0.5 },
-            { id: 'a2', name: 'Extra Patty', priceOpt: 1.5 },
-            { id: 'a3', name: 'Add Bacon', priceOpt: 1.0 },
-        ];
-    }
-    // Chicken/Meals
-    else if (title.includes('chicken') || title.includes('spaghetti') || title.includes('rice')) {
-        variations = [
-            { id: 'v1', name: 'Regular Portion', priceOpt: 0, isDefault: true },
-            { id: 'v2', name: 'Large Portion', priceOpt: 2.0 },
-        ];
-        addOns = [
-            { id: 'a1', name: 'Extra Rice', priceOpt: 0.8 },
-            { id: 'a2', name: 'Extra Gravy/Sauce', priceOpt: 0.5 },
-            { id: 'a3', name: 'Add Regular Drink', priceOpt: 1.2 },
-        ];
-    }
-    // Default fallback
-    else {
-        variations = [
-            { id: 'v1', name: 'Standard', priceOpt: 0, isDefault: true },
-        ];
-        addOns = [
-            { id: 'a1', name: 'Special Request Formatting', priceOpt: 0.5 },
-        ];
-    }
-
-    return { variations, addOns };
-}
 
 export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
     if (!isOpen || !item) return null;
@@ -69,10 +16,12 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
     // Reset state when a new item is opened
     useEffect(() => {
         if (item) {
-            const { variations, addOns } = getCustomizationOptions(item.title);
+            const variations = item.variations || [];
+            const addOns = item.add_ons || item.addOns || [];
+            
             setOptions({ variations, addOns });
 
-            const defaultVar = variations.find(v => v.isDefault) || variations[0];
+            const defaultVar = variations.find(v => v.is_default) || variations[0];
             setSelectedVarId(defaultVar?.id || '');
 
             const initAddOns = {};
@@ -86,11 +35,11 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
     // Calculate total price
     const basePrice = Number(item.price) || 0;
     const activeVar = options.variations.find(v => v.id === selectedVarId);
-    const varPrice = activeVar ? activeVar.priceOpt : 0;
+    const varPrice = activeVar ? Number(activeVar.price_opt) : 0;
 
     let addOnsPrice = 0;
     options.addOns.forEach(a => {
-        if (selectedAddOns[a.id]) addOnsPrice += a.priceOpt;
+        if (selectedAddOns[a.id]) addOnsPrice += Number(a.price_opt);
     });
 
     const totalItemPrice = (basePrice + varPrice + addOnsPrice) * qty;
@@ -151,7 +100,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
                                             />
                                             <span>{v.name}</span>
                                         </div>
-                                        {v.priceOpt > 0 && <span className={styles.extraPrice}>+${Number(v.priceOpt).toFixed(2)}</span>}
+                                        {Number(v.price_opt) > 0 && <span className={styles.extraPrice}>+${Number(v.price_opt).toFixed(2)}</span>}
                                     </label>
                                 ))}
                             </div>
@@ -177,7 +126,7 @@ export default function AddToCartModal({ isOpen, onClose, item, onConfirm }) {
                                             />
                                             <span>{a.name}</span>
                                         </div>
-                                        {a.priceOpt > 0 && <span className={styles.extraPrice}>+${Number(a.priceOpt).toFixed(2)}</span>}
+                                        {Number(a.price_opt) > 0 && <span className={styles.extraPrice}>+${Number(a.price_opt).toFixed(2)}</span>}
                                     </label>
                                 ))}
                             </div>
