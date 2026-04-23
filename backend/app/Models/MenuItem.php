@@ -43,4 +43,14 @@ class MenuItem extends Model
     {
         return MediaPath::toPublicUrl($value);
     }
+
+    public function variations()
+    {
+        return $this->hasMany(MenuItemVariation::class);
+    }
+
+    public function addOns()
+    {
+        return $this->hasMany(MenuItemAddOn::class);
+    }
 }

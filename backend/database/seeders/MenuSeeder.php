@@ -148,7 +148,7 @@ class MenuSeeder extends Seeder
                 );
 
                 foreach ($items as $itemData) {
-                    MenuItem::updateOrCreate(
+                    $menuItem = MenuItem::updateOrCreate(
                     ['restaurant_owner_id' => $restaurant->id, 'title' => $itemData['title']],
                         array_merge($itemData, [
                         'category_id' => $category->id,
@@ -158,6 +158,66 @@ class MenuSeeder extends Seeder
                         'available' => $itemData['stock_level'] > 0
                     ])
                     );
+
+                    $title = strtolower($itemData['title']);
+                    $variations = [];
+                    $addOns = [];
+
+                    // Beverages
+                    if (str_contains($title, 'drink') || str_contains($title, 'juice') || str_contains($title, 'sundae') || str_contains($title, 'coffee') || str_contains($title, 'latte') || str_contains($title, 'lemonade') || str_contains($title, 'float')) {
+                        $variations = [
+                            ['name' => 'Regular', 'price_opt' => 0, 'is_default' => true],
+                            ['name' => 'Large', 'price_opt' => 0.8, 'is_default' => false],
+                        ];
+                        $addOns = [
+                            ['name' => 'Extra Ice', 'price_opt' => 0],
+                            ['name' => 'Add Boba', 'price_opt' => 1.0],
+                        ];
+                    }
+                    // Burgers & Sandwiches
+                    else if (str_contains($title, 'burger') || str_contains($title, 'sandwich') || str_contains($title, 'mac')) {
+                        $variations = [
+                            ['name' => 'A La Carte', 'price_opt' => 0, 'is_default' => true],
+                            ['name' => 'Make it a Meal (Fries & Drink)', 'price_opt' => 2.5, 'is_default' => false],
+                        ];
+                        $addOns = [
+                            ['name' => 'Extra Cheese', 'price_opt' => 0.5],
+                            ['name' => 'Extra Patty', 'price_opt' => 1.5],
+                            ['name' => 'Add Bacon', 'price_opt' => 1.0],
+                        ];
+                    }
+                    // Chicken/Meals/Pasta
+                    else if (str_contains($title, 'chicken') || str_contains($title, 'spaghetti') || str_contains($title, 'rice') || str_contains($title, 'chao fan') || str_contains($title, 'mami') || str_contains($title, 'canton')) {
+                        $variations = [
+                            ['name' => 'Regular Portion', 'price_opt' => 0, 'is_default' => true],
+                            ['name' => 'Large Portion', 'price_opt' => 2.0, 'is_default' => false],
+                        ];
+                        $addOns = [
+                            ['name' => 'Extra Rice', 'price_opt' => 0.8],
+                            ['name' => 'Extra Gravy/Sauce', 'price_opt' => 0.5],
+                            ['name' => 'Add Regular Drink', 'price_opt' => 1.2],
+                        ];
+                    }
+                    // Default fallback
+                    else {
+                        $variations = [
+                            ['name' => 'Standard', 'price_opt' => 0, 'is_default' => true],
+                        ];
+                        $addOns = [
+                            ['name' => 'Special Request Formatting', 'price_opt' => 0.5],
+                        ];
+                    }
+
+                    // Delete existing to avoid duplicates on re-seed
+                    $menuItem->variations()->delete();
+                    $menuItem->addOns()->delete();
+
+                    foreach ($variations as $v) {
+                        $menuItem->variations()->create($v);
+                    }
+                    foreach ($addOns as $a) {
+                        $menuItem->addOns()->create($a);
+                    }
                 }
             }
         }
