@@ -33,6 +33,10 @@ function CheckoutPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [placedOrderId, setPlacedOrderId] = useState(null);
 
+    const [promoCodeInput, setPromoCodeInput] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoError, setPromoError] = useState('');
+
     // Payment methods from restaurant
     const [acceptedMethods, setAcceptedMethods] = useState(['cod']);
     const [restaurantPaymentInfo, setRestaurantPaymentInfo] = useState({});
@@ -78,7 +82,25 @@ function CheckoutPage() {
     }, [cartItems, urlRestaurantId]);
 
     const deliveryFee = 3.00;
-    const totalAmount = cartSubtotal + deliveryFee;
+    const discount = appliedPromo ? appliedPromo.calculated_discount : 0;
+    const totalAmount = Math.max(cartSubtotal + deliveryFee - discount, 0);
+
+    const handleApplyPromo = async () => {
+        if (!promoCodeInput.trim()) return;
+        setPromoError('');
+        try {
+            const restaurantId = cartItems[0]?.restaurantId || urlRestaurantId;
+            const res = await api.post('/promotions/apply', {
+                code: promoCodeInput.trim(),
+                restaurant_id: restaurantId,
+                subtotal: cartSubtotal
+            });
+            setAppliedPromo(res.data.promotion);
+        } catch (err) {
+            setPromoError(err.response?.data?.message || 'Invalid promo code');
+            setAppliedPromo(null);
+        }
+    };
 
     // Compute min/max dates for the schedule picker (today to +7 days)
     const { minDate, maxDate } = useMemo(() => {
@@ -127,7 +149,8 @@ function CheckoutPage() {
                 restaurantId,
                 subtotal: cartSubtotal,
                 deliveryFee,
-                discount: 0,
+                discount: discount,
+                promo_code: appliedPromo ? appliedPromo.code : null,
                 total: totalAmount,
                 paymentMethod,
                 deliveryAddress,
@@ -374,6 +397,29 @@ function CheckoutPage() {
                                     </div>
 
                                     <div className={styles.summaryBreakdown}>
+                                        <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                                            <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>Promo Code</label>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <input 
+                                                    type="text" 
+                                                    className={styles.formInput} 
+                                                    placeholder="Enter code" 
+                                                    value={promoCodeInput}
+                                                    onChange={e => setPromoCodeInput(e.target.value.toUpperCase())}
+                                                    style={{ textTransform: 'uppercase', flex: 1 }}
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    onClick={handleApplyPromo}
+                                                    style={{ padding: '0 16px', background: '#DC2626', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            {promoError && <p style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.25rem' }}>{promoError}</p>}
+                                            {appliedPromo && <p style={{ color: '#10B981', fontSize: '0.75rem', marginTop: '0.25rem' }}>Promotion '{appliedPromo.code}' applied!</p>}
+                                        </div>
+
                                         <div className={styles.summaryRow}>
                                             <span>Subtotal</span>
                                             <span>${Number(cartSubtotal).toFixed(2)}</span>
@@ -382,6 +428,12 @@ function CheckoutPage() {
                                             <span>Delivery Fee</span>
                                             <span>${Number(deliveryFee).toFixed(2)}</span>
                                         </div>
+                                        {appliedPromo && (
+                                            <div className={styles.summaryRow} style={{ color: '#10B981', fontWeight: '500' }}>
+                                                <span>Promo Discount</span>
+                                                <span>-${Number(discount).toFixed(2)}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className={styles.totalRow}>

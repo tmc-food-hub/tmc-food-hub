@@ -1421,3 +1421,421 @@
     font-size: 0.82rem;
     font-family: 'Inter', sans-serif;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  BRAND IMAGES CARD                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+.brandImagesCard {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.brandImagesHeader {
+    padding: 1.25rem 1.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brandImagesTitle {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.brandImagesSubtitle {
+    font-size: 0.8rem;
+    color: #6B7280;
+    margin: 0.15rem 0 0;
+}
+
+/* ── Cover Image ────────────────────────────────── */
+.coverImageContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 5;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    overflow: hidden;
+    margin: 0 1.5rem;
+    width: calc(100% - 3rem);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.coverImageContainer:hover {
+    transform: scale(1.005);
+}
+
+.coverImageContainer:hover .coverImageOverlay {
+    opacity: 1;
+}
+
+.coverImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.coverImagePlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #9CA3AF;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 50%, #e5e7eb 100%);
+}
+
+.coverImagePlaceholder svg {
+    opacity: 0.5;
+}
+
+.coverImagePlaceholderText {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #9CA3AF;
+}
+
+.coverImagePlaceholderHint {
+    font-size: 0.72rem;
+    color: #D1D5DB;
+    font-weight: 500;
+}
+
+.coverImageOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.coverImageBtn {
+    padding: 0.45rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #374151;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Inter', sans-serif;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.15s;
+}
+
+.coverImageBtn:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── Logo + Info Row ────────────────────────────── */
+.brandLogoRow {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.logoUploadWrapper {
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.logoUploadWrapper:hover .logoUploadOverlay {
+    opacity: 1;
+}
+
+.logoPreviewCircle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 0 0 1px #e5e7eb;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoPreviewCircle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logoPreviewInitial {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #991B1B;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 0 0 1px #e5e7eb;
+}
+
+.logoUploadOverlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: #fff;
+}
+
+.brandLogoInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.brandLogoName {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.brandLogoHint {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    margin: 0.2rem 0 0;
+}
+
+.brandLogoChangeBtn {
+    padding: 0.45rem 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.brandLogoChangeBtn:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+/* ── Customer Preview ───────────────────────────── */
+.customerPreviewSection {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.customerPreviewLabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem;
+}
+
+.customerPreviewCard {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    max-width: 380px;
+}
+
+.customerPreviewCover {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.customerPreviewBody {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.customerPreviewLogo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    margin-top: -24px;
+    background: #f3f4f6;
+    flex-shrink: 0;
+}
+
+.customerPreviewLogoInitial {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #991B1B;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    margin-top: -24px;
+    flex-shrink: 0;
+}
+
+.customerPreviewName {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.customerPreviewCuisine {
+    font-size: 0.7rem;
+    color: #9CA3AF;
+    margin: 0.1rem 0 0;
+}
+
+.customerPreviewRating {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #F59E0B;
+}
+
+/* ── Upload Toast ───────────────────────────────── */
+.uploadingOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #6B7280;
+    border-radius: inherit;
+    backdrop-filter: blur(4px);
+    z-index: 5;
+}
+
+.uploadSpinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #991B1B;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.brandImagesSaved {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #065F46;
+    color: #fff;
+    padding: 0.65rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 9999;
+    animation: toastSlideUp 0.3s ease-out;
+}
+
+@keyframes toastSlideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ── Modal Cover Image Upload ───────────────────── */
+.modalCoverUpload {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 5;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px dashed #d1d5db;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 1rem;
+}
+
+.modalCoverUpload:hover {
+    border-color: #991B1B;
+    background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+}
+
+.modalCoverUpload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modalCoverPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    color: #9CA3AF;
+    font-size: 0.82rem;
+    font-weight: 600;
+}

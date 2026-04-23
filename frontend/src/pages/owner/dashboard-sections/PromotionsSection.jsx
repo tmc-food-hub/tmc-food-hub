@@ -1,47 +1,9 @@
-import React, { useState } from 'react';
-import { Plus, Search, Tag, Calendar, Edit2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Tag, Calendar, Edit2, Trash2, Loader2 } from 'lucide-react';
 import styles from '../OwnerDashboard.module.css';
 import PromoCreateModal from './PromoCreateModal';
 import PromoStatusDialog from './PromoStatusDialog';
-
-const MOCK_PROMOTIONS = [
-    {
-        id: 1,
-        name: 'Lunch Rush Special',
-        appliesTo: 'All Lunch Bowls',
-        type: 'Percentage Off (%)',
-        value: '20% Off',
-        validDates: 'Mar 2 - Mar 6, 2026',
-        status: 'Active'
-    },
-    {
-        id: 2,
-        name: 'Weekend Feast',
-        appliesTo: 'Fixed $5 Off',
-        type: 'Fixed Amount ($)',
-        value: 'Fixed $5 Off',
-        validDates: 'Mar 9 - Mar 13, 2026',
-        status: 'Active'
-    },
-    {
-        id: 3,
-        name: 'BOGO Burger Day',
-        appliesTo: 'Premium Burgers',
-        type: 'Buy 1 Get 1 (BOGO)',
-        value: 'Buy 1, Get 1',
-        validDates: 'Mar 8, 2026',
-        status: 'Scheduled'
-    },
-    {
-        id: 4,
-        name: 'Free Delivery Monday',
-        appliesTo: 'Orders > $30.00',
-        type: 'Free Delivery',
-        value: 'Free Delivery',
-        validDates: 'Feb 23, 2026',
-        status: 'Expired'
-    }
-];
+import api from '../../../api/axios';
 
 function PromotionsSection() {
     const [activeTab, setActiveTab] = useState('All');
@@ -49,21 +11,58 @@ function PromotionsSection() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
+    
+    const [promotions, setPromotions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const tabs = ['All', 'Active', 'Scheduled', 'Expired'];
 
-    const filteredPromotions = MOCK_PROMOTIONS.filter(promo => {
+    const fetchPromotions = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/owner/promotions');
+            setPromotions(res.data);
+        } catch (err) {
+            console.error('Failed to fetch promotions', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPromotions();
+    }, []);
+
+    const filteredPromotions = promotions.filter(promo => {
         const matchesTab = activeTab === 'All' || promo.status === activeTab;
         const matchesSearch = promo.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTab && matchesSearch;
     });
 
-    const handleSavePromotion = () => {
-        // Mock save action
-        console.log("Saving new promotion...");
-        setShowCreateModal(false);
-        // Show success exactly like the design
-        setShowSuccessDialog(true);
+    const handleSavePromotion = async (data) => {
+        setIsSubmitting(true);
+        try {
+            await api.post('/owner/promotions', data);
+            await fetchPromotions();
+            setShowCreateModal(false);
+            setShowSuccessDialog(true);
+        } catch (err) {
+            console.error('Failed to create promotion', err);
+            setShowErrorDialog(true);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeletePromotion = async (id) => {
+        if (!window.confirm('Delete this promotion?')) return;
+        try {
+            await api.delete(`/owner/promotions/${id}`);
+            await fetchPromotions();
+        } catch (err) {
+            console.error('Failed to delete promotion', err);
+        }
     };
 
     return (
@@ -154,7 +153,7 @@ function PromotionsSection() {
                                 <td>
                                     <div className={styles.actionButtons}>
                                         <button className={styles.iconBtn}><Edit2 size={16} /></button>
-                                        <button className={styles.iconBtn}><Trash2 size={16} /></button>
+                                        <button className={styles.iconBtn} onClick={() => handleDeletePromotion(promo.id)}><Trash2 size={16} /></button>
                                     </div>
                                 </td>
                             </tr>
