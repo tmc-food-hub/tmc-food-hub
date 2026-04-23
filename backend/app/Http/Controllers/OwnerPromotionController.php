@@ -11,14 +11,20 @@ class OwnerPromotionController extends Controller
     public function index(Request $request)
     {
         $owner = $request->user();
+        $ownerId = (int) $owner->id;
         
         // Fetch promotions where applicable_restaurants contains the owner's ID
-        $promotions = Promotion::whereJsonContains('applicable_restaurants', clone $owner->id)
-            ->orWhereJsonContains('applicable_restaurants', strval($owner->id))
-            ->get();
+        // Check both int and string representations for JSON compatibility
+        $promotions = Promotion::where(function ($query) use ($ownerId) {
+            $query->whereJsonContains('applicable_restaurants', $ownerId)
+                  ->orWhereJsonContains('applicable_restaurants', (string) $ownerId);
+        })->get();
             
         // Map over them to format nicely
         return response()->json($promotions->map(function ($promo) {
+            $start = Carbon::parse($promo->start_date);
+            $end = Carbon::parse($promo->end_date);
+
             return [
                 'id' => $promo->id,
                 'name' => $promo->name,
@@ -26,10 +32,12 @@ class OwnerPromotionController extends Controller
                 'appliesTo' => $promo->applicability_type === 'all_items' ? 'All Items' : 'Specific Items',
                 'type' => $promo->discount_type === 'percentage' ? 'Percentage Off (%)' : ($promo->discount_type === 'fixed' ? 'Fixed Amount ($)' : 'BOGO / Free Delivery'),
                 'value' => $promo->discount_type === 'percentage' ? $promo->discount_value . '% Off' : '$' . number_format($promo->discount_value, 2) . ' Off',
-                'validDates' => Carbon::parse($promo->start_date)->format('M j') . ' - ' . Carbon::parse($promo->end_date)->format('M j, Y'),
+                'validDates' => $start->format('M j, g:i A') . ' – ' . $end->format('M j, Y g:i A'),
                 'status' => $promo->computed_status,
-                'raw_start_date' => Carbon::parse($promo->start_date)->format('Y-m-d'),
-                'raw_end_date' => Carbon::parse($promo->end_date)->format('Y-m-d'),
+                'raw_status' => $promo->status,
+                'raw_start_date' => $start->format('Y-m-d\TH:i'),
+                'raw_end_date' => $end->format('Y-m-d\TH:i'),
+                'discount_type' => $promo->discount_type,
                 'discount_value' => $promo->discount_value,
                 'minimum_order_value' => $promo->minimum_order_value,
             ];
@@ -48,19 +56,27 @@ class OwnerPromotionController extends Controller
             'minimum_order_value' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
+            'status' => 'nullable|string|in:active,scheduled,inactive',
         ]);
+
+        // Determine status: if 'active' was requested and start <= now, set active
+        $startDt = Carbon::parse($validated['start_date']);
+        $status = $request->input('status', 'active');
+        if ($status === 'active' && $startDt->isFuture()) {
+            $status = 'scheduled';
+        }
 
         $promo = Promotion::create([
             'name' => $validated['name'],
             'code' => strtoupper($validated['code']),
             'discount_type' => $validated['discount_type'],
             'discount_value' => $validated['discount_value'],
-            'minimum_order_value' => $validated['minimum_order_value'],
-            'applicability_type' => 'all_items', // simplified for owner
-            'applicable_restaurants' => [(int) $owner->id], // ENFORCE OWNER ID
-            'start_date' => Carbon::parse($validated['start_date'])->startOfDay(),
-            'end_date' => Carbon::parse($validated['end_date'])->endOfDay(),
-            'status' => 'active', // Let it evaluate dynamically
+            'minimum_order_value' => $validated['minimum_order_value'] ?? null,
+            'applicability_type' => 'all_items',
+            'applicable_restaurants' => [(int) $owner->id],
+            'start_date' => $startDt,
+            'end_date' => Carbon::parse($validated['end_date']),
+            'status' => $status,
         ]);
 
         return response()->json(['message' => 'Promotion created successfully', 'promotion' => $promo], 201);
@@ -77,31 +93,35 @@ class OwnerPromotionController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'code' => 'sometimes|string|max:50|unique:promotions,code,'.$id,
+            'discount_type' => 'sometimes|string|in:percentage,fixed,bogo,free_delivery',
             'discount_value' => 'sometimes|numeric|min:0',
+            'minimum_order_value' => 'nullable|numeric|min:0',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'status' => 'sometimes|string|in:active,scheduled,inactive',
         ]);
 
         if (isset($validated['start_date'])) {
-            $validated['start_date'] = Carbon::parse($validated['start_date'])->startOfDay();
+            $validated['start_date'] = Carbon::parse($validated['start_date']);
         }
         if (isset($validated['end_date'])) {
-            $validated['end_date'] = Carbon::parse($validated['end_date'])->endOfDay();
+            $validated['end_date'] = Carbon::parse($validated['end_date']);
         }
 
         $promo->update($validated);
 
-        return response()->json(['message' => 'Promotion updated', 'promotion' => $promo]);
+        return response()->json(['message' => 'Promotion updated', 'promotion' => $promo->fresh()]);
     }
 
     public function destroy(Request $request, $id)
     {
         $owner = $request->user();
+        $ownerId = (int) $owner->id;
         
         $promo = Promotion::where('id', $id)
-            ->whereJsonContains('applicable_restaurants', clone $owner->id)
-            ->orWhere(function($query) use ($id, $owner) {
-                $query->where('id', $id)->whereJsonContains('applicable_restaurants', strval($owner->id));
+            ->where(function ($query) use ($ownerId) {
+                $query->whereJsonContains('applicable_restaurants', $ownerId)
+                      ->orWhereJsonContains('applicable_restaurants', (string) $ownerId);
             })
             ->firstOrFail();
 

@@ -3937,8 +3937,13 @@
 }
 
 .statusScheduled {
-    color: #059669;
-    background: #ECFDF5;
+    color: #D97706;
+    background: #FFFBEB;
+}
+
+.statusInactive {
+    color: #6B7280;
+    background: #F3F4F6;
 }
 
 .statusExpired {
