@@ -69,6 +69,7 @@ class OrderController extends Controller
             'items.*.price'        => 'required|numeric|min:0',
             'items.*.image'        => 'nullable|string',
             'items.*.variations'   => 'nullable|array',
+            'promo_code'           => 'nullable|string',
         ]);
 
         $userId = $request->user()->id;
@@ -84,7 +85,16 @@ class OrderController extends Controller
             return response()->json(['message' => $message], 422);
         }
 
-        return DB::transaction(function () use ($validated, $userId, $owner) {
+        return DB::transaction(function () use ($validated, $userId, $owner, $request) {
+            $promotionId = null;
+            if (!empty($validated['promo_code'])) {
+                $promo = \App\Models\Promotion::where('code', $validated['promo_code'])->active()->first();
+                if ($promo) {
+                    $promotionId = $promo->id;
+                    $promo->increment('redemptions_count');
+                }
+            }
+
             $order = Order::create([
                 'customer_id'          => $userId,
                 'restaurant_owner_id'  => $validated['restaurantId'],
@@ -102,6 +112,7 @@ class OrderController extends Controller
                 'scheduled_time'       => $validated['scheduledTime'] ?? null,
                 'status'               => 'Pending',
                 'payment_status'       => $validated['paymentMethod'] === 'cod' ? 'paid' : 'awaiting_confirmation',
+                'promotion_id'         => $promotionId,
             ]);
 
             foreach ($validated['items'] as $item) {

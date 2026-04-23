@@ -53,7 +53,7 @@ function MenuPage() {
                     status: s.status || 'Operational',
                     rating: s.rating || 4.5,
                     dietary: s.dietary || 'All',
-                    cover: resolveMediaUrl(s.cover_image || s.logo) || 
+                    cover: resolveMediaUrl(s.cover_image) || resolveMediaUrl(s.logo) || 
                         (s.name?.includes('Jollibee') ? '/assets/images/service/resturant_logo/jollibee.svg' :
                         s.name?.includes("McDonald's") ? '/assets/images/service/resturant_logo/mcdonald-s-7.svg' :
                         s.name?.includes('Sushi Nori') ? '/assets/images/service/resturant_logo/sushi-nori.svg' :

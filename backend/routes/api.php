@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::post('/orders/{id}/upload-receipt', [OrderController::class, 'uploadReceipt']);
+    Route::post('/promotions/apply', [App\Http\Controllers\PromotionController::class, 'apply']);
 });
 
 // ── Owner Authenticated Routes ────────────────────────────────────────────
@@ -96,6 +97,12 @@ Route::middleware('auth:owners')->prefix('owner')->group(function () {
     Route::get('/payment-settings', [OwnerAuthController::class, 'getPaymentSettings']);
     Route::put('/payment-settings', [OwnerAuthController::class, 'updatePaymentSettings']);
     Route::put('/orders/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
+    
+    // Promotions
+    Route::get('/promotions', [App\Http\Controllers\OwnerPromotionController::class, 'index']);
+    Route::post('/promotions', [App\Http\Controllers\OwnerPromotionController::class, 'store']);
+    Route::put('/promotions/{id}', [App\Http\Controllers\OwnerPromotionController::class, 'update']);
+    Route::delete('/promotions/{id}', [App\Http\Controllers\OwnerPromotionController::class, 'destroy']);
 });
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {

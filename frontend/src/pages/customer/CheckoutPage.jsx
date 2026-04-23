@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { MapPin, Banknote, CalendarDays, Clock, Smartphone, Building2, Upload, Image as ImageIcon, CreditCard } from 'lucide-react';
 import api from '../../api/axios';
 import { CartContext } from '../../components/ui/CartContext';
@@ -18,6 +18,7 @@ function CheckoutPage() {
     const { showNotification } = useNotification();
     const { placeOrder } = useOrders();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const urlRestaurantId = searchParams.get('restaurantId');
 
@@ -32,6 +33,10 @@ function CheckoutPage() {
     const [error, setError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [placedOrderId, setPlacedOrderId] = useState(null);
+
+    const [promoCodeInput, setPromoCodeInput] = useState(location.state?.promoCode || '');
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoError, setPromoError] = useState('');
 
     // Payment methods from restaurant
     const [acceptedMethods, setAcceptedMethods] = useState(['cod']);
@@ -78,7 +83,37 @@ function CheckoutPage() {
     }, [cartItems, urlRestaurantId]);
 
     const deliveryFee = 3.00;
-    const totalAmount = cartSubtotal + deliveryFee;
+    const isFreeDelivery = appliedPromo?.discount_type === 'free_delivery';
+    const actualDeliveryFee = isFreeDelivery ? 0 : deliveryFee;
+    const discount = appliedPromo ? appliedPromo.calculated_discount : 0;
+    const totalAmount = Math.max(cartSubtotal + actualDeliveryFee - discount, 0);
+
+    const handleApplyPromo = async (code = promoCodeInput) => {
+        if (!code.trim()) return;
+        setPromoError('');
+        try {
+            const restaurantId = parseInt(cartItems[0]?.restaurantId || urlRestaurantId, 10);
+            const res = await api.post('/promotions/apply', {
+                code: code.trim().toUpperCase(),
+                restaurant_id: restaurantId,
+                subtotal: cartSubtotal
+            });
+            setAppliedPromo(res.data.promotion);
+            setPromoCodeInput(code.trim().toUpperCase()); // Ensure input is updated
+        } catch (err) {
+            setPromoError(err.response?.data?.message || 'Invalid promo code');
+            setAppliedPromo(null);
+        }
+    };
+
+    // Auto-apply if passed from CartPage
+    useEffect(() => {
+        if (location.state?.promoCode && cartItems.length > 0) {
+            handleApplyPromo(location.state.promoCode);
+            // Clear state so it doesn't re-apply if user navigates back and forth
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, cartItems.length]);
 
     // Compute min/max dates for the schedule picker (today to +7 days)
     const { minDate, maxDate } = useMemo(() => {
@@ -126,8 +161,10 @@ function CheckoutPage() {
                 restaurant: storeName,
                 restaurantId,
                 subtotal: cartSubtotal,
-                deliveryFee,
-                discount: 0,
+                deliveryFee: actualDeliveryFee,
+                discount: discount,
+                promo_code: appliedPromo ? appliedPromo.code : null,
+                promotion_id: appliedPromo ? appliedPromo.id : null,
                 total: totalAmount,
                 paymentMethod,
                 deliveryAddress,
@@ -374,14 +411,68 @@ function CheckoutPage() {
                                     </div>
 
                                     <div className={styles.summaryBreakdown}>
+                                        <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                                            <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>Promo Code</label>
+                                            {appliedPromo ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 0.85rem', background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '8px' }}>
+                                                    <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 700, color: '#059669' }}>
+                                                        ✅ {appliedPromo.code} — {appliedPromo.name || 'Discount applied'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setAppliedPromo(null); setPromoCodeInput(''); setPromoError(''); }}
+                                                        style={{ background: 'none', border: 'none', color: '#DC2626', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <input
+                                                            type="text"
+                                                            className={styles.formInput}
+                                                            placeholder="Enter promo code"
+                                                            value={promoCodeInput}
+                                                            onChange={e => setPromoCodeInput(e.target.value.toUpperCase())}
+                                                            style={{ textTransform: 'uppercase', flex: 1 }}
+                                                            onKeyDown={e => e.key === 'Enter' && handleApplyPromo()}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleApplyPromo}
+                                                            style={{ padding: '0 16px', background: '#991B1B', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        >
+                                                            Apply
+                                                        </button>
+                                                    </div>
+                                                    {promoError && <p style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.35rem' }}>{promoError}</p>}
+                                                </>
+                                            )}
+                                        </div>
+
                                         <div className={styles.summaryRow}>
                                             <span>Subtotal</span>
                                             <span>${Number(cartSubtotal).toFixed(2)}</span>
                                         </div>
                                         <div className={styles.summaryRow}>
                                             <span>Delivery Fee</span>
-                                            <span>${Number(deliveryFee).toFixed(2)}</span>
+                                            <span style={isFreeDelivery ? { textDecoration: 'line-through', color: '#9CA3AF' } : {}}>
+                                                ${Number(deliveryFee).toFixed(2)}
+                                            </span>
                                         </div>
+                                        {isFreeDelivery && (
+                                            <div className={styles.summaryRow} style={{ color: '#10B981', fontWeight: '500' }}>
+                                                <span>🎉 Free Delivery</span>
+                                                <span>-${Number(deliveryFee).toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        {appliedPromo && discount > 0 && (
+                                            <div className={styles.summaryRow} style={{ color: '#10B981', fontWeight: '500' }}>
+                                                <span>Promo Discount ({appliedPromo.code})</span>
+                                                <span>-${Number(discount).toFixed(2)}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className={styles.totalRow}>

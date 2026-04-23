@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
     User, Shield, Bell, Store, CreditCard, Search,
     CheckCircle2, AlertCircle, X, Save, Check,
-    PauseCircle, XCircle, MapPin, Phone, Eye, EyeOff
+    PauseCircle, XCircle, MapPin, Phone, Eye, EyeOff,
+    Camera, ImagePlus, Star
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -11,6 +12,7 @@ import styles from './SettingsSection.module.css';
 import api from '../../../api/axios';
 import { resolveMediaUrl } from '../../../utils/media';
 import { optimizeImageFile, prepareImageUpload, revokeObjectUrl } from '../../../utils/imageUpload';
+import ImageCropModal from '../../../components/ui/ImageCropModal';
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -1157,6 +1159,193 @@ function EditableMap({ position, onPositionChange }) {
     );
 }
 
+function BrandImagesCard({ store, refreshOwner }) {
+    const coverRef = useRef(null);
+    const logoRef = useRef(null);
+    const [uploadingCover, setUploadingCover] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [saved, setSaved] = useState('');
+    // Crop modal state
+    const [cropSrc, setCropSrc] = useState(null);
+    const [cropMode, setCropMode] = useState(null); // 'cover' | 'logo'
+
+    const coverSrc = resolveMediaUrl(store.cover);
+    const logoSrc = resolveMediaUrl(store.logo);
+    const cuisine = Array.isArray(store.cuisineType) && store.cuisineType.length > 0 ? store.cuisineType : [];
+
+    async function uploadImage(field, file) {
+        const formData = new FormData();
+        formData.append('first_name', store.firstName || '');
+        formData.append('last_name', store.lastName || '');
+        formData.append('restaurant_name', store.branchName || '');
+        formData.append('business_address', store.location || '');
+        formData.append('business_contact_number', store.phone || '');
+        formData.append(field, file);
+        await api.post('/owner/profile-update', formData);
+        await refreshOwner?.();
+    }
+
+    // Open file picker → show cropper
+    const handleFileSelect = (mode) => (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const objectUrl = URL.createObjectURL(file);
+        setCropSrc(objectUrl);
+        setCropMode(mode);
+        // Reset input so same file can be re-selected
+        e.target.value = '';
+    };
+
+    // After crop is applied
+    const handleCropComplete = async (croppedFile) => {
+        setCropSrc(null);
+        const mode = cropMode;
+        setCropMode(null);
+
+        if (mode === 'cover') {
+            setUploadingCover(true);
+            try {
+                await uploadImage('cover_file', croppedFile);
+                setSaved('Cover image updated!');
+                setTimeout(() => setSaved(''), 2500);
+            } catch (err) { console.error('Cover upload failed:', err); }
+            finally { setUploadingCover(false); }
+        } else {
+            setUploadingLogo(true);
+            try {
+                await uploadImage('logo_file', croppedFile);
+                setSaved('Logo updated!');
+                setTimeout(() => setSaved(''), 2500);
+            } catch (err) { console.error('Logo upload failed:', err); }
+            finally { setUploadingLogo(false); }
+        }
+    };
+
+    const handleCropCancel = () => {
+        if (cropSrc) URL.revokeObjectURL(cropSrc);
+        setCropSrc(null);
+        setCropMode(null);
+    };
+
+    return (
+        <>
+            <div className={styles.brandImagesCard}>
+                <div className={styles.brandImagesHeader}>
+                    <div>
+                        <h3 className={styles.brandImagesTitle}>Brand Images</h3>
+                        <p className={styles.brandImagesSubtitle}>Manage how your restaurant appears to customers</p>
+                    </div>
+                </div>
+
+                {/* Cover Image */}
+                <div className={styles.coverImageContainer} onClick={() => coverRef.current?.click()}>
+                    {uploadingCover && (
+                        <div className={styles.uploadingOverlay}>
+                            <div className={styles.uploadSpinner} />
+                            Uploading cover...
+                        </div>
+                    )}
+                    {coverSrc ? (
+                        <img src={coverSrc} alt="Cover" className={styles.coverImage} />
+                    ) : (
+                        <div className={styles.coverImagePlaceholder}>
+                            <ImagePlus size={32} />
+                            <span className={styles.coverImagePlaceholderText}>Upload Cover Image</span>
+                            <span className={styles.coverImagePlaceholderHint}>Recommended: 1600×500px · Max 10 MB</span>
+                        </div>
+                    )}
+                    {coverSrc && (
+                        <div className={styles.coverImageOverlay}>
+                            <span className={styles.coverImageBtn}><Camera size={14} /> Change Cover</span>
+                        </div>
+                    )}
+                    <input ref={coverRef} type="file" accept="image/*" onChange={handleFileSelect('cover')} style={{ display: 'none' }} />
+                </div>
+
+                {/* Logo Row */}
+                <div className={styles.brandLogoRow}>
+                    <div className={styles.logoUploadWrapper} onClick={() => logoRef.current?.click()}>
+                        {uploadingLogo && (
+                            <div className={styles.uploadingOverlay}>
+                                <div className={styles.uploadSpinner} />
+                            </div>
+                        )}
+                        {logoSrc ? (
+                            <div className={styles.logoPreviewCircle}>
+                                <img src={logoSrc} alt="Logo" />
+                            </div>
+                        ) : (
+                            <div className={styles.logoPreviewInitial}>
+                                {(store.branchName || 'R').charAt(0)}
+                            </div>
+                        )}
+                        <div className={styles.logoUploadOverlay}>
+                            <Camera size={18} />
+                        </div>
+                        <input ref={logoRef} type="file" accept="image/*" onChange={handleFileSelect('logo')} style={{ display: 'none' }} />
+                    </div>
+                    <div className={styles.brandLogoInfo}>
+                        <h4 className={styles.brandLogoName}>{store.branchName || 'Your Restaurant'}</h4>
+                        <p className={styles.brandLogoHint}>Click logo to change · Max 10 MB</p>
+                    </div>
+                    <button className={styles.brandLogoChangeBtn} onClick={() => logoRef.current?.click()}>
+                        <Camera size={14} /> Change Logo
+                    </button>
+                </div>
+
+                {/* Customer Preview */}
+                <div className={styles.customerPreviewSection}>
+                    <p className={styles.customerPreviewLabel}>Customer Preview</p>
+                    <div className={styles.customerPreviewCard}>
+                        {coverSrc ? (
+                            <img src={coverSrc} alt="Preview cover" className={styles.customerPreviewCover} />
+                        ) : (
+                            <div className={styles.customerPreviewCover} />
+                        )}
+                        <div className={styles.customerPreviewBody}>
+                            {logoSrc ? (
+                                <img src={logoSrc} alt="Preview logo" className={styles.customerPreviewLogo} />
+                            ) : (
+                                <div className={styles.customerPreviewLogoInitial}>
+                                    {(store.branchName || 'R').charAt(0)}
+                                </div>
+                            )}
+                            <div>
+                                <p className={styles.customerPreviewName}>{store.branchName || 'Your Restaurant'}</p>
+                                <p className={styles.customerPreviewCuisine}>{cuisine.length > 0 ? cuisine.join(' · ') : 'No cuisine set'}</p>
+                            </div>
+                            <div className={styles.customerPreviewRating}>
+                                <Star size={13} fill="#F59E0B" /> 5.0
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {saved && (
+                <div className={styles.brandImagesSaved}>
+                    <Check size={16} /> {saved}
+                </div>
+            )}
+
+            {/* Crop Modal */}
+            {cropSrc && cropMode && (
+                <ImageCropModal
+                    imageSrc={cropSrc}
+                    aspect={cropMode === 'cover' ? 16 / 5 : 1}
+                    title={cropMode === 'cover' ? 'Crop Cover Image' : 'Crop Logo'}
+                    cropShape={cropMode === 'logo' ? 'round' : 'rect'}
+                    outputWidth={cropMode === 'cover' ? 1600 : 500}
+                    outputHeight={cropMode === 'cover' ? 500 : 500}
+                    onComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
+            )}
+        </>
+    );
+}
+
+
 function RestaurantProfileTab({ store, refreshOwner }) {
     const [editMode, setEditMode] = useState(false);
     
@@ -1172,6 +1361,8 @@ function RestaurantProfileTab({ store, refreshOwner }) {
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#111827' }}>Restaurant Profile</h2>
                 <p style={{ color: '#6b7280', margin: 0, fontSize: '0.9rem' }}>Update your restaurant's brand details, contact information, and store visibility.</p>
             </div>
+
+            <BrandImagesCard store={store} refreshOwner={refreshOwner} />
 
             <div className={styles.card} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -1287,9 +1478,15 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
     });
     const [logoFile, setLogoFile] = useState(null);
     const [previewLogo, setPreviewLogo] = useState(resolveMediaUrl(store.logo));
+    const [coverFile, setCoverFile] = useState(null);
+    const [previewCover, setPreviewCover] = useState(resolveMediaUrl(store.cover));
     const [saving, setSaving] = useState(false);
     const [mapPosition, setMapPosition] = useState(DEFAULT_CENTER);
     const fileRef = useRef(null);
+    const coverFileRef = useRef(null);
+    // Crop modal state for the edit modal
+    const [modalCropSrc, setModalCropSrc] = useState(null);
+    const [modalCropMode, setModalCropMode] = useState(null);
 
     // Geocode initial address on mount
     useEffect(() => {
@@ -1299,6 +1496,7 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
     }, []);
 
     useEffect(() => () => revokeObjectUrl(previewLogo), [previewLogo]);
+    useEffect(() => () => revokeObjectUrl(previewCover), [previewCover]);
 
     const geocodeAddress = useCallback(async (addr) => {
         const result = await geocodeAddressToLatLng(addr);
@@ -1311,14 +1509,44 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
         if (addr) setForm(prev => ({ ...prev, address: addr }));
     }, []);
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const prepared = await prepareImageUpload(file);
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        setModalCropSrc(url);
+        setModalCropMode('logo');
+        e.target.value = '';
+    };
+
+    const handleCoverFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        setModalCropSrc(url);
+        setModalCropMode('cover');
+        e.target.value = '';
+    };
+
+    const handleModalCropComplete = (croppedFile) => {
+        const previewUrl = URL.createObjectURL(croppedFile);
+        if (modalCropMode === 'cover') {
+            revokeObjectUrl(previewCover);
+            setCoverFile(croppedFile);
+            setPreviewCover(previewUrl);
+        } else {
             revokeObjectUrl(previewLogo);
-            setLogoFile(prepared.uploadFile);
-            setPreviewLogo(prepared.previewUrl);
+            setLogoFile(croppedFile);
+            setPreviewLogo(previewUrl);
         }
+        if (modalCropSrc) URL.revokeObjectURL(modalCropSrc);
+        setModalCropSrc(null);
+        setModalCropMode(null);
+    };
+
+    const handleModalCropCancel = () => {
+        if (modalCropSrc) URL.revokeObjectURL(modalCropSrc);
+        setModalCropSrc(null);
+        setModalCropMode(null);
     };
 
     const handleSave = async () => {
@@ -1335,6 +1563,7 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
             form.cuisines.forEach(c => formData.append('cuisine_type[]', c));
             
             if (logoFile) formData.append('logo_file', logoFile);
+            if (coverFile) formData.append('cover_file', coverFile);
             
             await api.post('/owner/profile-update', formData);
 
@@ -1359,6 +1588,7 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
     };
 
     return (
+        <>
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
             <div style={{ backgroundColor: 'white', borderRadius: '12px', width: '100%', maxWidth: '780px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.75rem', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 10 }}>
@@ -1368,11 +1598,28 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
 
                 <div style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', backgroundColor: '#f9fafb' }}>
                     
+                    {/* Cover Image Upload */}
+                    <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '1.5rem', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
+                        <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', color: '#111827', fontWeight: 700 }}>Cover Image</h4>
+                        <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#6B7280' }}>This image appears on the menu listing page. Recommended 1600×500px.</p>
+                        <div className={styles.modalCoverUpload} onClick={() => coverFileRef.current?.click()}>
+                            {previewCover ? (
+                                <img src={previewCover} alt="Cover preview" />
+                            ) : (
+                                <div className={styles.modalCoverPlaceholder}>
+                                    <ImagePlus size={24} />
+                                    <span>Click to upload cover image</span>
+                                </div>
+                            )}
+                        </div>
+                        <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileChange} style={{ display: 'none' }} />
+                    </div>
+
                     <div style={{ backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '1.5rem', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
                         <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', color: '#111827', fontWeight: 700 }}>Restaurant Information</h4>
                         <div style={{ display: 'flex', gap: '1.5rem' }}>
                             <div style={{ flexShrink: 0 }}>
-                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Restaurant Name</label>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#374151', marginBottom: '0.5rem' }}>Restaurant Logo</label>
                                 <div 
                                     onClick={() => fileRef.current?.click()}
                                     style={{ width: '110px', height: '110px', borderRadius: '12px', border: '1px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', overflow: 'hidden', backgroundColor: 'white', padding: '0.5rem' }}
@@ -1498,6 +1745,20 @@ function EditRestaurantProfileModal({ store, onClose, refreshOwner }) {
                 </div>
             </div>
         </div>
+
+        {modalCropSrc && modalCropMode && (
+            <ImageCropModal
+                imageSrc={modalCropSrc}
+                aspect={modalCropMode === 'cover' ? 16 / 5 : 1}
+                title={modalCropMode === 'cover' ? 'Crop Cover Image' : 'Crop Logo'}
+                cropShape={modalCropMode === 'logo' ? 'round' : 'rect'}
+                outputWidth={modalCropMode === 'cover' ? 1600 : 500}
+                outputHeight={modalCropMode === 'cover' ? 500 : 500}
+                onComplete={handleModalCropComplete}
+                onCancel={handleModalCropCancel}
+            />
+        )}
+        </>
     );
 }
 
