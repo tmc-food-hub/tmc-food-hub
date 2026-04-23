@@ -7,6 +7,7 @@ import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import styles from './CartPage.module.css';
+import api from '../../api/axios';
 
 function CartPage() {
     const { cartItems, cartCount, cartSubtotal, increment, decrement, removeFromCart } = useContext(CartContext);
@@ -14,6 +15,7 @@ function CartPage() {
     const navigate = useNavigate();
     const [promoCode, setPromoCode] = useState('');
     const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoError, setPromoError] = useState('');
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -26,12 +28,25 @@ function CartPage() {
     if (loading || !isAuthenticated) return null;
 
     const deliveryFee = cartItems.length > 0 ? 3.00 : 0;
-    const discount = appliedPromo ? 5.00 : 0;
-    const totalAmount = cartSubtotal + deliveryFee - discount;
+    const isFreeDelivery = appliedPromo?.discount_type === 'free_delivery';
+    const actualDeliveryFee = isFreeDelivery ? 0 : deliveryFee;
+    const discount = appliedPromo ? appliedPromo.calculated_discount : 0;
+    const totalAmount = Math.max(cartSubtotal + actualDeliveryFee - discount, 0);
 
-    const handleApplyPromo = () => {
-        if (promoCode.trim().toUpperCase() === 'PROMO5') {
-            setAppliedPromo('PROMO5');
+    const handleApplyPromo = async () => {
+        if (!promoCode.trim()) return;
+        setPromoError('');
+        try {
+            const restaurantId = parseInt(cartItems[0]?.restaurantId, 10);
+            const res = await api.post('/promotions/apply', {
+                code: promoCode.trim().toUpperCase(),
+                restaurant_id: restaurantId,
+                subtotal: cartSubtotal
+            });
+            setAppliedPromo(res.data.promotion);
+        } catch (err) {
+            setPromoError(err.response?.data?.message || 'Invalid promo code');
+            setAppliedPromo(null);
         }
     };
 
@@ -136,12 +151,24 @@ function CartPage() {
                                                 <span>${Number(cartSubtotal).toFixed(2)}</span>
                                             </div>
                                             <div className={styles.summaryRow}>
-                                                <span>Delivery Fee</span>
-                                                <span>${Number(deliveryFee).toFixed(2)}</span>
+                                                <span>Subtotal</span>
+                                                <span>${Number(cartSubtotal).toFixed(2)}</span>
                                             </div>
-                                            {appliedPromo && (
-                                                <div className={styles.summaryRow}>
-                                                    <span>Discount ({appliedPromo})</span>
+                                            <div className={styles.summaryRow}>
+                                                <span>Delivery Fee</span>
+                                                <span style={isFreeDelivery ? { textDecoration: 'line-through', color: '#9CA3AF' } : {}}>
+                                                    ${Number(deliveryFee).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            {isFreeDelivery && (
+                                                <div className={styles.summaryRow} style={{ color: '#10B981', fontWeight: '500' }}>
+                                                    <span>🎉 Free Delivery</span>
+                                                    <span>-${Number(deliveryFee).toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                            {appliedPromo && discount > 0 && (
+                                                <div className={styles.summaryRow} style={{ color: '#10B981', fontWeight: '500' }}>
+                                                    <span>Discount ({appliedPromo.code})</span>
                                                     <span className={styles.discountValue}>-${Number(discount).toFixed(2)}</span>
                                                 </div>
                                             )}
@@ -154,7 +181,12 @@ function CartPage() {
                                         </div>
 
                                         {/* Checkout Button */}
-                                        <button className={styles.checkoutBtn} onClick={() => navigate('/checkout')}>Checkout</button>
+                                        <button 
+                                            className={styles.checkoutBtn} 
+                                            onClick={() => navigate('/checkout', { state: { promoCode: appliedPromo?.code } })}
+                                        >
+                                            Checkout
+                                        </button>
                                         <p className={styles.termsText}>
                                             By placing an order, you agree to TMC Foodhub's Terms and Conditions.
                                         </p>
@@ -167,10 +199,13 @@ function CartPage() {
                                                     className={styles.promoInput}
                                                     placeholder="Promo Code"
                                                     value={promoCode}
-                                                    onChange={(e) => setPromoCode(e.target.value)}
+                                                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                                    style={{ textTransform: 'uppercase' }}
                                                 />
                                                 <button className={styles.promoBtn} onClick={handleApplyPromo}>Apply</button>
                                             </div>
+                                            {promoError && <p style={{ color: '#DC2626', fontSize: '0.75rem', marginTop: '0.35rem' }}>{promoError}</p>}
+                                            {appliedPromo && <p style={{ color: '#10B981', fontSize: '0.75rem', marginTop: '0.35rem' }}>Promo '{appliedPromo.code}' applied!</p>}
                                         </div>
                                     </div>
                                 </div>
