@@ -7,6 +7,7 @@ use App\Models\EmailVerification;
 use App\Models\RestaurantOwner;
 use App\Models\SecuritySettings;
 use App\Support\MediaPath;
+use App\Support\PublicUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -259,12 +260,12 @@ class OwnerAuthController extends Controller
         $data['name'] = $validated['first_name'] . ' ' . $validated['last_name'];
 
         if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('restaurants/logos', 'public');
+            $path = PublicUpload::store($request->file('logo_file'), 'restaurants/logos');
             $data['logo'] = MediaPath::normalizeStoredPath($path);
         }
 
         if ($request->hasFile('cover_file')) {
-            $path = $request->file('cover_file')->store('restaurants/covers', 'public');
+            $path = PublicUpload::store($request->file('cover_file'), 'restaurants/covers');
             $data['cover_image'] = MediaPath::normalizeStoredPath($path);
         }
 
