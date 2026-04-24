@@ -167,6 +167,19 @@ function RestaurantMenuPage() {
                             <span className={styles.current}>{store.name}</span>
                         </div>
 
+                        {/* Cover Photo Banner */}
+                        {store.cover && store.cover !== '/assets/images/service/placeholder.svg' && (
+                            <div className={styles.coverBanner}>
+                                <img
+                                    src={store.cover}
+                                    alt={`${store.name} cover`}
+                                    className={styles.coverBannerImg}
+                                    loading="eager"
+                                    decoding="async"
+                                />
+                            </div>
+                        )}
+
                         {/* Restaurant Header */}
                         <div className={styles.restaurantHeader}>
                             <img src={store.logo} alt={store.name} className={styles.restaurantLogo} loading="lazy" decoding="async" />
