@@ -22,31 +22,68 @@ function getApiPrefixPath() {
     return '';
 }
 
-function resolveManagedMediaUrl(path) {
+function buildApiMediaBase() {
     const apiOrigin = getApiOrigin();
+    const apiPrefixPath = getApiPrefixPath();
+
+    return `${apiOrigin}${apiPrefixPath}/api/media`;
+}
+
+function stripManagedMediaPrefix(path) {
+    let normalizedPath = path.replace(/\\/g, '/').trim();
+
+    if (!normalizedPath) return '';
+
+    if (/^https?:\/\//i.test(normalizedPath) || normalizedPath.startsWith('//')) {
+        try {
+            const url = new URL(normalizedPath, window.location.origin);
+            normalizedPath = url.pathname;
+        } catch {
+            // Keep the raw input if URL parsing fails.
+        }
+    }
+
+    normalizedPath = normalizedPath.replace(/^\/+/, '');
+
+    if (normalizedPath.startsWith('api/media/')) {
+        normalizedPath = normalizedPath.slice('api/media/'.length);
+    }
+
+    if (normalizedPath.startsWith('storage/')) {
+        normalizedPath = normalizedPath.slice('storage/'.length);
+    }
+
+    return normalizedPath.replace(/^\/+/, '');
+}
+
+function encodeManagedMediaPath(path) {
+    return stripManagedMediaPrefix(path)
+        .split('/')
+        .filter(Boolean)
+        .map(segment => encodeURIComponent(segment))
+        .join('/');
+}
+
+function isManagedMediaPath(path) {
+    const normalizedPath = stripManagedMediaPrefix(path).toLowerCase();
+
+    return normalizedPath.startsWith('restaurants/')
+        || normalizedPath.startsWith('menu_items/')
+        || normalizedPath.startsWith('reviews/')
+        || normalizedPath.startsWith('orders/receipts/');
+}
+
+function resolveManagedMediaUrl(path) {
+    const mediaBase = buildApiMediaBase();
 
     try {
         const url = new URL(path, window.location.origin);
-        
-        // Extract the core path after /api/media/ or /storage/
-        let corePath = '';
-        if (url.pathname.includes('/api/media/')) {
-            corePath = url.pathname.slice(url.pathname.indexOf('/api/media/') + 11);
-        } else if (url.pathname.includes('/storage/')) {
-            corePath = url.pathname.slice(url.pathname.indexOf('/storage/') + 9);
-        } else {
-            corePath = url.pathname.replace(/^\/+/, '');
-        }
+        const corePath = encodeManagedMediaPath(url.pathname);
 
-        // Always force through /api/media/ to guarantee routing works
-        return `${apiOrigin}/api/media/${corePath}${url.search}${url.hash}`;
+        return `${mediaBase}/${corePath}${url.search}${url.hash}`;
     } catch {
-        // Fallback for completely unparseable paths
-        let corePath = path.replace(/^\/+/, '');
-        if (corePath.startsWith('api/media/')) corePath = corePath.slice(10);
-        else if (corePath.startsWith('storage/')) corePath = corePath.slice(8);
-        
-        return `${apiOrigin}/api/media/${corePath}`;
+        const corePath = encodeManagedMediaPath(path);
+        return `${mediaBase}/${corePath}`;
     }
 }
 
@@ -59,9 +96,13 @@ export function resolveMediaUrl(path) {
 
     const origin = getApiOrigin();
 
-    // If the backend returns a fully qualified URL to the media endpoint but with a wrong host 
-    // (e.g. localhost in production), we intercept it and swap it with the correct origin.
-    if (normalizedPath.includes('/api/media/') || normalizedPath.includes('/storage/')) {
+    // Route any backend-managed upload path through the media endpoint so live deployments
+    // do not depend on a public /storage symlink or a matching host/subfolder.
+    if (
+        normalizedPath.includes('/api/media/')
+        || normalizedPath.includes('/storage/')
+        || isManagedMediaPath(normalizedPath)
+    ) {
         return resolveManagedMediaUrl(normalizedPath);
     }
 
