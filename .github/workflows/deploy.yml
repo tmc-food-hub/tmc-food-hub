@@ -51,7 +51,7 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
-          ARGS: "-avz --delete"
+          ARGS: "-avz --delete --exclude=public/uploads/"
           REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
           REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
           REMOTE_PORT: 65002
@@ -117,6 +117,17 @@ jobs:
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             ENVEOF
 
+            grep -q "^APP_KEY=base64:" .env || php artisan key:generate --force
+            php artisan config:clear
             php artisan migrate --force
-   
+            php artisan db:seed --class=MenuSeeder
+
+            mkdir -p public/uploads/restaurants/covers
+            mkdir -p public/uploads/restaurants/logos
+            mkdir -p public/uploads/menu_items
+            mkdir -p public/uploads/reviews
+            mkdir -p public/uploads/orders/receipts
+            chmod -R 775 public/uploads
+
+            php artisan optimize:clear
           
