@@ -16,7 +16,7 @@ const isLocal = hostname === 'localhost'
 
 const baseURL = import.meta.env.VITE_API_URL
     || (isLocal
-        ? (hostname.endsWith('.test') ? 'https://tmc-backend.test/api' : 'http://127.0.0.1:8000/api')
+        ? (hostname.endsWith('.test') ? 'https://tmc-backend.test/api' : `http://${hostname}:8000/api`)
         : 'https://foodhub.tmc-innovations.com/api');
 
 // ── Auth Guard Configuration ──────────────────────────────────────────────────

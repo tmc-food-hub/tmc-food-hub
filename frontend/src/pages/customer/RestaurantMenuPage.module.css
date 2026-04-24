@@ -24,6 +24,24 @@
     font-weight: 500;
 }
 
+/* ── Cover Banner ── */
+.coverBanner {
+    width: 100%;
+    height: 240px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: #E5E7EB;
+    position: relative;
+}
+
+.coverBannerImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 /* ── Restaurant Info Header ── */
 .restaurantHeader {
     display: flex;
