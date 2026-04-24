@@ -51,7 +51,7 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
-          ARGS: "-avz --delete"
+          ARGS: "-avz --delete --exclude=public/uploads/"
           REMOTE_HOST: ${{ secrets.HOSTINGER_SERVER_IP }}
           REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}
           REMOTE_PORT: 65002
