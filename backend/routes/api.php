@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\InventoryController;
@@ -53,6 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/restaurants/{id}/reviewable-orders', [ReviewController::class, 'reviewableOrders']);
     Route::post('/restaurants/{id}/reviews', [ReviewController::class, 'store']);
     Route::post('/reviews/{review}/helpful', [ReviewController::class, 'toggleHelpful']);
+    Route::get('/cart', [CartController::class, 'show']);
+    Route::put('/cart', [CartController::class, 'sync']);
+    Route::delete('/cart', [CartController::class, 'clear']);
 
     // Customer: place orders and view/cancel their own orders
     Route::get('/orders', [OrderController::class, 'index']);

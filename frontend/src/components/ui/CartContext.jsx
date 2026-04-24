@@ -1,9 +1,9 @@
-import { createContext, useReducer, useCallback, useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { UserPlus, X } from 'lucide-react';
+import { createContext, useReducer, useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import { resolveMediaUrl } from '../../utils/media';
+import api from '../../api/axios';
 
 export const CartContext = createContext();
 
@@ -44,41 +44,143 @@ const cartReducer = (state, action) => {
       );
     case 'CLEAR_CART':
       return [];
+    case 'REPLACE_CART':
+      return action.payload;
     default:
       return state;
   }
 };
 
-const initCart = () => {
-  try {
-    const localData = localStorage.getItem('tmc_cart');
-    if (!localData) return [];
-    const parsed = JSON.parse(localData);
+const LEGACY_CART_KEY = 'tmc_cart';
 
-    // Invalidate cart if it contains old deprecated image paths that have been removed
+const buildCartItemId = (item) => {
+  const varId = item.variation ? item.variation.id ?? item.variation.name ?? 'default' : 'default';
+  const addOnsId = item.addOns && item.addOns.length
+    ? item.addOns.map(a => a.id ?? a.name).sort().join('-')
+    : 'none';
+
+  return `${item.id}_${varId}_${addOnsId}`;
+};
+
+const normalizeCartItems = (items = []) => {
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .filter(item => item && item.id && item.restaurantId)
+    .map(item => ({
+      ...item,
+      image: resolveMediaUrl(item.image),
+      quantity: Math.max(1, Number(item.quantity) || 1),
+      cartItemId: item.cartItemId || buildCartItemId(item),
+    }));
+};
+
+const loadLocalCart = (storageKey) => {
+  try {
+    const localData = localStorage.getItem(storageKey);
+    if (!localData) return [];
+
+    const parsed = JSON.parse(localData);
     const hasOldImages = parsed.some(item => item.image && (item.image.includes('.webp') || item.image.includes('fries.png') || item.image.includes('burger.png')));
+
     if (hasOldImages) {
-      localStorage.removeItem('tmc_cart');
+      localStorage.removeItem(storageKey);
       return [];
     }
 
-    return parsed;
+    return normalizeCartItems(parsed);
   } catch (e) {
     return [];
   }
 };
 
 export function CartProvider({ children }) {
-  const [cartItems, dispatch] = useReducer(cartReducer, [], initCart);
-
-  useEffect(() => {
-    localStorage.setItem('tmc_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+  const [cartItems, dispatch] = useReducer(cartReducer, []);
   const { showNotification } = useNotification();
-  const { isAuthenticated, setShowLoginPrompt } = useAuth();
+  const { isAuthenticated, setShowLoginPrompt, user } = useAuth();
   const [showRestaurantMismatch, setShowRestaurantMismatch] = useState(false);
   const [pendingItem, setPendingItem] = useState(null);
-  const navigate = useNavigate();
+  const [isHydrated, setIsHydrated] = useState(false);
+  const syncTimeoutRef = useRef(null);
+  const userStorageKey = useMemo(() => user?.id ? `tmc_cart_${user.id}` : null, [user?.id]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function hydrateCart() {
+      if (!isAuthenticated || !user?.id) {
+        dispatch({ type: 'REPLACE_CART', payload: [] });
+        setIsHydrated(true);
+        return;
+      }
+
+      setIsHydrated(false);
+
+      try {
+        const response = await api.get('/cart');
+        let nextItems = normalizeCartItems(response.data?.items || []);
+
+        if (nextItems.length === 0 && userStorageKey) {
+          nextItems = loadLocalCart(userStorageKey);
+
+          if (nextItems.length === 0) {
+            nextItems = loadLocalCart(LEGACY_CART_KEY);
+            if (nextItems.length > 0) {
+              localStorage.setItem(userStorageKey, JSON.stringify(nextItems));
+              localStorage.removeItem(LEGACY_CART_KEY);
+            }
+          }
+        }
+
+        if (isActive) {
+          dispatch({ type: 'REPLACE_CART', payload: nextItems });
+        }
+      } catch (error) {
+        if (isActive) {
+          const fallbackItems = userStorageKey ? loadLocalCart(userStorageKey) : [];
+          dispatch({ type: 'REPLACE_CART', payload: fallbackItems });
+        }
+      } finally {
+        if (isActive) {
+          setIsHydrated(true);
+        }
+      }
+    }
+
+    hydrateCart();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAuthenticated, user?.id, userStorageKey]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !userStorageKey || !isHydrated) return;
+
+    localStorage.setItem(userStorageKey, JSON.stringify(cartItems));
+
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        if (cartItems.length === 0) {
+          await api.delete('/cart');
+        } else {
+          await api.put('/cart', { items: cartItems });
+        }
+      } catch (error) {
+        console.error('Failed to sync cart', error);
+      }
+    }, 250);
+
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, [cartItems, isAuthenticated, isHydrated, user?.id, userStorageKey]);
 
   const addToCart = useCallback((item) => {
     if (!isAuthenticated) {

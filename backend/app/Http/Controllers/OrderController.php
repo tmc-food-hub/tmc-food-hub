@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\RestaurantOwner;
@@ -145,6 +146,11 @@ class OrderController extends Controller
                 'customer_id'         => $userId,
                 'restaurant_owner_id' => $order->restaurant_owner_id,
             ]);
+
+            Cart::updateOrCreate(
+                ['user_id' => $userId],
+                ['items' => []]
+            );
 
             return response()->json($order->load('items'), 201);
         });

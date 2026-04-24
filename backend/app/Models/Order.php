@@ -26,7 +26,8 @@ class Order extends Model
         'payment_status',
         'payment_receipt',
         'payment_sender_name',
-        'payment_transaction_id'
+        'payment_transaction_id',
+        'promotion_id',
     ];
 
     public function items()
