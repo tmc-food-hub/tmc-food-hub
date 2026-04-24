@@ -122,6 +122,7 @@ jobs:
 
             php artisan config:clear
             php artisan migrate --force
-            php artisan db:seed --class=MenuSeeder
+            php artisan storage:link
             php artisan optimize:clear
+   
           
