@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, PenLine, Star, ThumbsUp, UploadCloud, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
+import ManagedImage from '../../components/ui/ManagedImage';
 import styles from './RestaurantMenuPage.module.css';
 import { prepareImageUpload, revokeObjectUrl } from '../../utils/imageUpload';
-import { resolveMediaUrl } from '../../utils/media';
 
 function StarRow({ rating, size = 14 }) {
     return (
@@ -314,7 +314,15 @@ export default function RestaurantReviewsSection({ storeId, storeName, fallbackR
                                     {review.photos?.length > 0 && (
                                         <div className={styles.reviewImages}>
                                             {review.photos.map((photo, index) => (
-                                                <img key={photo + index} src={resolveMediaUrl(photo)} alt="Review Photo" className={styles.reviewImg} />
+                                                <ManagedImage
+                                                    key={photo + index}
+                                                    sources={[photo]}
+                                                    fallback="/assets/images/service/placeholder.svg"
+                                                    alt="Review Photo"
+                                                    className={styles.reviewImg}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                />
                                             ))}
                                         </div>
                                     )}

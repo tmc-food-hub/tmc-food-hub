@@ -6,6 +6,7 @@ import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
 import { CartContext } from '../../components/ui/CartContext';
 import AddToCartModal from '../../components/ui/AddToCartModal';
+import ManagedImage from '../../components/ui/ManagedImage';
 import { getStores } from '../../data/storesData';
 import RestaurantReviewsSection from './RestaurantReviewsSection';
 import styles from './RestaurantMenuPage.module.css';
@@ -170,8 +171,9 @@ function RestaurantMenuPage() {
                         {/* Cover Photo Banner */}
                         {store.cover && store.cover !== '/assets/images/service/placeholder.svg' && (
                             <div className={styles.coverBanner}>
-                                <img
-                                    src={store.cover}
+                                <ManagedImage
+                                    sources={[store.cover, store.logo]}
+                                    fallback="/assets/images/service/placeholder.svg"
                                     alt={`${store.name} cover`}
                                     className={styles.coverBannerImg}
                                     loading="eager"
@@ -182,7 +184,14 @@ function RestaurantMenuPage() {
 
                         {/* Restaurant Header */}
                         <div className={styles.restaurantHeader}>
-                            <img src={store.logo} alt={store.name} className={styles.restaurantLogo} loading="lazy" decoding="async" />
+                            <ManagedImage
+                                sources={[store.logo, store.cover]}
+                                fallback="/assets/images/service/placeholder.svg"
+                                alt={store.name}
+                                className={styles.restaurantLogo}
+                                loading="lazy"
+                                decoding="async"
+                            />
                             <div className={styles.restaurantInfo}>
                                 <div className={styles.restaurantCategory}>{store.cuisine}</div>
                                 <h1 className={styles.restaurantName}>{store.name}</h1>
@@ -280,8 +289,9 @@ function RestaurantMenuPage() {
                                                 key={item.id}
                                             >
                                                 <div className={styles.menuCardImgWrap}>
-                                                    <img
-                                                        src={resolveMediaUrl(item.image)}
+                                                    <ManagedImage
+                                                        sources={[item.image]}
+                                                        fallback="/assets/images/service/placeholder.svg"
                                                         alt={item.title}
                                                         className={`${styles.menuCardImg} ${item.title === 'Jolly Spaghetti' ? styles.spaghettiImg : ''}`}
                                                         loading="lazy"
@@ -377,7 +387,14 @@ function RestaurantMenuPage() {
                                 {similarStores.map(similar => (
                                     <Link to={`/menu/${similar.id}`} className={styles.productCard} key={similar.id}>
                                         <div className={styles.cardImageWrapper}>
-                                            <img src={similar.cover} alt={similar.name} className={styles.cardImage} loading="lazy" decoding="async" />
+                                            <ManagedImage
+                                                sources={[similar.cover, similar.logo]}
+                                                fallback="/assets/images/service/placeholder.svg"
+                                                alt={similar.name}
+                                                className={styles.cardImage}
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
                                         </div>
                                         <div className={styles.cardBody}>
                                             <div className={styles.badgesTopLeftSmall}>

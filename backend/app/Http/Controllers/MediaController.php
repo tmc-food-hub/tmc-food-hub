@@ -16,30 +16,32 @@ class MediaController extends Controller
             abort(404);
         }
 
-        $resolvedPath = $this->resolveExistingPath($path);
+        $resolvedMedia = $this->resolveExistingMedia($path);
 
-        if ($resolvedPath === null) {
+        if ($resolvedMedia === null) {
             return $this->missingImageResponse($path);
         }
 
-        $disk = Storage::disk('public');
-
-        $extension = strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo($resolvedMedia['path'], PATHINFO_EXTENSION));
         $mimeType = match ($extension) {
             'jpeg', 'jpg' => 'image/jpeg',
             'png' => 'image/png',
             'gif' => 'image/gif',
             'svg' => 'image/svg+xml',
             'webp' => 'image/webp',
+            'bmp' => 'image/bmp',
             default => 'application/octet-stream',
         };
 
         try {
-            $contents = $disk->get($resolvedPath);
+            $contents = $resolvedMedia['source'] === 'disk'
+                ? Storage::disk('public')->get($resolvedMedia['path'])
+                : file_get_contents($resolvedMedia['path']);
         } catch (\Throwable $exception) {
             Log::warning('Unable to read media file from public disk.', [
                 'path' => $path,
-                'resolved_path' => $resolvedPath,
+                'resolved_path' => $resolvedMedia['path'],
+                'resolved_source' => $resolvedMedia['source'],
                 'error' => $exception->getMessage(),
             ]);
 
@@ -52,7 +54,7 @@ class MediaController extends Controller
         ]);
     }
 
-    private function resolveExistingPath(string $path): ?string
+    private function resolveExistingMedia(string $path): ?array
     {
         $disk = Storage::disk('public');
         $candidates = [$path];
@@ -81,7 +83,47 @@ class MediaController extends Controller
             }
 
             if ($exists) {
-                return $candidate;
+                return [
+                    'source' => 'disk',
+                    'path' => $candidate,
+                ];
+            }
+
+            $filesystemCandidate = $this->resolveFilesystemCandidate($candidate);
+
+            if ($filesystemCandidate !== null) {
+                return [
+                    'source' => 'file',
+                    'path' => $filesystemCandidate,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveFilesystemCandidate(string $candidate): ?string
+    {
+        $candidate = ltrim(str_replace(['\\', '..'], ['/', ''], $candidate), '/');
+
+        if ($candidate === '') {
+            return null;
+        }
+
+        $possiblePaths = [
+            public_path('storage/' . $candidate),
+            public_path($candidate),
+            base_path('public/storage/' . $candidate),
+            base_path('storage/app/public/' . $candidate),
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (!is_string($path) || $path === '') {
+                continue;
+            }
+
+            if (is_file($path)) {
+                return $path;
             }
         }
 
