@@ -4,6 +4,7 @@ import { Search, MapPin, Clock, Star, ChevronLeft, ChevronRight, CheckCircle2 } 
 import Navbar from '../../components/sections/Navbar';
 import Footer from '../../components/sections/Footer';
 import BackToTop from '../../components/ui/BackToTop';
+import ManagedImage from '../../components/ui/ManagedImage';
 import styles from './MenuPage.module.css';
 import api from '../../api/axios';
 import { resolveMediaUrl } from '../../utils/media';
@@ -253,7 +254,14 @@ function MenuPage() {
                                     {paginatedStores.map(store => (
                                         <Link to={`/menu/${store.id}`} className={styles.productCard} key={store.id}>
                                             <div className={styles.cardImageWrapper}>
-                                                <img src={store.cover} alt={store.name} className={styles.cardImage} loading="lazy" decoding="async" />
+                                                <ManagedImage
+                                                    sources={[store.cover, store.logo]}
+                                                    fallback="/assets/images/service/placeholder.svg"
+                                                    alt={store.name}
+                                                    className={styles.cardImage}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                />
                                             </div>
                                             <div className={styles.cardBody}>
                                                 <div className={styles.badgesTopLeft}>
