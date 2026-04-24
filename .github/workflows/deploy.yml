@@ -132,4 +132,5 @@ jobs:
             chmod -R 775 public/uploads
 
             php artisan optimize:clear
+   
           
