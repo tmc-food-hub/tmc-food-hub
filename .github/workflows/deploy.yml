@@ -71,8 +71,8 @@ jobs:
           TARGET: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/${{ secrets.HOSTINGER_DOMAIN }}/public_html/"
           EXCLUDE: ".git/"
 
-      # --- POST-DEPLOYMENT COMMANDS (Optional but recommended) ---
-      - name: Run Laravel Migrations and Clear Cache
+      # --- POST-DEPLOYMENT COMMANDS ---
+      - name: Run Required Laravel Commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOSTINGER_SERVER_IP }}
@@ -117,20 +117,6 @@ jobs:
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             ENVEOF
 
-            # Generate app key if not set
-            grep -q "^APP_KEY=base64:" .env || php artisan key:generate --force
-
-            php artisan config:clear
             php artisan migrate --force
-            php artisan db:seed --class=MenuSeeder
-
-            mkdir -p public/uploads/restaurants/covers
-            mkdir -p public/uploads/restaurants/logos
-            mkdir -p public/uploads/menu_items
-            mkdir -p public/uploads/reviews
-            mkdir -p public/uploads/orders/receipts
-            chmod -R 775 public/uploads
-
-            php artisan optimize:clear
    
           
