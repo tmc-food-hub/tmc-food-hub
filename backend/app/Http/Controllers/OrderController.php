@@ -8,9 +8,9 @@ use App\Models\Order;
 use App\Models\RestaurantOwner;
 use App\Models\MenuItem;
 use App\Support\MediaPath;
+use App\Support\PublicUpload;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -244,10 +244,10 @@ class OrderController extends Controller
             && !str_starts_with($existingReceiptPath, 'data:')
             && !preg_match('/^https?:\/\//i', $existingReceiptPath)
         ) {
-            Storage::disk('public')->delete($existingReceiptPath);
+            PublicUpload::delete($existingReceiptPath);
         }
 
-        $storedPath = $request->file('receipt')->store("orders/receipts/{$order->id}", 'public');
+        $storedPath = PublicUpload::store($request->file('receipt'), "orders/receipts/{$order->id}");
 
         $order->update([
             'payment_receipt' => MediaPath::normalizeStoredPath($storedPath),

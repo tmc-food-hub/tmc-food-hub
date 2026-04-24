@@ -122,7 +122,15 @@ jobs:
 
             php artisan config:clear
             php artisan migrate --force
-            php artisan storage:link
+            php artisan db:seed --class=MenuSeeder
+
+            mkdir -p public/uploads/restaurants/covers
+            mkdir -p public/uploads/restaurants/logos
+            mkdir -p public/uploads/menu_items
+            mkdir -p public/uploads/reviews
+            mkdir -p public/uploads/orders/receipts
+            chmod -R 775 public/uploads
+
             php artisan optimize:clear
    
           

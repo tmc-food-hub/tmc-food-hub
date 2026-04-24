@@ -7,6 +7,7 @@ use App\Models\RestaurantOwner;
 use App\Models\Review;
 use App\Models\ReviewHelpfulVote;
 use App\Support\MediaPath;
+use App\Support\PublicUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -115,7 +116,7 @@ class ReviewController extends Controller
         $photoPaths = [];
         if ($request->hasFile('photo_files')) {
             foreach ($request->file('photo_files') as $photo) {
-                $path = $photo->store('reviews', 'public');
+                $path = PublicUpload::store($photo, 'reviews');
                 $photoPaths[] = MediaPath::normalizeStoredPath($path);
             }
         }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Support\MediaPath;
+use App\Support\PublicUpload;
 use Illuminate\Http\Request;
 
 use App\Models\Category;
@@ -132,7 +133,7 @@ class InventoryController extends Controller
         $imagePath = MediaPath::normalizeStoredPath($request->image);
 
         if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('menu_items', 'public');
+            $path = PublicUpload::store($request->file('image_file'), 'menu_items');
             $imagePath = MediaPath::normalizeStoredPath($path);
         }
 
@@ -179,7 +180,7 @@ class InventoryController extends Controller
         }
         
         if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('menu_items', 'public');
+            $path = PublicUpload::store($request->file('image_file'), 'menu_items');
             $data['image'] = MediaPath::normalizeStoredPath($path);
         }
 
